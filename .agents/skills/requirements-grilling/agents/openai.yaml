@@ -1,0 +1,6 @@
+interface:
+  display_name: "Requirements Grilling"
+  short_description: "Resolve material requirement gaps in small rounds"
+  default_prompt: "Use $requirements-grilling to clarify material requirement gaps in small rounds, then review the final requirement with me."
+policy:
+  allow_implicit_invocation: true

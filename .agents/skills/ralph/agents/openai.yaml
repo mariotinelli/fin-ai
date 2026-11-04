@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ralph"
+  short_description: "Planeja e acompanha uma filha DEV pelo Ralph"
+  default_prompt: "Use $ralph para a filha DEV identificada pelo ID do Redmine; se houver plano, ofereça executar ou substituir, e aguarde aprovação de qualquer plano novo."
+policy:
+  allow_implicit_invocation: true
