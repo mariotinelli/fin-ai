@@ -1,0 +1,331 @@
+{
+  "schema_version": 5,
+  "run_id": "277b06fc-6870-437c-b237-eacfdd666e39",
+  "internal_identity": "afdc1fed-4fbf-46ca-9535-9d231c80b9ce",
+  "mode": "new-scope",
+  "item_type": "Feature",
+  "phase": "completed",
+  "completed_phases": [
+    "mode-confirmed",
+    "inputs-normalized",
+    "repository-analyzed",
+    "interviewing",
+    "requirement-proposed",
+    "item-ready",
+    "requirement-approved",
+    "item-created",
+    "redmine-synchronized",
+    "completed"
+  ],
+  "identity": {
+    "redmine_user_id": 131789,
+    "display_name": "M?rio Tinelli",
+    "confirmed_at": "2026-11-04T17:02:22.854427Z"
+  },
+  "redmine": {
+    "project_id": 65224,
+    "project_name": "FinAi",
+    "tracker_id": 2,
+    "tracker_name": "Feature",
+    "initial_status_id": 1,
+    "initial_status_name": "New",
+    "mapping_confirmations": [],
+    "version": {
+      "id": 20355,
+      "name": "Sprint 1",
+      "status": "open",
+      "selected_by": "Usuário — confirmação explícita nesta conversa",
+      "selected_at": "2026-11-04T17:36:14.463170+00:00",
+      "sequencing_baseline": 0
+    },
+    "category": {
+      "id": null,
+      "name": null,
+      "confirmed_by": "Mário Tinelli",
+      "confirmed_at": "2026-11-04T19:31:04.975934+00:00"
+    },
+    "issue_id": 1015911
+  },
+  "sources": [
+    {
+      "id": "conversation-input-001",
+      "name": "Escopo inicial do MVP",
+      "type": "escopo funcional",
+      "origin": "Conversa: texto do escopo fornecido pelo usuário",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "../../scopes/2026-11-04-finai-mvp/sources/conversation-input-001.md",
+      "original_sha256": "29fa58bcdc4ae160539e5f1330109f2b86a6d44316d454f58c554c8598aa444a",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "5792eb0b8be57808b3eadfd6920fe7eafebb906d7e6c9f9d62158cc5e733f92f",
+      "extraction_method": "Transcrição do trecho relevante da conversa em UTF-8",
+      "fully_read": true
+    },
+    {
+      "id": "conversation-input-002",
+      "name": "Definições de contexto e acesso",
+      "type": "decisões do usuário",
+      "origin": "Conversa: respostas posteriores ao escopo",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "../../scopes/2026-11-04-finai-mvp/sources/conversation-input-002.md",
+      "original_sha256": "f81dab197b815e50998fea40abb55f14695abd108330711b5d665dd7273586d3",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "e7ff248be0322113001b0f2f6b3f1258ba92286d50001752a0122efe164e8fc2",
+      "extraction_method": "Transcrição das respostas do usuário, na ordem original",
+      "fully_read": true
+    }
+  ],
+  "repository": {
+    "stack": [
+      "PHP ^8.5, Laravel ^13.40, Inertia ^3.7 — composer.json",
+      "React ^19.3, TypeScript ^7 — package.json"
+    ],
+    "vocabulary": [
+      {
+        "term": "Usuário",
+        "evidence_paths": [
+          "app/Models/User.php"
+        ]
+      },
+      {
+        "term": "Cadastro, login e recuperação de senha",
+        "evidence_paths": [
+          "routes/web.php"
+        ]
+      },
+      {
+        "term": "Dashboard ainda sem recursos financeiros",
+        "evidence_paths": [
+          "resources/js/pages/dashboard.tsx"
+        ]
+      }
+    ],
+    "exclusions": [
+      "vendor/**",
+      "node_modules/**",
+      ".git/**",
+      ".env*",
+      "storage/**",
+      "bootstrap/cache/**",
+      "public/build/**",
+      "credentials",
+      "tokens"
+    ]
+  },
+  "decisions": [
+    {
+      "id": "q4",
+      "statement": "Exigir tipo receita/despesa, valor positivo em reais, descrição, categoria e data da movimentação.",
+      "decided_by": "Usuário — “q4. concordo”",
+      "decided_at": "2026-11-04T19:14:16.778190+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "q5",
+      "statement": "Permitir receitas e despesas com data futura. Momento de inclusão no saldo e totais ainda não definido.",
+      "decided_by": "Usuário — “q5. futuras também acho viavel”",
+      "decided_at": "2026-11-04T19:14:16.778190+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "q6",
+      "statement": "Movimentações futuras passam a afetar saldo e totais automaticamente na data informada, permanecendo fora desses valores até então. Não há confirmação manual de pagamento ou recebimento.",
+      "decided_by": "Usuário — “concordo” com a recomendação A apresentada em Q6",
+      "decided_at": "2026-11-04T19:22:59.200382+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "q7",
+      "statement": "Categorias predefinidas por tipo: receitas — Salário, Freelance, Rendimentos, Outras receitas; despesas — Alimentação, Moradia, Transporte, Saúde, Educação, Lazer, Compras, Outras despesas.",
+      "decided_by": "Usuário — “concordo” em resposta a Q7 e Q8",
+      "decided_at": "2026-11-04T19:24:20.445320+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "q8",
+      "statement": "Histórico por mês ou todo o histórico, busca por descrição e filtros por tipo e categoria. Futuras aparecem identificadas como agendadas e podem ser localizadas e corrigidas antes da data.",
+      "decided_by": "Usuário — “concordo” em resposta a Q7 e Q8",
+      "decided_at": "2026-11-04T19:24:20.445320+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "q9",
+      "statement": "Usar America/Sao_Paulo para hoje e virada da data das movimentações.",
+      "decided_by": "Usuário — “concordo” em resposta a Q9 e Q10",
+      "decided_at": "2026-11-04T19:27:17.868552+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "q10",
+      "statement": "Permitir editar todos os campos de registros próprios passados ou futuros; excluir após confirmação, sem desfazer. Recalcular efeitos imediatamente, inclusive ao mover uma data passada para futura.",
+      "decided_by": "Usuário — “concordo” em resposta a Q9 e Q10",
+      "decided_at": "2026-11-04T19:27:17.868552+00:00",
+      "status": "valid"
+    }
+  ],
+  "approvals": [
+    {
+      "id": "b20bd651-1916-478a-8d86-56023f0915bf",
+      "kind": "requirement",
+      "subject_sha256": "f8bbe28eb7beecb04dd179fcc95e570f40b1552160d6e493fe454697338d042f",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-04T19:31:04.975934+00:00",
+      "status": "valid",
+      "document_path": ".flow/publications/5b52c06a-0561-496f-8905-0a53de053bf2/requirement.md"
+    },
+    {
+      "id": "5b07d777-0828-4371-b600-53e615b12965",
+      "kind": "publication-plan",
+      "subject_sha256": "aa85df026961ad1e8eb4fd163a461639ee08f3eb841ec9f14b2cf95b67aca6f4",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-04T19:31:04.975934+00:00",
+      "status": "valid",
+      "plan_path": ".flow/publications/5b52c06a-0561-496f-8905-0a53de053bf2/plan.json"
+    }
+  ],
+  "deferred_questions": [],
+  "pauses": [],
+  "lock": {
+    "item_key": "finai:gestao-de-transacoes",
+    "lock_id": "d69e6e3a-2281-4315-b524-469cf4a4a852",
+    "acquired_at": "2026-11-04T19:11:25.761169Z",
+    "path": "docs/harness/.locks/c30c402b93bfc602fd665aae6a306fa8ec006bb3694508d61ad81e260678f6d2.lock.json"
+  },
+  "remote_operations": {
+    "create": {
+      "status": "completed",
+      "attempts": [
+        {
+          "id": "81056220-d829-4d1e-a535-a267ea65b46b",
+          "attempted_at": "2026-11-04T19:31:24.460234+00:00",
+          "outcome": "completed"
+        }
+      ],
+      "payload_sha256": "f28a4cc39f6785c918633a8988f409492988bb80b0be5c87b4ca679b3a598575",
+      "plan_approval_id": "5b07d777-0828-4371-b600-53e615b12965",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-04T19:31:04.975934+00:00",
+      "completed_at": "2026-11-04T19:31:24.460234+00:00",
+      "observation_id": "310648fc-867a-413b-abd6-d4b814cadf0f"
+    },
+    "publish": {
+      "status": "completed",
+      "attempts": [
+        {
+          "id": "fbd340ce-a9e2-4bb5-9d5c-6f3072ae4a68",
+          "attempted_at": "2026-11-04T19:32:09.893983+00:00",
+          "outcome": "completed"
+        }
+      ],
+      "payload_sha256": "367d82e3900d555d79f84e09c2c88ed7bbf04c6488b3605a7fd38c96c6eef067",
+      "plan_approval_id": "5b07d777-0828-4371-b600-53e615b12965",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-04T19:31:04.975934+00:00",
+      "baseline_path": ".flow/publications/5b52c06a-0561-496f-8905-0a53de053bf2/baseline.json",
+      "baseline_sha256": "d522090b82bbdc107eb13cc0897516bc81221d80416f1b570ed7ec3133b379ff",
+      "completed_at": "2026-11-04T19:32:09.893983+00:00",
+      "observation_id": "617e39a3-eaad-4577-9113-2c7f26ccdef1"
+    },
+    "relations": [
+      {
+        "key": "acesso-blocks-transacoes",
+        "relation_type": "blocks",
+        "source_issue_id": 1015909,
+        "target_issue_id": 1015911,
+        "status": "completed",
+        "attempts": [
+          {
+            "id": "b2727d47-388f-4acb-ac41-8eb10b9e7a4a",
+            "attempted_at": "2026-11-04T19:33:06.103499+00:00",
+            "outcome": "completed"
+          }
+        ],
+        "payload_sha256": "ec9dd70f4974f2513ebde010882db65b85a32adba40a5a161bbdfd686df2357f",
+        "plan_approval_id": "5b07d777-0828-4371-b600-53e615b12965",
+        "approved_by": "Mário Tinelli",
+        "approved_at": "2026-11-04T19:31:04.975934+00:00",
+        "completed_at": "2026-11-04T19:33:06.103499+00:00",
+        "observation_id": "0b76aa43-6890-435b-93d3-db897a846897"
+      }
+    ]
+  },
+  "remote_observations": [
+    {
+      "id": "310648fc-867a-413b-abd6-d4b814cadf0f",
+      "operation_key": "create",
+      "observed_at": "2026-11-04T19:31:24.460234+00:00",
+      "outcome": "matched",
+      "summary": "Resposta MCP confirmou a operação autorizada; evidência preservada."
+    },
+    {
+      "id": "617e39a3-eaad-4577-9113-2c7f26ccdef1",
+      "operation_key": "publish",
+      "observed_at": "2026-11-04T19:32:09.893983+00:00",
+      "outcome": "matched",
+      "summary": "Resposta MCP confirmou a operação autorizada; evidência preservada."
+    },
+    {
+      "id": "0b76aa43-6890-435b-93d3-db897a846897",
+      "operation_key": "acesso-blocks-transacoes",
+      "observed_at": "2026-11-04T19:33:06.103499+00:00",
+      "outcome": "matched",
+      "summary": "Relação blocks confirmada na leitura de ambas as issues."
+    }
+  ],
+  "requirement_divergences": [],
+  "title_convention": {
+    "surfaces": [
+      "WEB"
+    ],
+    "audiences": [
+      "USUARIO"
+    ],
+    "audience_mode": "single",
+    "shared_public_rule": "USUARIO inclui a pessoa antes do cadastro nas telas públicas de acesso e a pessoa autenticada nas áreas financeiras.",
+    "confirmation": {
+      "statement": "Proposta de convenção apresentada para aprovação conjunta do catálogo; ainda sem confirmação do usuário.",
+      "confirmed_by": "Assistente — proposta, não aprovação do usuário",
+      "confirmed_at": "2026-11-04T17:13:03.457919+00:00"
+    }
+  },
+  "delivery": {
+    "surface": "WEB",
+    "audiences": [
+      "USUARIO"
+    ],
+    "name": "Gestão de transações",
+    "title": "[WEB] [USUARIO] Gestão de transações",
+    "visible_delivery": "Gestão de transações",
+    "user_result": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa.",
+    "included": [
+      "Cadastrar receitas e despesas",
+      "Editar e excluir transações",
+      "Consultar histórico",
+      "Classificar por categorias predefinidas",
+      "Persistir transações vinculadas ao usuário"
+    ],
+    "boundary_reason": "Categorias predefinidas integram a classificação; não há demanda de manutenção de categorias."
+  },
+  "scope_item": {
+    "state_path": "../../scopes/2026-11-04-finai-mvp/.flow/scope-state.json",
+    "catalog_item_id": "transacoes",
+    "catalog_sha256": "9abbb769af4a171a921c8561fa6bd14f23d1d92176ce5ce9f4928301926b4b7d"
+  },
+  "creation_timing": "after-requirement",
+  "early_creation_request": null,
+  "classification": {
+    "suggested_type": "Feature",
+    "rationale": "Capacidade de gestão financeira prevista no catálogo aprovado.",
+    "confirmed_type": "Feature",
+    "confirmed_by": "Usuário — catálogo aprovado",
+    "confirmed_at": "2026-11-04T19:27:17.868552+00:00"
+  },
+  "similarity": {
+    "searched_at": "2026-11-04T19:27:17.868552+00:00",
+    "candidates": [],
+    "decision": "new-demand",
+    "confirmed_by": "Mário Tinelli",
+    "confirmed_at": "2026-11-04T19:31:04.975934+00:00"
+  }
+}

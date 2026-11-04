@@ -1,0 +1,109 @@
+# [WEB] [USUARIO] Gestão de transações
+
+## Objetivo
+
+Permitir que cada usuário organize receitas e despesas próprias, passadas, atuais e futuras, com categorias predefinidas e histórico consultável.
+
+## Resultado esperado
+
+O usuário cadastra, consulta, edita e exclui suas movimentações. Registros futuros aparecem como agendados e passam a contar automaticamente na data informada, sem confirmação manual de recebimento ou pagamento.
+
+## Atores e permissões
+
+Usuário autenticado com e-mail confirmado pode operar somente suas próprias transações. Listas, buscas, detalhes e alterações não revelam nem permitem operar registros de outra pessoa, inclusive por acesso direto a um identificador.
+
+## Histórias de usuário
+
+1. Como usuário, quero registrar receitas e despesas para organizar minhas finanças.
+2. Como usuário, quero cadastrar movimentações futuras para consultá-las antes da data prevista.
+3. Como usuário, quero classificar cada movimentação em uma categoria predefinida.
+4. Como usuário, quero consultar meu histórico por período e filtros para localizar registros.
+5. Como usuário, quero corrigir todos os campos e excluir registros próprios para manter meus números corretos.
+
+## Fluxo principal
+
+1. Abrir Nova transação e preencher tipo, valor, descrição, categoria e data.
+2. Selecionar uma categoria compatível com o tipo e salvar. Com dados válidos, persistir a transação na conta autenticada e confirmar o sucesso.
+3. Consultar o histórico, inicialmente no mês atual, com opção de selecionar outro mês ou todo o histórico; combinar busca por descrição e filtros de tipo e categoria.
+4. Abrir os detalhes de uma transação para consultar todos os campos, editar ou solicitar exclusão.
+5. Na edição, alterar os campos e salvar; na exclusão, revisar a confirmação e confirmar ou cancelar.
+6. Após cada operação concluída, atualizar a consulta e os valores financeiros aplicáveis. Movimentações futuras entram nos cálculos a partir da respectiva data no horário de Brasília.
+
+## Fluxos alternativos e exceções
+
+- Formulário inválido mostra erros nos campos, mantém os dados para correção e não altera a movimentação.
+- Cancelar cadastro, edição ou confirmação de exclusão não modifica registros.
+- Trocar o tipo exige categoria compatível; uma categoria do tipo anterior não pode permanecer inválida silenciosamente.
+- Histórico vazio orienta o primeiro cadastro. Busca sem resultados informa a ausência e permite ajustar ou limpar os filtros.
+- Falha ao persistir não apresenta sucesso nem aplica alterações parciais; o usuário recebe orientação de nova tentativa.
+- Transação excluída ou indisponível não pode ser alterada; a interface informa indisponibilidade sem expor dados de outra conta.
+- Repetir a confirmação de exclusão de um registro já removido não produz novo efeito nos totais.
+- Movimentações com dados iguais podem existir como registros distintos; não há deduplicação automática por descrição, valor e data.
+
+## Regras de negócio
+
+R1. Tipo (receita ou despesa), valor em reais, descrição, categoria e data são obrigatórios. O valor é positivo; o tipo determina entrada ou saída.
+
+R2. Proposta de limites: valor de R$ 0,01 a R$ 999.999.999,99, com até duas casas decimais, sem arredondamento silencioso de entrada com precisão maior; descrição de 1 a 120 caracteres após remover espaços nas extremidades; data válida entre 01/01/1900 e 31/12/9999. Essas são propostas de limites explícitos, não regras funcionais impostas pelo design.
+
+R3. Categorias de receita: Salário, Freelance, Rendimentos e Outras receitas. Categorias de despesa: Alimentação, Moradia, Transporte, Saúde, Educação, Lazer, Compras e Outras despesas. O usuário seleciona categorias, sem criar, renomear ou excluir categorias no MVP.
+
+R4. As transações pertencem ao usuário autenticado e permanecem disponíveis após sair e entrar novamente. Não é permitido escolher outro proprietário.
+
+R5. A data da movimentação determina sua competência. O calendário de referência é America/Sao_Paulo. Data maior que hoje identifica uma transação agendada: ela aparece no histórico, mas fica fora do saldo e dos totais de receitas/despesas até o início da data informada. A inclusão é automática, sem confirmação manual e sem executar pagamentos externos.
+
+R6. Valores financeiros usam somente registros não excluídos com data menor ou igual a hoje. Saldo geral é receitas menos despesas de todo esse conjunto. Totais de um mês consideram a data da movimentação dentro do mês e a mesma restrição de hoje; selecionar um mês futuro não torna suas movimentações realizadas. O saldo pode ser negativo. Não há saldo inicial separado nesta entrega.
+
+R7. Todos os campos de uma transação própria podem ser editados, independentemente da data. Alterações de tipo, valor, categoria ou data recalculam os valores aplicáveis. Mover uma transação de hoje/passada para futura retira seu efeito atual; movê-la de futura para hoje/passada inclui esse efeito.
+
+R8. Excluir exige confirmação e remove a movimentação do histórico e dos cálculos; não há ação de desfazer no MVP.
+
+R9. Proposta de consulta: busca por trecho da descrição, sem diferenciar maiúsculas/minúsculas ou acentos; filtros combinados restringem o mesmo conjunto. Limpar filtros mostra todo o histórico. Ordenação por data da movimentação decrescente, com registros cadastrados mais recentemente primeiro em caso de empate. Paginação de 50 registros, mantendo os filtros; mudar um filtro retorna à primeira página.
+
+R10. O histórico exibe descrição, tipo, valor, categoria, data e identificação de agendada quando aplicável. A identificação deixa de ser agendada quando chega a data. As futuras seguem a ordenação por data, sem uma fila separada.
+
+## Dados percebidos pelo usuário
+
+Campos definidos em R1; valores em reais com centavos; datas no formato brasileiro; categorias de R3; indicação de agendada; filtros, número de resultados, paginação, detalhes, erros e confirmações de cadastro, edição e exclusão.
+
+## Critérios de aceite
+
+CA1. Dado um usuário habilitado e dados válidos, salvar receita ou despesa cria um registro próprio, mostra sucesso e mantém os dados disponíveis após novo acesso.
+
+CA2. Campos ausentes, tipo/categoria incompatíveis, valores ou datas fora de R2 e descrição vazia ou longa impedem salvar, exibem erros e preservam o formulário para correção.
+
+CA3. Dada uma movimentação futura, ela aparece como agendada no histórico e não afeta saldo nem totais, inclusive quando consultado seu próprio mês futuro.
+
+CA4. Ao chegar a data em America/Sao_Paulo, a movimentação passa a compor os valores de R6 sem confirmação manual e deixa de ser identificada como agendada.
+
+CA5. Selecionar mês ou todo o histórico e combinar descrição, tipo e categoria retorna apenas os registros correspondentes do usuário, respeitando ordenação e paginação de R9.
+
+CA6. Histórico vazio e busca sem resultados apresentam estados distintos, permitindo cadastrar ou ajustar os filtros. Limpar filtros retorna ao histórico integral.
+
+CA7. Abrir um registro próprio mostra os campos de R10 e permite edição ou exclusão; outro usuário não consegue consultar, alterar ou excluir esse registro por nenhum desses caminhos.
+
+CA8. Editar qualquer campo válido atualiza o mesmo registro e recalcula os efeitos aplicáveis; mover uma data passada para futura retira o efeito atual e o movimento inverso o inclui.
+
+CA9. Cancelar cadastro, edição ou exclusão mantém os registros e totais anteriores. Exclusão confirmada remove o registro do histórico e dos cálculos, sem opção de desfazer.
+
+CA10. Falha ao salvar não modifica parcialmente os dados nem anuncia sucesso. Registro indisponível não pode ser alterado e não revela informações de terceiros.
+
+CA11. Selecionar uma categoria fora do tipo escolhido não permite concluir. As listas de categorias disponíveis correspondem exatamente a R3.
+
+CA12. Duas operações distintas com dados iguais podem gerar duas transações; cada registro tem edição e exclusão independentes. Repetir exclusão de um registro removido não altera novamente os totais.
+
+## Dependências
+
+Acesso à conta — issue #1015909 — fornece autenticação e confirmação de e-mail. Esta Feature fornece os registros e as regras temporais consumidos pelo dashboard e pelo assistente; as respectivas interfaces serão entregues nesses outros itens.
+
+## Designs e evidências
+
+Escopo inicial e respostas Q4 a Q10; catálogo aprovado. Design-001 é referência exclusivamente visual para histórico, formulário e detalhes, sem impor armazenamento local ou lógica do protótipo. Limites e detalhes de consulta de R2 e R9 são propostas explícitas para esta revisão. Repositório inspecionado em app/Models, routes/web.php e resources/js/pages; recursos financeiros ainda não identificados.
+
+## Dentro do escopo
+
+Cadastro manual, persistência por usuário, categorias predefinidas, detalhes e histórico filtrável, datas futuras, inclusão automática por data, edição e exclusão confirmada, com atualização dos efeitos financeiros descritos.
+
+## Fora do escopo
+
+Manutenção de categorias, múltiplas moedas, contas bancárias, importações, cartões, parcelamento, recorrência automática, confirmação manual de pagamento/recebimento, pagamentos externos e desfazer exclusões. Telas do dashboard e interação com IA pertencem às outras Features aprovadas.

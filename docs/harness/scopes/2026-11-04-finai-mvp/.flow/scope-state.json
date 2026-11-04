@@ -1,0 +1,1318 @@
+{
+  "schema_version": 3,
+  "run_id": "5bfd085c-46d4-4ad9-9d2e-c23db7713fa3",
+  "internal_identity": "84040e40-1205-4d5a-b8d2-9de4c321cdd3",
+  "mode": "new-scope",
+  "phase": "completed",
+  "completed_phases": [
+    "mode-confirmed",
+    "inputs-normalized",
+    "repository-analyzed",
+    "catalog-proposed",
+    "catalog-approved",
+    "items-processing",
+    "relations-reconciled",
+    "scope-approved",
+    "completed"
+  ],
+  "identity": {
+    "redmine_user_id": 131789,
+    "display_name": "M?rio Tinelli",
+    "confirmed_at": "2026-11-04T17:02:22.854427Z"
+  },
+  "redmine": {
+    "project_id": 65224,
+    "project_name": "FinAi",
+    "feature_tracker_id": 2,
+    "feature_tracker_name": "Feature",
+    "bug_tracker_id": 1,
+    "bug_tracker_name": "Bug",
+    "initial_status_id": 1,
+    "initial_status_name": "New",
+    "mapping_confirmations": [],
+    "version": {
+      "id": 20355,
+      "name": "Sprint 1",
+      "status": "open",
+      "selected_by": "Usuário — confirmação explícita nesta conversa",
+      "selected_at": "2026-11-04T17:36:14.463170+00:00",
+      "sequencing_baseline": 0
+    }
+  },
+  "sources": [
+    {
+      "id": "conversation-input-001",
+      "name": "Escopo inicial do MVP",
+      "type": "escopo funcional",
+      "origin": "Conversa: texto do escopo fornecido pelo usuário",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "sources/conversation-input-001.md",
+      "original_sha256": "29fa58bcdc4ae160539e5f1330109f2b86a6d44316d454f58c554c8598aa444a",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "5792eb0b8be57808b3eadfd6920fe7eafebb906d7e6c9f9d62158cc5e733f92f",
+      "extraction_method": "Transcrição do trecho relevante da conversa em UTF-8",
+      "fully_read": true
+    },
+    {
+      "id": "conversation-input-002",
+      "name": "Definições de contexto e acesso",
+      "type": "decisões do usuário",
+      "origin": "Conversa: respostas posteriores ao escopo",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "sources/conversation-input-002.md",
+      "original_sha256": "f81dab197b815e50998fea40abb55f14695abd108330711b5d665dd7273586d3",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "e7ff248be0322113001b0f2f6b3f1258ba92286d50001752a0122efe164e8fc2",
+      "extraction_method": "Transcrição das respostas do usuário, na ordem original",
+      "fully_read": true
+    },
+    {
+      "id": "design-001",
+      "name": "FinAI-Controle-Financeiro.zip",
+      "type": "referência visual",
+      "origin": "C:/Users/maari/Downloads/FinAI-Controle-Financeiro.zip",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "sources/design-001.md",
+      "original_sha256": "d7fec0da8d116208b921ee8cb152b8c3710cf4a7500e30aca6d7b43270dddbd5",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "020819a1f9d30e7b39c7bde4b5d94008c0c224da2308b789bd3d88835eade551",
+      "extraction_method": "Leitura integral dos três arquivos UTF-8 com zipfile, sem execução ou extração dos originais",
+      "fully_read": true
+    },
+    {
+      "id": "conversation-input-003",
+      "name": "Inclusão de recuperação de senha",
+      "type": "resposta do usuário",
+      "origin": "Conversa: resposta sobre Esqueci minha senha",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "sources/conversation-input-003.md",
+      "original_sha256": "507a9a8be3d145a86daa9644b28bf42a8dc0720d8baeabdf0406c393692bf082",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "5d9c08993113ca6d72689522a0e6ba9622b399b3af964971bcf936dfd46dbe24",
+      "extraction_method": "Transcrição UTF-8",
+      "fully_read": true
+    }
+  ],
+  "repository": {
+    "stack": [
+      "PHP ^8.5, Laravel ^13.40, Inertia ^3.7 — composer.json",
+      "React ^19.3, TypeScript ^7 — package.json"
+    ],
+    "vocabulary": [
+      {
+        "term": "Usuário",
+        "evidence": "app/Models/User.php"
+      },
+      {
+        "term": "Cadastro, login e recuperação de senha",
+        "evidence": "routes/web.php"
+      },
+      {
+        "term": "Dashboard ainda sem recursos financeiros",
+        "evidence": "resources/js/pages/dashboard.tsx"
+      }
+    ],
+    "exclusions": [
+      "vendor/**",
+      "node_modules/**",
+      ".git/**",
+      ".env*",
+      "storage/**",
+      "bootstrap/cache/**",
+      "public/build/**",
+      "credentials",
+      "tokens"
+    ]
+  },
+  "lock": {
+    "item_key": "finai:mvp-inicial",
+    "lock_id": "fb54199b-0da8-4b07-87e0-e31579e85d59",
+    "acquired_at": "2026-11-04T17:02:22.854427Z",
+    "path": "docs/harness/.locks/faca381c61499d80dac89e6cba5903e627e4b1de348c6c2b0fee7b00138456df.lock.json"
+  },
+  "final_summary": {
+    "issues": [
+      {
+        "id": 1015909,
+        "title": "[WEB] [USUARIO] Acesso à conta",
+        "version": "Sprint 1",
+        "sequencing": 1,
+        "status": "New"
+      },
+      {
+        "id": 1015911,
+        "title": "[WEB] [USUARIO] Gestão de transações",
+        "version": "Sprint 1",
+        "sequencing": 2,
+        "status": "New"
+      },
+      {
+        "id": 1015912,
+        "title": "[WEB] [USUARIO] Dashboard financeiro",
+        "version": "Sprint 1",
+        "sequencing": 3,
+        "status": "New"
+      },
+      {
+        "id": 1015913,
+        "title": "[WEB] [USUARIO] Assistente financeiro com IA",
+        "version": "Sprint 1",
+        "sequencing": 4,
+        "status": "New"
+      }
+    ],
+    "relations": [
+      {
+        "id": 763,
+        "from_issue_id": 1015909,
+        "to_issue_id": 1015911,
+        "type": "blocks"
+      },
+      {
+        "id": 764,
+        "from_issue_id": 1015911,
+        "to_issue_id": 1015912,
+        "type": "blocks"
+      },
+      {
+        "id": 765,
+        "from_issue_id": 1015911,
+        "to_issue_id": 1015913,
+        "type": "blocks"
+      }
+    ],
+    "artifacts": [
+      "docs/harness/features/1015909-acesso-a-conta/feature.md",
+      "docs/harness/features/1015911-gestao-de-transacoes/feature.md",
+      "docs/harness/features/1015912-dashboard-financeiro/feature.md",
+      "docs/harness/features/1015913-assistente-financeiro-ia/feature.md",
+      "docs/harness/scopes/2026-11-04-finai-mvp/scope.md"
+    ],
+    "approvals": "Catálogo, quatro requisitos e seus planos de publicação e encerramento consolidado aprovados pelo usuário nesta conversa.",
+    "validations": "Quatro requisitos em completed; quatro descrições integrais conferidas; três relações confirmadas; Sprint 1, Sequencing 1 a 4 e status New preservados; escopo concluído e validado, sem lacunas funcionais abertas.",
+    "next_recommendation": "Preparar o desdobramento DEV/QA dos requisitos aprovados, começando por Acesso à conta, com project-slices. Nenhuma implementação ou tarefa técnica foi criada neste fluxo."
+  },
+  "title_convention": {
+    "surfaces": [
+      "WEB"
+    ],
+    "audiences": [
+      "USUARIO"
+    ],
+    "audience_mode": "single",
+    "shared_public_rule": "USUARIO inclui a pessoa antes do cadastro nas telas públicas de acesso e a pessoa autenticada nas áreas financeiras.",
+    "confirmation": {
+      "statement": "Proposta de convenção apresentada para aprovação conjunta do catálogo; ainda sem confirmação do usuário.",
+      "confirmed_by": "Assistente — proposta, não aprovação do usuário",
+      "confirmed_at": "2026-11-04T17:13:03.457919+00:00"
+    }
+  },
+  "input_inventory": {
+    "selection": "complete-package",
+    "requested": [
+      "Escopo escrito e respostas do usuário",
+      "FinAI-Controle-Financeiro.zip completo, apenas visual"
+    ],
+    "entries": [
+      {
+        "source_id": "conversation-input-001",
+        "origin": "Conversa: texto do escopo fornecido pelo usuário",
+        "role": "behavioral",
+        "decision": null
+      },
+      {
+        "source_id": "conversation-input-002",
+        "origin": "Conversa: respostas posteriores ao escopo",
+        "role": "behavioral",
+        "decision": null
+      },
+      {
+        "source_id": "design-001",
+        "origin": "C:/Users/maari/Downloads/FinAI-Controle-Financeiro.zip",
+        "role": "contextual",
+        "decision": null
+      },
+      {
+        "source_id": "conversation-input-003",
+        "origin": "Conversa: resposta sobre Esqueci minha senha",
+        "role": "contextual",
+        "decision": null
+      }
+    ],
+    "references": []
+  },
+  "catalog": [
+    {
+      "id": "acesso",
+      "type": "Feature",
+      "name": "Acesso à conta",
+      "human_objective": "Qualquer pessoa cria sua conta, entra, sai e recupera acesso.",
+      "actors": [
+        "Pessoa usuária"
+      ],
+      "observable_result_or_deviation": "Qualquer pessoa cria sua conta, entra, sai e recupera acesso.",
+      "evidence": [
+        "conversation-input-002"
+      ],
+      "dependencies": [],
+      "separation_reason": "Reutiliza e adequa a base de acesso existente; os detalhes de aceitação serão entrevistados.",
+      "suggested_position": 1,
+      "status": "completed",
+      "candidate_ids": [
+        "c-acesso"
+      ],
+      "lifecycle": "active",
+      "delivery": {
+        "surface": "WEB",
+        "audiences": [
+          "USUARIO"
+        ],
+        "name": "Acesso à conta",
+        "title": "[WEB] [USUARIO] Acesso à conta",
+        "visible_delivery": "Acesso à conta",
+        "user_result": "Qualquer pessoa cria sua conta, entra, sai e recupera acesso.",
+        "included": [
+          "Cadastro público",
+          "Login e saída",
+          "Recuperação de senha"
+        ],
+        "boundary_reason": "Reutiliza e adequa a base de acesso existente; os detalhes de aceitação serão entrevistados."
+      }
+    },
+    {
+      "id": "transacoes",
+      "type": "Feature",
+      "name": "Gestão de transações",
+      "human_objective": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa.",
+      "actors": [
+        "Pessoa usuária"
+      ],
+      "observable_result_or_deviation": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ],
+      "dependencies": [
+        "acesso"
+      ],
+      "separation_reason": "Categorias predefinidas integram a classificação; não há demanda de manutenção de categorias.",
+      "suggested_position": 2,
+      "status": "completed",
+      "candidate_ids": [
+        "c-transacoes"
+      ],
+      "lifecycle": "active",
+      "delivery": {
+        "surface": "WEB",
+        "audiences": [
+          "USUARIO"
+        ],
+        "name": "Gestão de transações",
+        "title": "[WEB] [USUARIO] Gestão de transações",
+        "visible_delivery": "Gestão de transações",
+        "user_result": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa.",
+        "included": [
+          "Cadastrar receitas e despesas",
+          "Editar e excluir transações",
+          "Consultar histórico",
+          "Classificar por categorias predefinidas",
+          "Persistir transações vinculadas ao usuário"
+        ],
+        "boundary_reason": "Categorias predefinidas integram a classificação; não há demanda de manutenção de categorias."
+      }
+    },
+    {
+      "id": "dashboard",
+      "type": "Feature",
+      "name": "Dashboard financeiro",
+      "human_objective": "Usuário acompanha a situação financeira calculada de seus registros.",
+      "actors": [
+        "Pessoa usuária"
+      ],
+      "observable_result_or_deviation": "Usuário acompanha a situação financeira calculada de seus registros.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ],
+      "dependencies": [
+        "transacoes"
+      ],
+      "separation_reason": "Resumo financeiro, sem relatórios avançados.",
+      "suggested_position": 3,
+      "status": "completed",
+      "candidate_ids": [
+        "c-dashboard"
+      ],
+      "lifecycle": "active",
+      "delivery": {
+        "surface": "WEB",
+        "audiences": [
+          "USUARIO"
+        ],
+        "name": "Dashboard financeiro",
+        "title": "[WEB] [USUARIO] Dashboard financeiro",
+        "visible_delivery": "Dashboard financeiro",
+        "user_result": "Usuário acompanha a situação financeira calculada de seus registros.",
+        "included": [
+          "Visualizar saldo geral",
+          "Visualizar receitas e despesas do mês",
+          "Consultar movimentações recentes",
+          "Refletir os registros do usuário"
+        ],
+        "boundary_reason": "Resumo financeiro, sem relatórios avançados."
+      }
+    },
+    {
+      "id": "assistente",
+      "type": "Feature",
+      "name": "Assistente financeiro com IA",
+      "human_objective": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar.",
+      "actors": [
+        "Pessoa usuária"
+      ],
+      "observable_result_or_deviation": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ],
+      "dependencies": [
+        "transacoes"
+      ],
+      "separation_reason": "Registro e consulta compõem uma capacidade única; sem múltiplos agentes ou recomendações futuras.",
+      "suggested_position": 4,
+      "status": "completed",
+      "candidate_ids": [
+        "c-assistente"
+      ],
+      "lifecycle": "active",
+      "delivery": {
+        "surface": "WEB",
+        "audiences": [
+          "USUARIO"
+        ],
+        "name": "Assistente financeiro com IA",
+        "title": "[WEB] [USUARIO] Assistente financeiro com IA",
+        "visible_delivery": "Assistente financeiro com IA",
+        "user_result": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar.",
+        "included": [
+          "Interagir por chat com IA real",
+          "Identificar valor, descrição e categoria",
+          "Solicitar informações faltantes",
+          "Solicitar confirmação antes de persistir",
+          "Registrar receitas e despesas",
+          "Consultar apenas dados reais do próprio usuário"
+        ],
+        "boundary_reason": "Registro e consulta compõem uma capacidade única; sem múltiplos agentes ou recomendações futuras."
+      }
+    }
+  ],
+  "dependency_graph": [
+    {
+      "item": "transacoes",
+      "blocked_by": "acesso"
+    },
+    {
+      "item": "dashboard",
+      "blocked_by": "transacoes"
+    },
+    {
+      "item": "assistente",
+      "blocked_by": "transacoes"
+    }
+  ],
+  "parallel_ready_groups": [
+    [
+      "acesso"
+    ],
+    [
+      "transacoes"
+    ],
+    [
+      "dashboard",
+      "assistente"
+    ]
+  ],
+  "suggested_order": [
+    "acesso",
+    "transacoes",
+    "dashboard",
+    "assistente"
+  ],
+  "approvals": [
+    {
+      "id": "2daf8aad-60b1-4eb5-a584-7104719fb517",
+      "kind": "complete-catalog-and-order",
+      "subject_sha256": "9abbb769af4a171a921c8561fa6bd14f23d1d92176ce5ce9f4928301926b4b7d",
+      "approved_by": "Usuário — “catalogo aprovado”",
+      "approved_at": "2026-11-04T17:36:14.463170+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "2ac84340-9d23-4970-b366-faccca170697",
+      "kind": "scope-completion",
+      "subject_sha256": "68fb15d11cb4c24de2d6bbe0d7e77917afea944882a2c3de6aa4de6981e77706",
+      "approved_by": "Usuário — “aprovado” em resposta ao resumo final do escopo",
+      "approved_at": "2026-11-04T20:29:35.999639+00:00",
+      "status": "valid"
+    }
+  ],
+  "pauses": [],
+  "source_allocation": [
+    {
+      "source_id": "conversation-input-001",
+      "ownership": "scope-shared",
+      "item_ids": [
+        "transacoes",
+        "dashboard",
+        "assistente"
+      ],
+      "path": "sources/conversation-input-001.md"
+    },
+    {
+      "source_id": "conversation-input-002",
+      "ownership": "scope-shared",
+      "item_ids": [
+        "acesso",
+        "transacoes",
+        "dashboard",
+        "assistente"
+      ],
+      "path": "sources/conversation-input-002.md"
+    },
+    {
+      "source_id": "design-001",
+      "ownership": "scope-context",
+      "item_ids": [],
+      "path": "sources/design-001.md"
+    },
+    {
+      "source_id": "conversation-input-003",
+      "ownership": "scope-context",
+      "item_ids": [],
+      "path": "sources/conversation-input-003.md"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "c-acesso",
+      "status": "decided",
+      "catalog_item_ids": [
+        "acesso"
+      ],
+      "rationale": "Reutiliza e adequa a base de acesso existente; os detalhes de aceitação serão entrevistados."
+    },
+    {
+      "id": "c-transacoes",
+      "status": "decided",
+      "catalog_item_ids": [
+        "transacoes"
+      ],
+      "rationale": "Categorias predefinidas integram a classificação; não há demanda de manutenção de categorias."
+    },
+    {
+      "id": "c-dashboard",
+      "status": "decided",
+      "catalog_item_ids": [
+        "dashboard"
+      ],
+      "rationale": "Resumo financeiro, sem relatórios avançados."
+    },
+    {
+      "id": "c-assistente",
+      "status": "decided",
+      "catalog_item_ids": [
+        "assistente"
+      ],
+      "rationale": "Registro e consulta compõem uma capacidade única; sem múltiplos agentes ou recomendações futuras."
+    }
+  ],
+  "item_progress": [
+    {
+      "catalog_item_id": "acesso",
+      "status": "completed",
+      "issue_id": 1015909,
+      "artifact_path": "docs/harness/features/1015909-acesso-a-conta/feature.md",
+      "state_path": "docs/harness/features/1015909-acesso-a-conta/.flow/feature-state.json",
+      "requirement_phase": "completed",
+      "functional_gaps": [],
+      "reconciliation_status": "completed",
+      "started_at": "2026-11-04T17:36:50.965471+00:00",
+      "completed_at": "2026-11-04T19:11:25.460953+00:00"
+    },
+    {
+      "catalog_item_id": "transacoes",
+      "status": "completed",
+      "issue_id": 1015911,
+      "artifact_path": "docs/harness/features/1015911-gestao-de-transacoes/feature.md",
+      "state_path": "docs/harness/features/1015911-gestao-de-transacoes/.flow/feature-state.json",
+      "requirement_phase": "completed",
+      "functional_gaps": [],
+      "reconciliation_status": "completed",
+      "started_at": "2026-11-04T19:11:25.460953+00:00",
+      "completed_at": "2026-11-04T19:34:00.718377+00:00"
+    },
+    {
+      "catalog_item_id": "dashboard",
+      "status": "completed",
+      "issue_id": 1015912,
+      "artifact_path": "docs/harness/features/1015912-dashboard-financeiro/feature.md",
+      "state_path": "docs/harness/features/1015912-dashboard-financeiro/.flow/feature-state.json",
+      "requirement_phase": "completed",
+      "functional_gaps": [],
+      "reconciliation_status": "completed",
+      "started_at": "2026-11-04T19:34:00.718377+00:00",
+      "completed_at": "2026-11-04T20:11:15.486234+00:00"
+    },
+    {
+      "catalog_item_id": "assistente",
+      "status": "completed",
+      "issue_id": 1015913,
+      "artifact_path": "docs/harness/features/1015913-assistente-financeiro-ia/feature.md",
+      "state_path": "docs/harness/features/1015913-assistente-financeiro-ia/.flow/feature-state.json",
+      "requirement_phase": "completed",
+      "functional_gaps": [],
+      "reconciliation_status": "completed",
+      "started_at": "2026-11-04T20:11:15.486234+00:00",
+      "completed_at": "2026-11-04T20:27:06.936987+00:00"
+    }
+  ],
+  "continuation_decisions": [],
+  "catalog_changes": [],
+  "relations": [
+    {
+      "stable_key": "acesso-blocks-transacoes",
+      "from_item_id": "acesso",
+      "to_item_id": "transacoes",
+      "relation_type": "blocks",
+      "from_issue_id": 1015909,
+      "to_issue_id": 1015911,
+      "status": "completed",
+      "approval_id": "5b07d777-0828-4371-b600-53e615b12965",
+      "reconciliation_status": "completed",
+      "completed_at": "2026-11-04T19:34:00.718377+00:00"
+    },
+    {
+      "stable_key": "transacoes-blocks-dashboard",
+      "from_item_id": "transacoes",
+      "to_item_id": "dashboard",
+      "relation_type": "blocks",
+      "from_issue_id": 1015911,
+      "to_issue_id": 1015912,
+      "status": "completed",
+      "approval_id": "f96fec6e-3ad6-4859-a171-27017a691e97",
+      "reconciliation_status": "completed",
+      "completed_at": "2026-11-04T20:11:15.486234+00:00"
+    },
+    {
+      "stable_key": "transacoes-blocks-assistente",
+      "from_item_id": "transacoes",
+      "to_item_id": "assistente",
+      "relation_type": "blocks",
+      "from_issue_id": 1015911,
+      "to_issue_id": 1015913,
+      "status": "completed",
+      "approval_id": "0b37b563-074d-4036-9f2a-e5e862a6c549",
+      "reconciliation_status": "completed",
+      "completed_at": "2026-11-04T20:27:06.936987+00:00"
+    }
+  ],
+  "validations": [
+    {
+      "kind": "requirement-state",
+      "item_id": "acesso",
+      "status": "passed",
+      "validated_at": "2026-11-04T19:11:25.460953+00:00"
+    },
+    {
+      "kind": "functional-publication",
+      "item_id": "acesso",
+      "status": "passed",
+      "validated_at": "2026-11-04T19:11:25.460953+00:00"
+    },
+    {
+      "kind": "requirement-state",
+      "item_id": "transacoes",
+      "status": "passed",
+      "validated_at": "2026-11-04T19:34:00.718377+00:00"
+    },
+    {
+      "kind": "functional-publication",
+      "item_id": "transacoes",
+      "status": "passed",
+      "validated_at": "2026-11-04T19:34:00.718377+00:00"
+    },
+    {
+      "kind": "native-relation",
+      "relation_id": 763,
+      "status": "passed",
+      "validated_at": "2026-11-04T19:34:00.718377+00:00"
+    },
+    {
+      "kind": "requirement-state",
+      "item_id": "dashboard",
+      "status": "passed",
+      "validated_at": "2026-11-04T20:11:15.486234+00:00"
+    },
+    {
+      "kind": "functional-publication",
+      "item_id": "dashboard",
+      "status": "passed",
+      "validated_at": "2026-11-04T20:11:15.486234+00:00"
+    },
+    {
+      "kind": "native-relation",
+      "relation_id": 764,
+      "status": "passed",
+      "validated_at": "2026-11-04T20:11:15.486234+00:00"
+    },
+    {
+      "kind": "requirement-state",
+      "item_id": "assistente",
+      "status": "passed",
+      "validated_at": "2026-11-04T20:27:06.936987+00:00"
+    },
+    {
+      "kind": "functional-publication",
+      "item_id": "assistente",
+      "status": "passed",
+      "validated_at": "2026-11-04T20:27:06.936987+00:00"
+    },
+    {
+      "kind": "native-relation",
+      "relation_id": 765,
+      "status": "passed",
+      "validated_at": "2026-11-04T20:27:06.936987+00:00"
+    },
+    {
+      "kind": "final-reconciliation",
+      "status": "passed",
+      "validated_at": "2026-11-04T20:27:06.936987+00:00",
+      "summary": "Quatro requisitos e descrições integrais, status New, Sprint 1, Sequencing 1 a 4 e relações 763/764/765 conferidos."
+    },
+    {
+      "kind": "scope-state",
+      "status": "passed",
+      "validated_at": "2026-11-04T20:27:06.936987+00:00"
+    }
+  ],
+  "behaviors": [
+    {
+      "id": "b-acesso-1",
+      "description": "Cadastro público",
+      "evidence": [
+        {
+          "source_id": "conversation-input-002",
+          "locator": "Resposta do usuário"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "acesso",
+      "consumers": [],
+      "repository": {
+        "status": "partial",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Qualquer pessoa cria sua conta, entra, sai e recupera acesso."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-acesso-2",
+      "description": "Login e saída",
+      "evidence": [
+        {
+          "source_id": "conversation-input-002",
+          "locator": "Resposta do usuário"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "acesso",
+      "consumers": [],
+      "repository": {
+        "status": "partial",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Qualquer pessoa cria sua conta, entra, sai e recupera acesso."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-acesso-3",
+      "description": "Recuperação de senha",
+      "evidence": [
+        {
+          "source_id": "conversation-input-002",
+          "locator": "Complementada pela resposta conversation-input-003: sim à recuperação de senha"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "acesso",
+      "consumers": [],
+      "repository": {
+        "status": "partial",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Qualquer pessoa cria sua conta, entra, sai e recupera acesso."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-transacoes-1",
+      "description": "Cadastrar receitas e despesas",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.2 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "transacoes",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-transacoes-2",
+      "description": "Editar e excluir transações",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.2 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "transacoes",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-transacoes-3",
+      "description": "Consultar histórico",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.2 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "transacoes",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-transacoes-4",
+      "description": "Classificar por categorias predefinidas",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.2 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "transacoes",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-transacoes-5",
+      "description": "Persistir transações vinculadas ao usuário",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.2 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "transacoes",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário mantém e consulta suas movimentações, sem acessar as de outra pessoa."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-dashboard-1",
+      "description": "Visualizar saldo geral",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.1 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "dashboard",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário acompanha a situação financeira calculada de seus registros."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-dashboard-2",
+      "description": "Visualizar receitas e despesas do mês",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.1 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "dashboard",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário acompanha a situação financeira calculada de seus registros."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-dashboard-3",
+      "description": "Consultar movimentações recentes",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.1 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "dashboard",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário acompanha a situação financeira calculada de seus registros."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-dashboard-4",
+      "description": "Refletir os registros do usuário",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.1 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "dashboard",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário acompanha a situação financeira calculada de seus registros."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-assistente-1",
+      "description": "Interagir por chat com IA real",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.4 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "assistente",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-assistente-2",
+      "description": "Identificar valor, descrição e categoria",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.4 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "assistente",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-assistente-3",
+      "description": "Solicitar informações faltantes",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.4 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "assistente",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-assistente-4",
+      "description": "Solicitar confirmação antes de persistir",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.4 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "assistente",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-assistente-5",
+      "description": "Registrar receitas e despesas",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.4 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "assistente",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-assistente-6",
+      "description": "Consultar apenas dados reais do próprio usuário",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seção 3.4 e regras básicas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "assistente",
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php",
+          "app/Models/User.php",
+          "resources/js/pages/dashboard.tsx"
+        ],
+        "proposed_change": "Usuário registra e consulta suas finanças por conversa, com confirmação antes de gravar."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-isolamento",
+      "description": "Finanças separadas por usuário em todas as operações, inclusive consultas da IA.",
+      "evidence": [
+        {
+          "source_id": "conversation-input-002",
+          "locator": "Resposta sobre login e finanças separadas"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "covered",
+      "owner": "transacoes",
+      "consumers": [
+        "dashboard",
+        "assistente"
+      ],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "app/Models/User.php",
+          "routes/web.php"
+        ],
+        "proposed_change": "Vincular e limitar operações financeiras ao próprio usuário."
+      },
+      "decision": null
+    },
+    {
+      "id": "b-exclusoes",
+      "description": "Fora do MVP: bancos, extratos, cartões, metas, relatórios avançados, finanças empresariais, múltiplos agentes e evoluções futuras.",
+      "evidence": [
+        {
+          "source_id": "conversation-input-001",
+          "locator": "Seções 5 e 7"
+        }
+      ],
+      "evidence_kind": "annotation",
+      "audiences": [
+        "USUARIO"
+      ],
+      "disposition": "excluded",
+      "owner": null,
+      "consumers": [],
+      "repository": {
+        "status": "absent",
+        "evidence": [
+          "routes/web.php"
+        ],
+        "proposed_change": "Não incluir nesta entrega."
+      },
+      "decision": {
+        "statement": "Exclusões e evoluções futuras declaradas no escopo inicial.",
+        "confirmed_by": "Usuário — escopo inicial",
+        "confirmed_at": "2026-11-04T17:13:03.457919+00:00"
+      }
+    }
+  ],
+  "dependency_reasons": [
+    {
+      "item": "transacoes",
+      "blocked_by": "acesso",
+      "provided_capability": "Identidade autenticada",
+      "blocking_reason": "Sem esta capacidade, a entrega integrada não pode ser aceita com dados reais e isolados.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ]
+    },
+    {
+      "item": "dashboard",
+      "blocked_by": "transacoes",
+      "provided_capability": "Transações pessoais persistidas",
+      "blocking_reason": "Sem esta capacidade, a entrega integrada não pode ser aceita com dados reais e isolados.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ]
+    },
+    {
+      "item": "assistente",
+      "blocked_by": "transacoes",
+      "provided_capability": "Transações pessoais persistidas",
+      "blocking_reason": "Sem esta capacidade, a entrega integrada não pode ser aceita com dados reais e isolados.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ]
+    }
+  ],
+  "order_reasons": [
+    {
+      "item": "acesso",
+      "basis": "usage-lifecycle",
+      "rationale": "Acesso antecede uso de finanças pessoais.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ]
+    },
+    {
+      "item": "transacoes",
+      "basis": "dependency",
+      "rationale": "As movimentações precisam de autoria e acesso individual.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ]
+    },
+    {
+      "item": "dashboard",
+      "basis": "dependency",
+      "rationale": "A visão financeira usa movimentações persistidas.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ]
+    },
+    {
+      "item": "assistente",
+      "basis": "usage-lifecycle",
+      "rationale": "Depois do registro manual e da visualização, acrescentar a interação por IA.",
+      "evidence": [
+        "conversation-input-001",
+        "conversation-input-002"
+      ]
+    }
+  ]
+}

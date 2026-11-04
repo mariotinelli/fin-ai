@@ -1,0 +1,62 @@
+{
+  "issues": [
+    {
+      "id": 1015909,
+      "title": "[WEB] [USUARIO] Acesso à conta",
+      "version": "Sprint 1",
+      "sequencing": 1,
+      "status": "New"
+    },
+    {
+      "id": 1015911,
+      "title": "[WEB] [USUARIO] Gestão de transações",
+      "version": "Sprint 1",
+      "sequencing": 2,
+      "status": "New"
+    },
+    {
+      "id": 1015912,
+      "title": "[WEB] [USUARIO] Dashboard financeiro",
+      "version": "Sprint 1",
+      "sequencing": 3,
+      "status": "New"
+    },
+    {
+      "id": 1015913,
+      "title": "[WEB] [USUARIO] Assistente financeiro com IA",
+      "version": "Sprint 1",
+      "sequencing": 4,
+      "status": "New"
+    }
+  ],
+  "relations": [
+    {
+      "id": 763,
+      "from_issue_id": 1015909,
+      "to_issue_id": 1015911,
+      "type": "blocks"
+    },
+    {
+      "id": 764,
+      "from_issue_id": 1015911,
+      "to_issue_id": 1015912,
+      "type": "blocks"
+    },
+    {
+      "id": 765,
+      "from_issue_id": 1015911,
+      "to_issue_id": 1015913,
+      "type": "blocks"
+    }
+  ],
+  "artifacts": [
+    "docs/harness/features/1015909-acesso-a-conta/feature.md",
+    "docs/harness/features/1015911-gestao-de-transacoes/feature.md",
+    "docs/harness/features/1015912-dashboard-financeiro/feature.md",
+    "docs/harness/features/1015913-assistente-financeiro-ia/feature.md",
+    "docs/harness/scopes/2026-11-04-finai-mvp/scope.md"
+  ],
+  "approvals": "Catálogo e os quatro requisitos com seus planos de publicação aprovados pelo usuário nesta conversa. Encerramento consolidado aguardando aprovação.",
+  "validations": "Quatro estados de requisito em completed; quatro descrições integrais conferidas; três relações confirmadas; Sprint 1, Sequencing 1 a 4 e status New preservados; escopo válido em scope-approved, sem lacunas funcionais abertas.",
+  "next_recommendation": "Preparar o desdobramento DEV/QA dos requisitos aprovados, começando por Acesso à conta, com project-slices. Nenhuma implementação ou tarefa técnica foi criada neste fluxo."
+}
