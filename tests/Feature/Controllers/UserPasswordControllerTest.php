@@ -27,6 +27,11 @@ it('may reset password', function (): void {
         ->shouldReceive('verify')
         ->once()
         ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
+        ->andReturnTrue()
+        ->getMock()
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'Another-pass12!', 'threshold' => 0])
         ->andReturnTrue();
 
     Event::fake([PasswordReset::class]);
@@ -37,6 +42,8 @@ it('may reset password', function (): void {
     ]);
 
     $token = Password::createToken($user);
+
+    $this->travel(59)->minutes();
 
     $response = $this->fromRoute('password.reset', ['token' => $token])
         ->post(route('password.store'), [
@@ -52,7 +59,19 @@ it('may reset password', function (): void {
     expect(Hash::check('Valid-pass12!', $user->refresh()->password))->toBeTrue()
         ->and($user->email_verified_at)->toBeNull();
 
-    Event::assertDispatched(PasswordReset::class);
+    $resetHash = $user->password;
+
+    $this->fromRoute('password.reset', ['token' => $token])
+        ->post(route('password.store'), [
+            'email' => $user->email,
+            'password' => 'Another-pass12!',
+            'password_confirmation' => 'Another-pass12!',
+            'token' => $token,
+        ])->assertRedirectToRoute('password.reset', ['token' => $token])
+        ->assertSessionHasErrors(['email' => __('passwords.token')]);
+
+    expect($user->refresh()->password)->toBe($resetHash);
+    Event::assertDispatchedTimes(PasswordReset::class, 1);
 
     $this->assertGuest();
 
@@ -83,6 +102,8 @@ it('fails with invalid token', function (): void {
     $user = User::factory()->create([
         'email' => 'test@example.com',
     ]);
+    $originalHash = $user->password;
+    Event::fake([PasswordReset::class]);
 
     $response = $this->fromRoute('password.reset', ['token' => 'invalid-token'])
         ->post(route('password.store'), [
@@ -93,7 +114,38 @@ it('fails with invalid token', function (): void {
         ]);
 
     $response->assertRedirect(route('password.reset', ['token' => 'invalid-token']))
-        ->assertSessionHasErrors('email');
+        ->assertSessionHasErrors(['email' => __('passwords.token')]);
+
+    expect($user->refresh()->password)->toBe($originalHash);
+    Event::assertNotDispatched(PasswordReset::class);
+    $this->assertGuest();
+});
+
+it('rejects a token after 60 minutes without changing the password', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])->andReturnTrue();
+
+    $this->freezeTime();
+    $user = User::factory()->create();
+    $originalHash = $user->password;
+    $token = Password::createToken($user);
+    Event::fake([PasswordReset::class]);
+
+    $this->travel(61)->minutes();
+
+    $this->fromRoute('password.reset', ['token' => $token])
+        ->post(route('password.store'), [
+            'email' => $user->email,
+            'password' => 'Valid-pass12!',
+            'password_confirmation' => 'Valid-pass12!',
+            'token' => $token,
+        ])->assertRedirectToRoute('password.reset', ['token' => $token])
+        ->assertSessionHasErrors(['email' => __('passwords.token')]);
+
+    expect($user->refresh()->password)->toBe($originalHash);
+    Event::assertNotDispatched(PasswordReset::class);
+    $this->assertGuest();
 });
 
 it('fails with non-existent email', function (): void {
@@ -112,7 +164,7 @@ it('fails with non-existent email', function (): void {
         ]);
 
     $response->assertRedirect(route('password.reset', ['token' => 'fake-token']))
-        ->assertSessionHasErrors('email');
+        ->assertSessionHasErrors(['email' => __('passwords.token')]);
 });
 
 it('requires email', function (): void {
