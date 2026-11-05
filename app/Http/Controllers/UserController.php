@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 final readonly class UserController
 {
@@ -30,10 +31,18 @@ final readonly class UserController
         /** @var array<string, mixed> $attributes */
         $attributes = $request->safe()->except('password');
 
-        $user = $action->handle(
-            $attributes,
-            $request->string('password')->value(),
-        );
+        try {
+            $user = $action->handle(
+                $attributes,
+                $request->string('password')->value(),
+            );
+        } catch (TransportExceptionInterface $transportException) {
+            report($transportException);
+
+            return back()->withErrors([
+                'email' => 'We could not send your verification email. Please try registering again.',
+            ]);
+        }
 
         Auth::login($user);
 
