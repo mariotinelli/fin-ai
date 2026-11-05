@@ -8,6 +8,8 @@ bash <plan-issue>/ralph.sh execute <pasta-dev>/planning.md
 
 O Ralph lê as fases e o comando da suíte diretamente de `planning.md`. Ele cria automaticamente `.flow/ralph-state.json` ao lado do plano, contendo somente a fase atual, o gate atual, fases concluídas e seus commits. Apague esse arquivo para esquecer o progresso local; isso não desfaz commits nem mudanças do Git.
 
+O Gate 3 seleciona o interpretador pelo bloco do baseline conforme [o contrato](planning-contract.md), inclusive no Windows, sem profiles interativos. Interpretador ausente, sintaxe Bash inválida, saída Bash 126/127 e saída cmd 9009 interrompem a execução como falha operacional, preservando alterações e estado, sem retornar ao desenvolvimento nessa execução. Outros códigos não zero continuam no ciclo de correção; essa classificação não identifica toda falha de ambiente possível. Scripts internos de ferramentas como Composer podem usar outro shell; confira sua portabilidade ao preparar o baseline.
+
 ## Gates de cada fase
 
 1. **Desenvolvimento:** abre uma sessão nova do Codex para implementar somente a fase, sem commit.

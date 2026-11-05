@@ -4,6 +4,8 @@ O planejamento fica ao lado de `task.md` e é o único artefato entregue ao Ralp
 
 ## Estrutura
 
+O Gate 3 usa o interpretador indicado no bloco do baseline: `sh`, `bash`, `shell` ou bloco sem linguagem usam Bash; `powershell` usa Windows PowerShell, `pwsh` usa PowerShell 7 e `cmd`/`bat` usam cmd. O interpretador deve estar no PATH; profiles interativos não são carregados. Use sintaxe e caminhos compatíveis com o interpretador escolhido e propague explicitamente falhas de comandos intermediários, especialmente em PowerShell. Valide também subprocessos: iniciar Composer pelo Bash não muda automaticamente o shell usado pelos scripts internos do Composer no Windows.
+
 Use estas seções de segundo nível antes das fases:
 
 - `Identidade e fontes`: filha, requisito pai e caminhos locais usados.
