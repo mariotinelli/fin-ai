@@ -87,13 +87,13 @@ it('offers a new link without verifying either account when the link is refused'
 
     $response->assertRedirectToRoute('verification.notice')
         ->assertSessionHasErrors([
-            'email' => 'We could not verify your email with this link. Please request a new verification link.',
+            'email' => 'Não foi possível confirmar seu e-mail com este link. Solicite um novo link de confirmação.',
         ])
         ->assertSessionMissing('status');
     $this->withCookie(config('session.cookie'), session()->getId())
         ->get(route('verification.notice'))->assertOk()->assertInertia(fn ($page) => $page
         ->component('user-email-verification-notification/create')
-        ->where('errors.email', 'We could not verify your email with this link. Please request a new verification link.')
+        ->where('errors.email', 'Não foi possível confirmar seu e-mail com este link. Solicite um novo link de confirmação.')
         ->where('status', null));
     $this->get(route('dashboard'))->assertRedirectToRoute('verification.notice');
     expect($user->fresh()->email_verified_at)->toBeNull();

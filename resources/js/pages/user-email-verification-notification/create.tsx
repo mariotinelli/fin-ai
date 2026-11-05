@@ -11,12 +11,12 @@ import { send } from '@/routes/verification';
 export default function VerifyEmail({ status }: { status?: string }) {
     return (
         <>
-            <Head title="Email verification" />
+            <Head title="Confirmação de e-mail" />
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                    Um novo link de confirmação foi enviado para o endereço de
+                    e-mail informado durante o cadastro.
                 </div>
             )}
 
@@ -24,19 +24,22 @@ export default function VerifyEmail({ status }: { status?: string }) {
                 {({ processing, errors }) => (
                     <>
                         {Object.keys(errors).length > 0 && (
-                            <AlertError errors={Object.values(errors)} />
+                            <AlertError
+                                errors={Object.values(errors)}
+                                title="Não foi possível concluir a solicitação."
+                            />
                         )}
 
                         <Button disabled={processing} variant="secondary">
                             {processing && <Spinner />}
-                            Resend verification email
+                            Reenviar e-mail de confirmação
                         </Button>
 
                         <TextLink
                             href={logout()}
                             className="mx-auto block text-sm"
                         >
-                            Log out
+                            Sair
                         </TextLink>
                     </>
                 )}
@@ -48,8 +51,8 @@ export default function VerifyEmail({ status }: { status?: string }) {
 VerifyEmail.layout = [
     AuthLayout,
     {
-        title: 'Verify email',
+        title: 'Confirme seu e-mail',
         description:
-            'Please verify your email address by clicking on the link we just emailed to you.',
+            'Confirme seu endereço de e-mail clicando no link que acabamos de enviar.',
     },
 ];

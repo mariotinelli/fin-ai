@@ -79,7 +79,7 @@ it('rolls back registration when mail transport fails and allows retrying the sa
     $this->fromRoute('register')->post(route('register.store'), $data)
         ->assertRedirectToRoute('register')
         ->assertSessionHasErrors([
-            'email' => 'We could not send your verification email. Please try registering again.',
+            'email' => 'Não foi possível enviar seu e-mail de confirmação. Tente realizar o cadastro novamente.',
         ])
         ->assertSessionMissing('status');
 
@@ -88,7 +88,7 @@ it('rolls back registration when mail transport fails and allows retrying the sa
     Exceptions::assertReported(fn (TransportException $reported): bool => $reported === $exception);
     $this->withCookie(config('session.cookie'), session()->getId())
         ->get(route('register'))->assertOk()->assertInertia(fn ($page) => $page
-        ->where('errors.email', 'We could not send your verification email. Please try registering again.'));
+        ->where('errors.email', 'Não foi possível enviar seu e-mail de confirmação. Tente realizar o cadastro novamente.'));
 
     Notification::fake();
 

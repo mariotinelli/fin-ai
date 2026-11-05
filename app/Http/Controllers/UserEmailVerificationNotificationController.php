@@ -36,7 +36,7 @@ final readonly class UserEmailVerificationNotificationController
             $request->session()->forget('status');
 
             return to_route('verification.notice')->withErrors([
-                'email' => 'We could not send your verification email. Please try again.',
+                'email' => 'Não foi possível enviar seu e-mail de confirmação. Tente novamente.',
             ]);
         }
 

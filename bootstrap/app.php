@@ -42,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             $request->session()->forget('status');
 
             return to_route('verification.notice')->withErrors([
-                'email' => 'We could not verify your email with this link. Please request a new verification link.',
+                'email' => 'Não foi possível confirmar seu e-mail com este link. Solicite um novo link de confirmação.',
             ]);
         });
 

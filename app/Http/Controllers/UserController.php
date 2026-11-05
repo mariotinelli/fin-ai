@@ -40,7 +40,7 @@ final readonly class UserController
             report($transportException);
 
             return back()->withErrors([
-                'email' => 'We could not send your verification email. Please try registering again.',
+                'email' => 'Não foi possível enviar seu e-mail de confirmação. Tente realizar o cadastro novamente.',
             ]);
         }
 

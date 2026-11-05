@@ -87,7 +87,7 @@ it('shows a retry error without success when transport fails and allows resendin
         ->fromRoute('verification.notice')->post(route('verification.send'))
         ->assertRedirectToRoute('verification.notice')
         ->assertSessionHasErrors([
-            'email' => 'We could not send your verification email. Please try again.',
+            'email' => 'Não foi possível enviar seu e-mail de confirmação. Tente novamente.',
         ])
         ->assertSessionMissing('status');
 
@@ -96,7 +96,7 @@ it('shows a retry error without success when transport fails and allows resendin
     $this->withCookie(config('session.cookie'), session()->getId())
         ->get(route('verification.notice'))->assertOk()->assertInertia(fn ($page) => $page
         ->component('user-email-verification-notification/create')
-        ->where('errors.email', 'We could not send your verification email. Please try again.')
+        ->where('errors.email', 'Não foi possível enviar seu e-mail de confirmação. Tente novamente.')
         ->where('status', null));
 
     Notification::fake();
