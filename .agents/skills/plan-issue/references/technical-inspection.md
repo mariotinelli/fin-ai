@@ -10,6 +10,14 @@ Para dependência externa relevante, confira sucesso, falha e indisponibilidade 
 
 **Concluído quando:** cada afirmação decisiva tem origem localizável, condições de ambiente relevantes estão explícitas e nenhuma hipótese foi apresentada como comportamento confirmado.
 
+## Conferir o alcance da solução
+
+Antes de propor mudança em default, configuração global ou componente compartilhado, localize seus consumidores e compare o comportamento afetado com o escopo aprovado, inclusive por ambiente. Registre os consumidores relevantes e a evidência que sustenta essa avaliação na arquitetura ou nos riscos.
+
+Se a proposta modificar comportamento fora do escopo, prefira uma aplicação localizada que preserve o compartilhamento necessário. Se ampliar o alcance for necessário, apresente o impacto e a decisão de produto pendente antes de tratar a arquitetura como pronta. Declarar um fluxo fora do escopo não neutraliza alterações nele; adaptar suas fixtures também não demonstra preservação funcional. Uma mudança compartilhada é válida quando os efeitos estão autorizados ou a inspeção sustenta a preservação dos demais consumidores.
+
+**Concluído quando:** o alcance real da solução é compatível com os limites da tarefa, e efeitos externos estão preservados com evidência ou dependem de decisão explícita.
+
 ## Descobrir verificadores e pré-requisitos
 
 Expanda os scripts agregados até identificar verificadores, opções e configurações relevantes. Inclua formatação, análise estática, refatoração em modo de verificação, tipos, testes e cobertura conforme existirem; não imponha ferramentas de outra stack. Consulte CI pertinente sem declarar equivalência se não a verificou.
