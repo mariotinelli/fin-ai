@@ -29,6 +29,13 @@ scripts:
 
     "$HERD_COMMAND" link --secure --isolate=8.5 --update-env "$ORCA_WORKSPACE_NAME"
 
+    HERD_PHP_BINARY=$("$HERD_COMMAND" which-php)
+    HERD_PHP_DIR=$(dirname "$HERD_PHP_BINARY")
+    if command -v cygpath >/dev/null 2>&1; then
+      HERD_PHP_DIR=$(cygpath -u "$HERD_PHP_DIR")
+    fi
+    export PATH="$HERD_PHP_DIR:$PATH"
+
     DB_NAME="${ORCA_WORKSPACE_NAME//-/_}"
     TEST_DB_NAME="${DB_NAME}_testing"
 
@@ -122,9 +129,18 @@ scripts:
       create_database_if_missing "$TEST_DB_NAME"
     )
 
-    PHP_VERSION_ID=$("$HERD_COMMAND" php -r 'echo PHP_VERSION_ID;')
+    PHP_VERSION_ID=$(php -r 'echo PHP_VERSION_ID;')
     if [ "$PHP_VERSION_ID" -lt 80500 ]; then
-      echo "FinAI requires PHP 8.5 or newer; Herd selected $($HERD_COMMAND php -r 'echo PHP_VERSION;')." >&2
+      echo "FinAI requires PHP 8.5 or newer; Herd selected $(php -r 'echo PHP_VERSION;')." >&2
+      exit 1
+    fi
+
+    if command -v composer >/dev/null 2>&1; then
+      COMPOSER_COMMAND="composer"
+    elif command -v composer.bat >/dev/null 2>&1; then
+      COMPOSER_COMMAND="composer.bat"
+    else
+      echo "Composer not found." >&2
       exit 1
     fi
 
@@ -139,14 +155,14 @@ scripts:
       BUN_COMMAND="bun.exe"
     fi
 
-    "$HERD_COMMAND" composer install --no-interaction --prefer-dist
+    "$COMPOSER_COMMAND" install --no-interaction --prefer-dist
     "$BUN_COMMAND" install --frozen-lockfile
-    "$HERD_COMMAND" php artisan key:generate --force --no-interaction
+    php artisan key:generate --force --no-interaction
     (
       unset APP_KEY
-      "$HERD_COMMAND" php artisan key:generate --env=testing --force --no-interaction
+      php artisan key:generate --env=testing --force --no-interaction
     )
-    "$HERD_COMMAND" php artisan migrate:fresh --seed --force --no-interaction
+    php artisan migrate:fresh --seed --force --no-interaction
     "$BUN_COMMAND" run build
 
   archive: |
