@@ -54,6 +54,8 @@ it('may send verification notification', function (): void {
         ->assertSessionHas('status', 'verification-link-sent');
 
     Notification::assertSentTo($user, VerifyEmail::class);
+    expect($user->fresh()->email_verified_at)->toBeNull();
+    $this->get(route('dashboard'))->assertRedirectToRoute('verification.notice');
 });
 
 it('redirects verified users when sending notification', function (): void {
