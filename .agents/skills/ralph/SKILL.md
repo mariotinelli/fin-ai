@@ -44,7 +44,18 @@ Deixe o script decidir se é possível iniciar ou retomar. Não imponha uma chec
 
 Conserve o identificador da execução e acompanhe esse mesmo processo até obter seu resultado. Esperas curtas, de no máximo 60 segundos, devem permitir feedback contínuo ao usuário.
 
-Comunique início de fase, andamento e resultado dos gates a partir da saída humana do script. O Gate 1 termina como **finalizado**, não como aprovado. Durante uma espera sem novas mensagens, informe que o último gate observado continua em andamento; não invente atividade, percentual ou conclusão. Preserve a diferença entre reprovação interna seguida de nova tentativa pelo script e interrupção do processo.
+Comunique mudanças observadas em mensagens curtas, com **fase**, nome da etapa e **resultado** destacados. Prefira os nomes Desenvolvimento, Validação, Testes e Commit; mantenha o número do gate como referência secundária. Use o total de fases e o título do plano quando conhecidos. O Gate 1 termina como **finalizado**, não como aprovado. Preserve a diferença entre reprovação interna seguida de nova tentativa pelo script e interrupção do processo.
+
+Exemplos de apresentação, preenchidos somente com fatos observados:
+
+- **Fase 1 de 2 — Política de senha** · **Desenvolvimento em andamento** (Gate 1).
+- **Fase 1 de 2** · **Validação aprovada**. Iniciando os testes (Gate 3).
+- **Fase 1 de 2 concluída** — testes aprovados e commit criado. **Próxima: Fase 2 de 2 — Desenvolvimento**.
+- **Fase 2 de 2** · **Testes reprovados — tentativa 2 de 3**. O executor iniciou a correção nesta mesma fase.
+
+Cada atualização deve conter apenas o avanço novo. Não reproduza uma lista crescente de mensagens anteriores nem envie uma mensagem por consulta ao processo. Sem novidade, mantenha o acompanhamento e, quando for necessário atualizar o usuário, use uma única linha: **Fase 2 de 2 · Desenvolvimento** — sem nova saída desde a última atualização. Respeite a frequência de comunicação exigida pelo ambiente; evite variações repetidas da mesma frase. Ausência de saída não comprova atividade ou travamento: não invente progresso, percentual ou horário.
+
+Ao mudar de fase, anuncie explicitamente a conclusão da anterior e o início da próxima, para não parecer retorno ao Gate 1 da mesma fase. Horários e identificadores de commit entram somente quando disponíveis e úteis; não use blocos de código para status em prosa.
 
 Mantenha as conversas internas, prompts e logs extensos fora do acompanhamento. Não use `--verbose` por padrão nem abra outro processo Ralph para verificar progresso. Se a ferramenta deixar de permitir acompanhamento, informe a limitação sem declarar conclusão, reiniciar ou encerrar um processo que possa continuar ativo.
 
@@ -53,6 +64,8 @@ Mantenha as conversas internas, prompts e logs extensos fora do acompanhamento. 
 ## 4. Informar o resultado
 
 Em sucesso, informe a conclusão observada e os resultados disponíveis, incluindo a orientação do executor para revisar as mudanças. Fases já concluídas permanecem sob o controle da retomada existente.
+
+Comece por **Tarefa #ID concluída** ou **Tarefa #ID interrompida**, conforme observado. Resuma fases concluídas e verificações relevantes; em interrupção, destaque **fase e etapa**, causa e próximo passo. Prefira parágrafos curtos ou poucos itens a um histórico de polling.
 
 Em interrupção, leia o diagnóstico apontado pelo script, resuma a causa comprovada e indique como retomar a mesma tarefa. Se não houver diagnóstico ou causa conclusiva, diga isso. Mostre apenas os trechos necessários e sanitizados, preservando segredos e conversas internas.
 
