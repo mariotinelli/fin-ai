@@ -40,21 +40,26 @@ Primeiro, assumir a configuração padrão no provider da aplicação com a cade
 
 ## Baseline
 
-Comando agregado do projeto: `composer test`. Para reproduzi-lo neste Windows com o PHP 8.5 isolado, os verificadores foram observados com `PATH=/c/Users/maari/.config/herd/bin/php85:$PATH` e o Composer PHAR do Herd. O comando agregado é somente de verificação: Pint usa `--test`, Rector usa `--dry-run`, o frontend usa `fmt --check`/lint sem `--fix`, e os demais passos são análises ou testes.
+O agregado `composer test` descreve os verificadores, mas não preserva o PHP isolado nos processos filhos neste Windows. Além disso, o proxy `herd php` não propaga o código de saída do processo filho. O gate reproduzível abaixo pede ao Herd o binário PHP isolado, executa cada ferramenta PHP com esse binário para preservar falhas e mantém os comandos frontend no Bun:
 
-Resultado inicial: interrompido antes dos testes Pest com cobertura. Pint, Rector, formatação/lint frontend, PHPStan, TypeScript e type coverage passaram. O script `test:unit` não iniciou porque `XDEBUG_MODE="coverage" pest ...` foi interpretado por `cmd.exe` e `XDEBUG_MODE` não é um comando válido no Windows. Além disso, o PHP 8.5.12 isolado disponível possui PostgreSQL, mas não possui PCOV nem Xdebug; o PHP 8.4 global possui cobertura, porém é incompatível com o requisito `php ^8.5.0`. Nenhum arquivo versionado foi alterado pelo baseline.
+```sh
+HERD_PHP=$(/c/Users/maari/.config/herd/bin/herd.bat which-php | tr -d '\r\n')
+"$HERD_PHP" vendor/bin/pint --parallel --test && "$HERD_PHP" vendor/bin/rector --dry-run && bun run test:lint && "$HERD_PHP" vendor/bin/phpstan && bun run test:types && "$HERD_PHP" vendor/bin/pest --type-coverage --min=100 && "$HERD_PHP" vendor/bin/pest --parallel --coverage --exactly=100.0
+```
 
-Pré-requisito operacional pendente: disponibilizar ao executor um PHP 8.5 com PCOV ou Xdebug e uma invocação do gate compatível com o shell, preservando todos os verificadores e a exigência de cobertura exata de 100%. Até isso ser resolvido, o plano não está apto a ser encaminhado ao Ralph e não há bloco de comando executável seguro para o parser.
+Pré-requisitos observados: PHP 8.5.12 selecionado pelo Herd, Xdebug 3.5.0 com modo `coverage`, PostgreSQL e os navegadores Playwright correspondentes ao `playwright 1.64.1` do projeto. Os binários Playwright foram alinhados com `bunx playwright install`, sem alterar dependências ou arquivos versionados.
+
+Resultado inicial: passou. Foram executados 177 testes com 559 assertions; cobertura de tipos e cobertura de código ficaram em 100%. Pint, Rector, formatação/lint frontend, PHPStan e TypeScript também passaram. O runtime ainda emite um aviso não bloqueante de OPcache compilado para uma API anterior do Zend Engine, e o Rector emite a depreciação conhecida de `withSetProviders()`. Nenhum arquivo versionado foi alterado pelo baseline.
 
 | Verificador | Invocação/configuração | Exigência relevante | Resultado observado |
 | --- | --- | --- | --- |
 | Pint | `pint --parallel --test` | Verificação, sem correção | Passou |
-| Rector | `rector --dry-run` | Verificação, sem reescrita | Passou; emitiu aviso de depreciação de `withSetProviders()` |
+| Rector | `rector --dry-run` | PHP 8.5 pelo Herd e verificação sem reescrita | Passou; emitiu aviso de depreciação de `withSetProviders()` |
 | Frontend lint/formato | `bun run test:lint` | `vp fmt --check resources/` e `vp lint` | Passou |
-| PHPStan | `phpstan` | Nível máximo conforme `phpstan.neon` | Passou sem erros |
+| PHPStan | `phpstan` | PHP 8.5 pelo Herd e nível máximo conforme `phpstan.neon` | Passou sem erros |
 | TypeScript | `bun run test:types` | `tsc --noEmit` | Passou |
-| Cobertura de tipos | `pest --type-coverage --min=100` | 100% | Passou |
-| Testes e cobertura de código | `XDEBUG_MODE="coverage" pest --parallel --coverage --exactly=100.0` | PHP 8.5, PostgreSQL e driver de cobertura | Não executado: sintaxe de variável incompatível com `cmd.exe`; PHP 8.5 local também sem driver de cobertura |
+| Cobertura de tipos | `pest --type-coverage --min=100` | PHP 8.5 pelo Herd e 100% | Passou com 100% |
+| Testes e cobertura de código | `pest --parallel --coverage --exactly=100.0` | PHP 8.5 pelo Herd, PostgreSQL, Xdebug e navegadores Playwright compatíveis | Passou: 177 testes, 559 assertions e 100% de cobertura |
 
 ## Riscos
 
@@ -111,4 +116,4 @@ Usar a regra nativa documentada do Laravel como fonte única. Nos testes Pest, s
 
 ### Verificação focada
 
-Executar `php artisan test --compact tests/Feature/Controllers/UserControllerTest.php tests/Feature/Controllers/UserPasswordControllerTest.php` com PHP 8.5 e o verificador externo isolado pelos próprios testes. Depois executar o gate completo definido no baseline quando o driver de cobertura e a invocação compatível estiverem disponíveis; revisar qualquer correção automática apenas se uma ferramenta de desenvolvimento for usada fora do gate de verificação.
+Resolver o PHP 8.5 com `herd which-php` e usar o binário retornado para executar `artisan test --compact tests/Feature/Controllers/UserControllerTest.php tests/Feature/Controllers/UserPasswordControllerTest.php`, mantendo o verificador externo isolado pelos próprios testes e códigos de saída confiáveis. Depois executar o gate completo definido no baseline; revisar qualquer correção automática apenas se uma ferramenta de desenvolvimento for usada fora do gate de verificação.
