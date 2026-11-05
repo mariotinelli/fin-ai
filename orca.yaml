@@ -1,0 +1,247 @@
+scripts:
+  setup: |
+    #!/usr/bin/env bash
+
+    set -euo pipefail
+
+    cd "$ORCA_WORKTREE_PATH"
+
+    cp -n "$ORCA_ROOT_PATH/.env" .env 2>/dev/null || cp -n .env.example .env
+    if [ -f "$ORCA_ROOT_PATH/.env.testing" ]; then
+      cp -n "$ORCA_ROOT_PATH/.env.testing" .env.testing
+    else
+      cp -n .env.testing.example .env.testing
+    fi
+    cp -n "$ORCA_ROOT_PATH/opencode.json" opencode.json 2>/dev/null || true
+    cp -n "$ORCA_ROOT_PATH/boost.json" boost.json 2>/dev/null || true
+
+    mkdir -p .codex
+    cp -n "$ORCA_ROOT_PATH/.codex/config.toml" .codex/config.toml 2>/dev/null || true
+
+    DB_NAME="${ORCA_WORKSPACE_NAME//-/_}"
+    TEST_DB_NAME="${DB_NAME}_testing"
+
+    if ! [[ "$DB_NAME" =~ ^[A-Za-z0-9_]+$ ]] || [ "${#DB_NAME}" -gt 47 ]; then
+      echo "Invalid workspace database name: $DB_NAME" >&2
+      exit 1
+    fi
+
+    set_env_value() {
+      local file="$1"
+      local key="$2"
+      local value="$3"
+
+      if grep -q "^${key}=" "$file"; then
+        sed "s#^${key}=.*#${key}=${value}#" "$file" > "${file}.tmp"
+        mv "${file}.tmp" "$file"
+      else
+        printf '\n%s=%s\n' "$key" "$value" >> "$file"
+      fi
+    }
+
+    ensure_env_value() {
+      local file="$1"
+      local key="$2"
+      local value="$3"
+
+      if ! grep -q "^${key}=" "$file"; then
+        printf '\n%s=%s\n' "$key" "$value" >> "$file"
+      fi
+    }
+
+    for file in .env .env.testing; do
+      set_env_value "$file" DB_CONNECTION pgsql
+      ensure_env_value "$file" DB_HOST 127.0.0.1
+      ensure_env_value "$file" DB_PORT 5432
+      ensure_env_value "$file" DB_USERNAME postgres
+      ensure_env_value "$file" DB_PASSWORD ""
+    done
+
+    set_env_value .env DB_DATABASE "$DB_NAME"
+    set_env_value .env.testing DB_DATABASE "$TEST_DB_NAME"
+
+    set -a
+    . ./.env
+    set +a
+
+    DB_HOST="${DB_HOST:-127.0.0.1}"
+    DB_PORT="${DB_PORT:-5432}"
+    DB_USERNAME="${DB_USERNAME:-postgres}"
+    export PGPASSWORD="${DB_PASSWORD:-}"
+
+    if command -v psql >/dev/null 2>&1; then
+      PSQL_COMMAND="psql"
+    elif command -v psql.exe >/dev/null 2>&1; then
+      PSQL_COMMAND="psql.exe"
+    else
+      echo "PostgreSQL CLI not found. Install psql and make it available in PATH." >&2
+      exit 1
+    fi
+
+    create_database_if_missing() {
+      local database_name="$1"
+      local exists
+
+      exists=$("$PSQL_COMMAND" -X --no-password -v ON_ERROR_STOP=1 \
+        -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d postgres -At \
+        -c "SELECT 1 FROM pg_database WHERE datname = '$database_name'")
+
+      if [ "$exists" != "1" ]; then
+        "$PSQL_COMMAND" -X --no-password -v ON_ERROR_STOP=1 \
+          -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d postgres \
+          -c "CREATE DATABASE \"$database_name\""
+      fi
+
+      "$PSQL_COMMAND" -X --no-password -v ON_ERROR_STOP=1 \
+        -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d "$database_name" \
+        -c "CREATE EXTENSION IF NOT EXISTS citext; CREATE EXTENSION IF NOT EXISTS unaccent;"
+    }
+
+    create_database_if_missing "$DB_NAME"
+    (
+      set -a
+      . ./.env.testing
+      set +a
+
+      DB_HOST="${DB_HOST:-127.0.0.1}"
+      DB_PORT="${DB_PORT:-5432}"
+      DB_USERNAME="${DB_USERNAME:-postgres}"
+      export PGPASSWORD="${DB_PASSWORD:-}"
+
+      create_database_if_missing "$TEST_DB_NAME"
+    )
+
+    if command -v php85 >/dev/null 2>&1; then
+      PHP_COMMAND="php85"
+    elif command -v php85.bat >/dev/null 2>&1; then
+      PHP_COMMAND="php85.bat"
+    elif command -v php >/dev/null 2>&1; then
+      PHP_COMMAND="php"
+    elif command -v php.bat >/dev/null 2>&1; then
+      PHP_COMMAND="php.bat"
+    else
+      echo "PHP CLI not found. Install PHP 8.5 with Laravel Herd." >&2
+      exit 1
+    fi
+
+    PHP_VERSION_ID=$("$PHP_COMMAND" -r 'echo PHP_VERSION_ID;')
+    if [ "$PHP_VERSION_ID" -lt 80500 ]; then
+      echo "FinAI requires PHP 8.5 or newer; found $($PHP_COMMAND -r 'echo PHP_VERSION;')." >&2
+      exit 1
+    fi
+
+    if command -v composer.bat >/dev/null 2>&1; then
+      COMPOSER_LAUNCHER=$(command -v composer.bat)
+    elif command -v composer >/dev/null 2>&1; then
+      COMPOSER_LAUNCHER=$(command -v composer)
+    else
+      echo "Composer not found." >&2
+      exit 1
+    fi
+
+    COMPOSER_PHAR="$(dirname "$COMPOSER_LAUNCHER")/composer.phar"
+    if [ ! -f "$COMPOSER_PHAR" ]; then
+      echo "composer.phar not found next to $COMPOSER_LAUNCHER." >&2
+      exit 1
+    fi
+
+    if ! command -v bun >/dev/null 2>&1 && ! command -v bun.exe >/dev/null 2>&1; then
+      echo "Bun not found." >&2
+      exit 1
+    fi
+
+    if command -v bun >/dev/null 2>&1; then
+      BUN_COMMAND="bun"
+    else
+      BUN_COMMAND="bun.exe"
+    fi
+
+    if command -v herd >/dev/null 2>&1; then
+      HERD_COMMAND="herd"
+    elif command -v herd.bat >/dev/null 2>&1; then
+      HERD_COMMAND="herd.bat"
+    else
+      HERD_COMMAND=""
+    fi
+
+    "$PHP_COMMAND" "$COMPOSER_PHAR" install --no-interaction --prefer-dist
+    "$BUN_COMMAND" install --frozen-lockfile
+    "$PHP_COMMAND" artisan key:generate --force --no-interaction
+    "$PHP_COMMAND" artisan key:generate --env=testing --force --no-interaction
+    "$PHP_COMMAND" artisan migrate:fresh --seed --force --no-interaction
+    "$BUN_COMMAND" run build
+
+    if [ -n "$HERD_COMMAND" ]; then
+      "$HERD_COMMAND" link --secure --isolate=8.5 --update-env "$ORCA_WORKSPACE_NAME"
+    fi
+
+  archive: |
+    #!/usr/bin/env bash
+
+    set -euo pipefail
+
+    cd "$ORCA_WORKTREE_PATH"
+
+    if command -v herd >/dev/null 2>&1; then
+      HERD_COMMAND="herd"
+    elif command -v herd.bat >/dev/null 2>&1; then
+      HERD_COMMAND="herd.bat"
+    else
+      HERD_COMMAND=""
+    fi
+
+    if [ -n "$HERD_COMMAND" ]; then
+      "$HERD_COMMAND" unsecure "$ORCA_WORKSPACE_NAME" >/dev/null 2>&1 || true
+      "$HERD_COMMAND" unlink "$ORCA_WORKSPACE_NAME" >/dev/null 2>&1 || true
+    fi
+
+    DB_NAME="${ORCA_WORKSPACE_NAME//-/_}"
+    TEST_DB_NAME="${DB_NAME}_testing"
+
+    if ! [[ "$DB_NAME" =~ ^[A-Za-z0-9_]+$ ]] || [ "${#DB_NAME}" -gt 47 ]; then
+      echo "Invalid workspace database name: $DB_NAME" >&2
+      exit 1
+    fi
+
+    set -a
+    . ./.env
+    set +a
+
+    DB_HOST="${DB_HOST:-127.0.0.1}"
+    DB_PORT="${DB_PORT:-5432}"
+    DB_USERNAME="${DB_USERNAME:-postgres}"
+    export PGPASSWORD="${DB_PASSWORD:-}"
+
+    if command -v psql >/dev/null 2>&1; then
+      PSQL_COMMAND="psql"
+    elif command -v psql.exe >/dev/null 2>&1; then
+      PSQL_COMMAND="psql.exe"
+    else
+      echo "PostgreSQL CLI not found. Install psql and make it available in PATH." >&2
+      exit 1
+    fi
+
+    "$PSQL_COMMAND" -X --no-password -v ON_ERROR_STOP=1 \
+      -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d postgres \
+      -c "DROP DATABASE IF EXISTS \"$DB_NAME\" WITH (FORCE)"
+
+    (
+      set -a
+      . ./.env.testing
+      set +a
+
+      DB_HOST="${DB_HOST:-127.0.0.1}"
+      DB_PORT="${DB_PORT:-5432}"
+      DB_USERNAME="${DB_USERNAME:-postgres}"
+      export PGPASSWORD="${DB_PASSWORD:-}"
+
+      "$PSQL_COMMAND" -X --no-password -v ON_ERROR_STOP=1 \
+        -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d postgres \
+        -c "DROP DATABASE IF EXISTS \"$TEST_DB_NAME\" WITH (FORCE)"
+
+      for i in {1..50}; do
+        "$PSQL_COMMAND" -X --no-password -v ON_ERROR_STOP=1 \
+          -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME" -d postgres \
+          -c "DROP DATABASE IF EXISTS \"${TEST_DB_NAME}_test_${i}\" WITH (FORCE)"
+      done
+    )
