@@ -1,0 +1,9 @@
+{
+  "status": "ready",
+  "feature_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1015911-gestao-de-transacoes\\feature.md",
+  "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1015911-gestao-de-transacoes\\.flow\\feature-state.json",
+  "issue_id": 1015911,
+  "requirement_sha256": "f8bbe28eb7beecb04dd179fcc95e570f40b1552160d6e493fe454697338d042f",
+  "remote_snapshot_sha256": "0137045fecb752a66c225d50414259a15a3a20a1c95d8ab9e644cf115cdf8b70",
+  "checked_at": "2026-11-04T22:55:56.974Z"
+}

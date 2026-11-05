@@ -1,0 +1,2366 @@
+{
+  "schema_version": 3,
+  "status": "approved",
+  "current_revision": 2,
+  "revisions": [
+    {
+      "number": 1,
+      "recorded_by": "Mário Tinelli — revisão pendente",
+      "recorded_at": "2026-11-04T20:37:12.0643919+00:00",
+      "reason": "Primeira proposta com inspeção, estimativas independentes e condições completas",
+      "proposal_sha256": "bb67553b57c67ba31dfc9f6bc4438b1ce933ace66b7dc982a6fb12bbb0919e13",
+      "proposal": {
+        "feature": {
+          "title": "[WEB] [USUARIO] Acesso à conta",
+          "artifact_path": "feature.md",
+          "state_path": ".flow/feature-state.json",
+          "issue_id": 1015909,
+          "requirement_sha256": "00628586f7b8f20fef1c5c9740afeef71c3f1f4c719059858236479b762340f7",
+          "input_check_path": ".flow/slices-input-check.json",
+          "input_check_sha256": "4b6625db5a265c95b8ffcab2d83c5fe083032c607cd9ca3c639af6c982a11635"
+        },
+        "inspection": [
+          {
+            "path": "routes/web.php",
+            "finding": "Cadastro/login/reset em guest; dashboard em auth+verified; confirmação em auth+signed e throttle. Rotas de verificação conferidas com artisan route:list.",
+            "classification": "existing"
+          },
+          {
+            "path": "app/Http/Requests/CreateUserRequest.php; app/Http/Requests/CreateUserPasswordRequest.php; vendor/nunomaduro/essentials/src/Configurables/SetDefaultPassword.php",
+            "finding": "Ambos usam Password::defaults. Essentials 1.2.0 define 12..255/classes/uncompromised somente produção, desabilitado em testes. Config/essentials e AppServiceProvider não sobrescrevem. Aplicação fora produção precisa completar R3.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Actions/CreateUser.php; app/Http/Controllers/UserController.php; bootstrap/app.php",
+            "finding": "Registered é disparado na transação; falha de transporte propaga sem orientação específica. Preservar cadastro/rollback e repetir sem duplicar; não alterar regra de domínio do pai.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/UserEmailVerificationController.php; vendor/laravel/framework/src/Illuminate/Foundation/Auth/EmailVerificationRequest.php; resources/js/pages/user-email-verification-notification/create.tsx",
+            "finding": "Assinatura/titular/hash e idempotência existentes. Recusas retornam 403; tela mostra sucesso de reenvio, mas não erros de envio nem orientação de link recusado.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Actions/CreateUserEmailResetNotification.php; app/Http/Controllers/UserEmailResetNotificationController.php; resources/js/pages/user-email-reset-notification/create.tsx",
+            "finding": "Resposta genérica já existe para status do broker; erro de transporte não tratado. Completar orientação sem expor explicitamente existência da conta.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/UserPasswordController.php; resources/js/pages/user-password/create.tsx",
+            "finding": "Token recusado gera erro em email; tela exibe erro mas não fornece novo pedido. Completar retomada.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Actions/CreateUserPassword.php; config/auth.php; vendor/laravel/framework/src/Illuminate/Auth/Passwords/PasswordBroker.php; vendor/laravel/framework/src/Illuminate/Auth/Passwords/DatabaseTokenRepository.php",
+            "finding": "Troca password hash/remember token sem mexer email_verified_at. Broker valida e exclui token após reset; expire efetivo confirmado por artisan config:show = 60 minutos. Não confundir throttle de 60 segundos com expiração.",
+            "classification": "existing"
+          },
+          {
+            "path": "app/Http/Requests/CreateSessionRequest.php; app/Http/Controllers/SessionController.php; resources/js/pages/session/create.tsx; vendor/laravel/framework/src/Illuminate/Auth/SessionGuard.php",
+            "finding": "Login, intended, checkbox remember, cinco falhas por e-mail+IP; RateLimiter hit usa 60 segundos. Logout limpa recaller, invalida sessão e retorna /. Leitura confirma preservações; não houve teste real de navegador/SMTP.",
+            "classification": "existing"
+          },
+          {
+            "path": "tests/Feature/Controllers/SessionControllerTest.php; tests/Feature/Controllers/UserControllerTest.php; tests/Feature/Controllers/UserEmailVerificationTest.php; tests/Feature/Controllers/UserEmailVerificationNotificationControllerTest.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php; tests/Feature/Controllers/UserPasswordControllerTest.php",
+            "finding": "Executados com PHP85 do Herd: 54 testes passaram, 245 assertions. Fakes nos testes não comprovam entrega SMTP; testes atuais não cobrem todas as condições propostas. PHP padrão era 8.4; PHP85 executou com aviso de OPcache incompatível, sem impedir resultados.",
+            "classification": "existing"
+          },
+          {
+            "path": "composer.lock; package.json; vendor/laravel/framework/src/Illuminate/Auth/Listeners/SendEmailVerificationNotification.php",
+            "finding": "Versões verificadas: Laravel 13.40.0, Fortify 1.41.0, Inertia Laravel 3.7.0, Essentials 1.2.0; React/Inertia declarados no package.json. Listener padrão envia confirmação para MustVerifyEmail. Inspeção não inclui credenciais nem valida transporte real.",
+            "classification": "existing"
+          }
+        ],
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "Cadastro público sem convite ou aprovação administrativa."
+          },
+          {
+            "id": "R2",
+            "summary": "Nome/e-mail obrigatórios até 255 caracteres, e-mail válido e único, senha e confirmação obrigatórias e iguais."
+          },
+          {
+            "id": "R3",
+            "summary": "Cadastro e redefinição: senha de 12 a 255 caracteres, maiúscula, minúscula, número, símbolo e rejeição de senha vazada."
+          },
+          {
+            "id": "R4",
+            "summary": "Área financeira exige autenticação e e-mail confirmado; recebimento de e-mail não confirma."
+          },
+          {
+            "id": "R5",
+            "summary": "Recuperação válida por 60 minutos, uso único e senha anterior sem novos logins após sucesso."
+          },
+          {
+            "id": "R6",
+            "summary": "Saída encerra sessão atual; lembrar acesso não dispensa confirmação nem impede saída explícita."
+          },
+          {
+            "id": "CA1",
+            "summary": "Cadastro válido cria uma única conta, envia confirmação e apresenta fluxo de confirmação."
+          },
+          {
+            "id": "CA2",
+            "summary": "Ausências, e-mail inválido/duplicado, senha fora de R3 e confirmação diferente impedem conclusão e mostram erros aplicáveis."
+          },
+          {
+            "id": "CA3",
+            "summary": "Conta não confirmada não acessa finanças e pode confirmar, reenviar e sair."
+          },
+          {
+            "id": "CA4",
+            "summary": "Titular autenticado confirma com link válido próprio; inválido, expirado ou de outra conta é recusado e permite novo pedido."
+          },
+          {
+            "id": "CA5",
+            "summary": "Credenciais corretas entram; incorretas não; após cinco falhas, nova tentativa informa bloqueio e espera."
+          },
+          {
+            "id": "CA6",
+            "summary": "Após sair, área protegida exige login, inclusive com lembrar acesso selecionado."
+          },
+          {
+            "id": "CA7",
+            "summary": "Recuperação tem resposta genérica para e-mail existente/inexistente e envia link ao titular quando existente."
+          },
+          {
+            "id": "CA8",
+            "summary": "Redefinição válida com R3 retorna ao login; nova senha funciona, antiga não; e-mail não confirmado continua restrito."
+          },
+          {
+            "id": "CA9",
+            "summary": "Recuperação com link inválido, expirado ou utilizado não muda senha e oferece nova solicitação."
+          },
+          {
+            "id": "CA10-confirmacao",
+            "summary": "CA10 e exceções: falha de envio no cadastro/reenvio orienta nova tentativa sem afirmar conclusão dependente do e-mail."
+          },
+          {
+            "id": "CA10-recuperacao",
+            "summary": "CA10 e exceções: falha de envio de recuperação orienta nova tentativa sem afirmar conclusão dependente do e-mail."
+          },
+          {
+            "id": "F1",
+            "summary": "Exceções: reabrir link de confirmação ainda válido de conta já confirmada preserva confirmação."
+          },
+          {
+            "id": "F2",
+            "summary": "Fluxo principal: login retorna à área inicial ou destino protegido solicitado; saída retorna à página pública."
+          },
+          {
+            "id": "F3",
+            "summary": "Dados e exceções: cadastro não solicita dados financeiros; duplicidade permite seguir para login ou recuperação."
+          }
+        ],
+        "slices": [
+          {
+            "number": 1,
+            "title_suffix": "Política de senha no cadastro e na redefinição",
+            "estimate_hours": 3,
+            "description": {
+              "delivery": "Completar a aplicação da política de senha aprovada no cadastro e na redefinição. A base já valida os formulários, mas a regra forte depende do ambiente de produção. Preservar as validações dos demais campos e os caminhos de cadastro, confirmação e retorno ao login.",
+              "limits": "Abrange criação da conta e redefinição de senha esquecida. Não amplia gestão de perfil, autenticação social, passkeys ou dois fatores.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Cadastro e redefinição aceitam senha de 12 a 255 caracteres que contenha maiúscula, minúscula, número e símbolo, não conste em vazamentos e tenha confirmação igual."
+                },
+                {
+                  "kind": "error",
+                  "text": "Senha com menos de 12 ou mais de 255 caracteres impede cadastro e redefinição, com erro no campo."
+                },
+                {
+                  "kind": "error",
+                  "text": "A ausência de maiúscula, minúscula, número ou símbolo impede cadastro e redefinição, com erro no campo para cada composição inválida."
+                },
+                {
+                  "kind": "error",
+                  "text": "Senha conhecida em vazamentos impede cadastro e redefinição e apresenta erro, mesmo quando atende ao tamanho e à composição."
+                },
+                {
+                  "kind": "error",
+                  "text": "Senha ou confirmação ausente, ou confirmação diferente, impede concluir os dois fluxos e apresenta erro."
+                },
+                {
+                  "kind": "error",
+                  "text": "No cadastro, nome e e-mail ausentes ou maiores que 255 caracteres, e-mail inválido ou já cadastrado continuam recusados com erros; na redefinição, e-mail ausente ou inválido continua recusado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Com cadastro válido, uma única conta é criada e segue para confirmação por e-mail, sem solicitar dados financeiros."
+                },
+                {
+                  "kind": "success",
+                  "text": "Com link de recuperação válido e senha conforme a regra, redefinir retorna ao login; a nova senha permite entrar e a anterior deixa de permitir novos logins."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Redefinir a senha não confirma o e-mail: a conta anteriormente não confirmada continua sem acesso financeiro."
+                }
+              ],
+              "dependencies": "Pode iniciar com os fluxos de acesso existentes. A verificação integrada da Feature inclui ‘Acesso à conta - Confirmação de e-mail com nova tentativa’ e ‘Acesso à conta - Recuperação de senha com nova tentativa’.",
+              "traceability": [
+                "R3",
+                "CA2",
+                "CA8"
+              ]
+            },
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Política de senha no cadastro e na redefinição",
+            "api_delivery": false,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": []
+          },
+          {
+            "number": 2,
+            "title_suffix": "Confirmação de e-mail com nova tentativa",
+            "estimate_hours": 5,
+            "description": {
+              "delivery": "Completar a orientação de nova tentativa quando o envio de confirmação falhar no cadastro ou no reenvio, e quando um link de confirmação for recusado. Preservar o cadastro público, a confirmação pelo titular, a restrição financeira e o reenvio que já existem.",
+              "limits": "Abrange cadastro, envio/reenvio e confirmação do e-mail. A política de senha pertence a ‘Acesso à conta - Política de senha no cadastro e na redefinição’; a recuperação de senha pertence a ‘Acesso à conta - Recuperação de senha com nova tentativa’.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Cadastro válido cria uma única conta, envia o link e orienta confirmar o e-mail; receber o e-mail por si só não libera finanças."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Conta não confirmada permanece sem acesso financeiro, com orientação para confirmar, reenviar o link ou sair."
+                },
+                {
+                  "kind": "success",
+                  "text": "Titular com link válido da própria conta confirma o endereço e acessa a área inicial, autenticando-se antes quando necessário."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link de confirmação inválido não confirma o endereço nem libera acesso e apresenta orientação e caminho para solicitar outro."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link de confirmação expirado não confirma o endereço nem libera acesso e apresenta orientação e caminho para solicitar outro."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Link de outra conta não confirma nenhum endereço indevido nem libera acesso e permite ao usuário solicitar confirmação da própria conta."
+                },
+                {
+                  "kind": "success",
+                  "text": "Reabrir link ainda válido de uma conta já confirmada mantém a confirmação e permite seguir à área inicial."
+                },
+                {
+                  "kind": "error",
+                  "text": "Falha de envio no cadastro informa a impossibilidade de concluir a etapa dependente do e-mail e orienta nova tentativa; repetir depois da falha não cria contas duplicadas."
+                },
+                {
+                  "kind": "error",
+                  "text": "Falha no reenvio informa que o envio não foi concluído e orienta nova tentativa, sem mensagem de sucesso."
+                },
+                {
+                  "kind": "success",
+                  "text": "Restabelecido o envio, a nova tentativa permite receber o link e concluir a confirmação."
+                }
+              ],
+              "dependencies": "Pode iniciar com cadastro e confirmação existentes. Para a jornada integrada, usar a política de senha entregue por ‘Acesso à conta - Política de senha no cadastro e na redefinição’.",
+              "traceability": [
+                "CA4",
+                "CA10-confirmacao"
+              ]
+            },
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Confirmação de e-mail com nova tentativa",
+            "api_delivery": false,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": []
+          },
+          {
+            "number": 3,
+            "title_suffix": "Recuperação de senha com nova tentativa",
+            "estimate_hours": 4,
+            "description": {
+              "delivery": "Completar a recuperação de senha com orientação quando o envio falhar e uma opção de novo pedido quando o link for inválido, expirado ou já utilizado. Preservar a resposta genérica, a validade de 60 minutos, o uso único e a restrição de contas sem e-mail confirmado.",
+              "limits": "Abrange solicitação e redefinição de senha esquecida. A composição da senha pertence a ‘Acesso à conta - Política de senha no cadastro e na redefinição’; envio de confirmação pertence a ‘Acesso à conta - Confirmação de e-mail com nova tentativa’.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Solicitar recuperação apresenta que um link será enviado se a conta existir, sem distinguir conta existente de inexistente; para conta existente, envia ao e-mail cadastrado."
+                },
+                {
+                  "kind": "error",
+                  "text": "Falha no envio orienta nova tentativa sem afirmar conclusão do envio ou revelar explicitamente se a conta existe."
+                },
+                {
+                  "kind": "success",
+                  "text": "Depois de restabelecer o envio, nova solicitação permite ao titular receber um link utilizável."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link de recuperação inválido não altera senha e oferece caminho para solicitar outro."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link de recuperação expirado após 60 minutos não altera senha e oferece caminho para solicitar outro."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link já utilizado com sucesso não altera senha novamente e oferece caminho para solicitar outro."
+                },
+                {
+                  "kind": "success",
+                  "text": "Link válido, dentro de 60 minutos e ainda não usado, com nova senha e confirmação válidas, permite redefinir e retorna ao login."
+                },
+                {
+                  "kind": "success",
+                  "text": "Após redefinição, nova senha permite novos logins e senha anterior não; o link utilizado deixa de funcionar."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Redefinição não confirma e-mail e mantém a restrição financeira das contas não confirmadas."
+                }
+              ],
+              "dependencies": "Pode iniciar com a recuperação existente. Para concluir a jornada integrada, usar a política de senha entregue por ‘Acesso à conta - Política de senha no cadastro e na redefinição’.",
+              "traceability": [
+                "CA9",
+                "CA10-recuperacao"
+              ]
+            },
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Recuperação de senha com nova tentativa",
+            "api_delivery": false,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": []
+          }
+        ],
+        "coverage": [
+          {
+            "requirement_id": "R1",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "routes/web.php register em guest e UserController::store/CreateUser::handle: não há convite nem aprovação."
+          },
+          {
+            "requirement_id": "R2",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateUserRequest::rules e CreateUserPasswordRequest::rules validam obrigatoriedade, limites, unicidade e confirmação; campos mostram InputError."
+          },
+          {
+            "requirement_id": "R3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "SetDefaultPassword só aplica regra forte em produção e desativa durante testes; Requests usam defaults. Adaptar aplicação consistente da regra aprovada."
+          },
+          {
+            "requirement_id": "R4",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "routes/web.php dashboard em auth+verified, User implementa MustVerifyEmail, EnsureEmailIsVerified e confirmação explícita em fulfill."
+          },
+          {
+            "requirement_id": "R5",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "config auth.passwords.users.expire efetivo=60 minutos; PasswordBroker::reset exclui token, DatabaseTokenRepository verifica expiração; CreateUserPassword substitui senha hash."
+          },
+          {
+            "requirement_id": "R6",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "SessionController::destroy invalida sessão; SessionGuard::logout limpa recaller e renova remember token; login checkbox e guard verified continuam aplicáveis."
+          },
+          {
+            "requirement_id": "CA1",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateUser transaciona criação e Registered; listener SendEmailVerificationNotification envia; login redireciona dashboard e verified conduz verification.notice."
+          },
+          {
+            "requirement_id": "CA2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Validações e InputError já existem; política fora de produção é parcial. Preservar validações de cadastro/reset e completar R3."
+          },
+          {
+            "requirement_id": "CA3",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "dashboard auth+verified; UserEmailVerificationNotificationController::create/store e tela com send.form e logout via TextLink."
+          },
+          {
+            "requirement_id": "CA4",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "signed e EmailVerificationRequest validam assinatura/id/hash; erro atualmente resulta 403 sem orientação para novo link. Adaptar apresentação da recusa."
+          },
+          {
+            "requirement_id": "CA5",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateSessionRequest::validateCredentials/ensureIsNotRateLimited: 5 falhas por e-mail+IP; hit padrão 60 segundos; mensagem seconds/minutes; SessionController autentica. Testes executados."
+          },
+          {
+            "requirement_id": "CA6",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "SessionController::destroy e SessionGuard::clearUserDataFromStorage removem sessão/cookie; rotas auth permanecem. Cobertura de remember por leitura integral, não por teste de navegador."
+          },
+          {
+            "requirement_id": "CA7",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "UserEmailResetNotificationController ignora status identificador e devolve mesma frase; PasswordBroker envia notificação para usuário encontrado. Testes executados com Notification::fake."
+          },
+          {
+            "requirement_id": "CA8",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "CreateUserPassword preserva email_verified_at, troca hash/remember token; UserPasswordController retorna login. R3 exige adaptação compartilhada e preservação desta jornada."
+          },
+          {
+            "requirement_id": "CA9",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "PasswordBroker recusa token e Controller mostra erro; resources/js/pages/user-password/create.tsx não oferece novo pedido. Adaptar orientação/navegação."
+          },
+          {
+            "requirement_id": "CA10-confirmacao",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "CreateUser dispara Registered dentro da transação e CreateUserEmailVerificationNotification envia diretamente; não há tratamento de envio nem mensagem de erro na tela de confirmação."
+          },
+          {
+            "requirement_id": "CA10-recuperacao",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "CreateUserEmailResetNotification::handle chama broker sem tratamento; exceção de transporte escapa e tela só conhece status/erro de campo."
+          },
+          {
+            "requirement_id": "F1",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "UserEmailVerificationController retorna dashboard quando hasVerifiedEmail após validação do request; teste específico executado."
+          },
+          {
+            "requirement_id": "F2",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "SessionController::store usa redirect()->intended; destroy retorna /. Middlewares protegem destino."
+          },
+          {
+            "requirement_id": "F3",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "user/create só nome/email/senha/confirmação e link login; session/create oferece password.request. CreateUserRequest impede duplicidade."
+          }
+        ],
+        "decisions": [
+          "Proposta para revisão do tech lead; nenhuma aprovação inferida da seleção do escopo.",
+          "CA10 foi desdobrado em CA10-confirmacao e CA10-recuperacao por contexto, mantendo o significado integral. F1/F2/F3 tornam explícitos fluxos e exceções sem ID no requisito.",
+          "Sem filhas existentes: consulta com children e busca paginada para parent_id 1015909, status *, retornaram total_count 0.",
+          "Três cortes sem bloqueios de início e sem dependências externas; integração da política de senha necessária para aceite completo. Todas as três DEV bloqueiam a QA.",
+          "Estimativas independentes: avaliador A = 2,5h/5h/3,5h e QA 5,5h; avaliador B = 3h/5h/4h e QA 5,5h. Nenhuma estimativa herdada foi fornecida ou usada.",
+          "Estimativas finais assumidas: 3h para política (inclui consumidores e dados de testes existentes), 5h para confirmação (transação, recusas, mensagens e regressões), 4h para recuperação (retomada, integração e regressões), QA 5,5h. Escolha motivada por riscos de integração, não média automática.",
+          "QA pressupõe ambiente com e-mails observáveis, falhas controláveis e links expirados preparados. Provisionamento de infraestrutura não é uma entrega deste pai; indisponibilidade deve ser registrada como impedimento de execução.",
+          "DOCX obrigatório na nova publicação: fonte integral destas 28 condições; gerar condicoes-teste-r001.docx após aprovação e anexar à única QA. Markdown complementar.",
+          "Não há mudança material do requisito, API consumível, Study ou contexto técnico prescritivo nas tarefas. Pai permanece New e relação existente com Gestão de transações permanece intacta.",
+          "Conferência semântica: regras R1-R6, CA1-CA10 e fluxos/exceções mapeados; capacidades existentes também incluídas nas condições. Referências não substituem critérios completos das DEV/QA."
+        ],
+        "test_conditions": {
+          "document_format": "docx",
+          "context": "Feature #1015909, Acesso à conta. Preparar contas confirmadas e não confirmadas, e-mails disponíveis/inexistentes, dados válidos e inválidos e ambiente autorizado com observação de e-mails, falha de envio controlada e links com validade conhecida. Condições para execução futura; os 54 testes da base não equivalem à aprovação destes cenários.",
+          "conditions": [
+            {
+              "id": "CT-001",
+              "title": "Cadastro público válido",
+              "verification": "Como visitante, cadastrar nome e e-mail disponíveis, senha conforme R3 e confirmação igual.",
+              "expected_result": "Uma única conta é criada sem convite, aprovação administrativa ou dados financeiros; recebe link e é orientada a confirmar, sem acesso financeiro ainda.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "CA1",
+                "F3"
+              ]
+            },
+            {
+              "id": "CT-002",
+              "title": "Campos obrigatórios",
+              "verification": "No cadastro, omitir separadamente nome, e-mail, senha e confirmação; na redefinição, omitir e-mail, senha e confirmação.",
+              "expected_result": "Cada ausência aplicável impede concluir e exibe erro no campo; conta/senha não é criada/alterada indevidamente.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-003",
+              "title": "Limites de nome e e-mail",
+              "verification": "No cadastro, usar nome/e-mail válidos com 255 caracteres e, separadamente, com 256 caracteres; demais dados válidos.",
+              "expected_result": "Até 255 caracteres é aceito; acima disso exibe erro e não conclui.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-004",
+              "title": "E-mail inválido e duplicado",
+              "verification": "Cadastrar com e-mail inválido e com e-mail já usado; testar e-mail inválido na redefinição e acessar login/recuperação pelo fluxo existente.",
+              "expected_result": "Erros impedem conclusão e duplicação; o usuário consegue seguir para entrar ou recuperar acesso.",
+              "requirement_ids": [
+                "R2",
+                "CA2",
+                "F3"
+              ]
+            },
+            {
+              "id": "CT-005",
+              "title": "Limites de senha",
+              "verification": "No cadastro e na redefinição com link válido, testar senhas não vazadas de 11, 12, 255 e 256 caracteres, com todas as classes e confirmação igual.",
+              "expected_result": "12 e 255 são aceitas; 11 e 256 são recusadas com erro, sem concluir a operação.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-006",
+              "title": "Composição da senha",
+              "verification": "Nos dois fluxos, testar separadamente senha sem maiúscula, sem minúscula, sem número e sem símbolo, mantendo demais regras válidas.",
+              "expected_result": "Cada ausência é recusada com erro; a combinação completa não é recusada por composição.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-007",
+              "title": "Senha conhecida em vazamentos",
+              "verification": "Usar dado de teste reconhecido como vazado, que atenda tamanho e composição, no cadastro e na redefinição.",
+              "expected_result": "Ambos recusam com erro e não concluem.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-008",
+              "title": "Confirmação diferente",
+              "verification": "No cadastro e redefinição, informar senha válida e confirmação diferente.",
+              "expected_result": "Erro impede criar a conta ou alterar a senha.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-009",
+              "title": "Acesso sem autenticação",
+              "verification": "Como visitante, abrir a área inicial protegida.",
+              "expected_result": "Exige login e não apresenta área financeira.",
+              "requirement_ids": [
+                "R4"
+              ]
+            },
+            {
+              "id": "CT-010",
+              "title": "Conta não confirmada",
+              "verification": "Entrar com conta não confirmada, tentar área protegida e reenviar confirmação; repetir com lembrar acesso selecionado.",
+              "expected_result": "Mantém restrição financeira, mostra orientação e permite reenviar/sair. Receber e-mail ou lembrar acesso não confirma a conta.",
+              "requirement_ids": [
+                "R4",
+                "R6",
+                "CA3"
+              ]
+            },
+            {
+              "id": "CT-011",
+              "title": "Confirmação válida",
+              "verification": "Abrir link válido próprio como titular autenticado; repetir jornada começando sem sessão.",
+              "expected_result": "Solicita autenticação quando necessária, confirma o endereço do titular e libera a área inicial.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-012",
+              "title": "Confirmação com link inválido",
+              "verification": "Alterar um link de confirmação e abri-lo como titular não confirmado.",
+              "expected_result": "Recusa confirmação e acesso financeiro, orienta e oferece novo pedido.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-013",
+              "title": "Confirmação expirada",
+              "verification": "Abrir link cuja validade tenha expirado, com titular não confirmado.",
+              "expected_result": "Recusa confirmação e acesso financeiro, orienta e oferece novo pedido.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-014",
+              "title": "Confirmação de outra conta",
+              "verification": "Autenticado como A não confirmado, abrir link válido de B.",
+              "expected_result": "Não confirma A nem B indevidamente, não libera finanças e permite solicitar link da própria conta.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-015",
+              "title": "Reabertura de confirmação",
+              "verification": "Confirmar conta e reabrir o mesmo link ainda válido como titular.",
+              "expected_result": "Mantém confirmação e permite seguir à área inicial, sem desfazer estado.",
+              "requirement_ids": [
+                "F1"
+              ]
+            },
+            {
+              "id": "CT-016",
+              "title": "Falha de envio no cadastro",
+              "verification": "Provocar falha controlada no envio durante cadastro válido; restaurar envio e repetir conforme orientação.",
+              "expected_result": "Informa falha e nova tentativa sem falso sucesso; retomada permite receber confirmação sem contas duplicadas.",
+              "requirement_ids": [
+                "CA10-confirmacao",
+                "CA1"
+              ]
+            },
+            {
+              "id": "CT-017",
+              "title": "Falha de envio no reenvio",
+              "verification": "Com conta não confirmada, provocar falha de reenvio, restaurar serviço e tentar novamente.",
+              "expected_result": "Apresenta orientação sem alegar envio concluído; nova tentativa recebe link e permite confirmação.",
+              "requirement_ids": [
+                "CA10-confirmacao",
+                "CA3"
+              ]
+            },
+            {
+              "id": "CT-018",
+              "title": "Login e destino solicitado",
+              "verification": "Com conta confirmada, entrar com credenciais corretas diretamente e após solicitar página protegida.",
+              "expected_result": "Acessa área inicial ou destino protegido solicitado.",
+              "requirement_ids": [
+                "CA5",
+                "F2"
+              ]
+            },
+            {
+              "id": "CT-019",
+              "title": "Credenciais incorretas",
+              "verification": "Tentar entrar com senha errada ou conta inexistente.",
+              "expected_result": "Não autentica e apresenta erro.",
+              "requirement_ids": [
+                "CA5"
+              ]
+            },
+            {
+              "id": "CT-020",
+              "title": "Bloqueio temporário de login",
+              "verification": "Para o mesmo e-mail e origem, realizar cinco falhas consecutivas; tentar novamente durante bloqueio e após a espera informada.",
+              "expected_result": "A nova tentativa durante bloqueio informa espera sem autenticar; terminado o prazo, credenciais válidas permitem entrar.",
+              "requirement_ids": [
+                "CA5"
+              ]
+            },
+            {
+              "id": "CT-021",
+              "title": "Saída explícita",
+              "verification": "Entrar em conta confirmada, sair e reabrir área protegida; repetir com lembrar acesso selecionado.",
+              "expected_result": "Retorna à página pública, encerra sessão atual e exige login novamente mesmo com lembrança anterior.",
+              "requirement_ids": [
+                "R6",
+                "CA6",
+                "F2"
+              ]
+            },
+            {
+              "id": "CT-022",
+              "title": "Resposta genérica de recuperação",
+              "verification": "Solicitar recuperação para e-mail cadastrado e para e-mail inexistente, com envio disponível.",
+              "expected_result": "Exibe a mesma resposta genérica; titular cadastrado recebe link sem informação de existência ao solicitante.",
+              "requirement_ids": [
+                "CA7"
+              ]
+            },
+            {
+              "id": "CT-023",
+              "title": "Redefinição válida",
+              "verification": "Com link próprio não usado, antes de 60 minutos, definir senha conforme R3 e confirmação igual; testar logins com senha anterior e nova.",
+              "expected_result": "Retorna ao login; nova senha funciona e antiga não permite novos logins.",
+              "requirement_ids": [
+                "R3",
+                "R5",
+                "CA8"
+              ]
+            },
+            {
+              "id": "CT-024",
+              "title": "Redefinição de conta não confirmada",
+              "verification": "Redefinir com link válido uma conta não confirmada e entrar com a nova senha.",
+              "expected_result": "Senha é alterada, mas e-mail não é confirmado e finanças continuam restritas.",
+              "requirement_ids": [
+                "R4",
+                "CA8"
+              ]
+            },
+            {
+              "id": "CT-025",
+              "title": "Recuperação com token inválido",
+              "verification": "Tentar redefinir com token inválido e senha válida; usar opção de novo pedido.",
+              "expected_result": "Não altera senha e permite solicitar outro link.",
+              "requirement_ids": [
+                "CA9"
+              ]
+            },
+            {
+              "id": "CT-026",
+              "title": "Recuperação expirada",
+              "verification": "Tentar redefinir após ultrapassar 60 minutos da emissão, com senha válida; solicitar novo link.",
+              "expected_result": "Recusa sem alterar senha e oferece nova solicitação; link novo válido permite retomar.",
+              "requirement_ids": [
+                "R5",
+                "CA9"
+              ]
+            },
+            {
+              "id": "CT-027",
+              "title": "Recuperação já utilizada",
+              "verification": "Após redefinição bem-sucedida, reutilizar o link para outra senha e usar novo pedido.",
+              "expected_result": "Não altera novamente a senha; informa recusa e permite solicitar outro link.",
+              "requirement_ids": [
+                "R5",
+                "CA9"
+              ]
+            },
+            {
+              "id": "CT-028",
+              "title": "Falha no envio da recuperação",
+              "verification": "Provocar falha controlada no envio, observar orientação e repetir após restabelecimento.",
+              "expected_result": "Orienta nova tentativa sem falso sucesso nem afirmação explícita de existência da conta; nova solicitação permite ao titular receber link.",
+              "requirement_ids": [
+                "CA10-recuperacao",
+                "CA7"
+              ]
+            }
+          ]
+        }
+      },
+      "semantic_baseline": {
+        "requirement_sha256": "00628586f7b8f20fef1c5c9740afeef71c3f1f4c719059858236479b762340f7",
+        "semantic_model_sha256": "98bc5243a0d20f5adc9b6c491e5cd26f449a228653dc5ba9f69e18abfe419bbf",
+        "semantic_model": {
+          "requirements": [
+            {
+              "id": "R1",
+              "summary": "Cadastro público sem convite ou aprovação administrativa."
+            },
+            {
+              "id": "R2",
+              "summary": "Nome/e-mail obrigatórios até 255 caracteres, e-mail válido e único, senha e confirmação obrigatórias e iguais."
+            },
+            {
+              "id": "R3",
+              "summary": "Cadastro e redefinição: senha de 12 a 255 caracteres, maiúscula, minúscula, número, símbolo e rejeição de senha vazada."
+            },
+            {
+              "id": "R4",
+              "summary": "Área financeira exige autenticação e e-mail confirmado; recebimento de e-mail não confirma."
+            },
+            {
+              "id": "R5",
+              "summary": "Recuperação válida por 60 minutos, uso único e senha anterior sem novos logins após sucesso."
+            },
+            {
+              "id": "R6",
+              "summary": "Saída encerra sessão atual; lembrar acesso não dispensa confirmação nem impede saída explícita."
+            },
+            {
+              "id": "CA1",
+              "summary": "Cadastro válido cria uma única conta, envia confirmação e apresenta fluxo de confirmação."
+            },
+            {
+              "id": "CA2",
+              "summary": "Ausências, e-mail inválido/duplicado, senha fora de R3 e confirmação diferente impedem conclusão e mostram erros aplicáveis."
+            },
+            {
+              "id": "CA3",
+              "summary": "Conta não confirmada não acessa finanças e pode confirmar, reenviar e sair."
+            },
+            {
+              "id": "CA4",
+              "summary": "Titular autenticado confirma com link válido próprio; inválido, expirado ou de outra conta é recusado e permite novo pedido."
+            },
+            {
+              "id": "CA5",
+              "summary": "Credenciais corretas entram; incorretas não; após cinco falhas, nova tentativa informa bloqueio e espera."
+            },
+            {
+              "id": "CA6",
+              "summary": "Após sair, área protegida exige login, inclusive com lembrar acesso selecionado."
+            },
+            {
+              "id": "CA7",
+              "summary": "Recuperação tem resposta genérica para e-mail existente/inexistente e envia link ao titular quando existente."
+            },
+            {
+              "id": "CA8",
+              "summary": "Redefinição válida com R3 retorna ao login; nova senha funciona, antiga não; e-mail não confirmado continua restrito."
+            },
+            {
+              "id": "CA9",
+              "summary": "Recuperação com link inválido, expirado ou utilizado não muda senha e oferece nova solicitação."
+            },
+            {
+              "id": "CA10-confirmacao",
+              "summary": "CA10 e exceções: falha de envio no cadastro/reenvio orienta nova tentativa sem afirmar conclusão dependente do e-mail."
+            },
+            {
+              "id": "CA10-recuperacao",
+              "summary": "CA10 e exceções: falha de envio de recuperação orienta nova tentativa sem afirmar conclusão dependente do e-mail."
+            },
+            {
+              "id": "F1",
+              "summary": "Exceções: reabrir link de confirmação ainda válido de conta já confirmada preserva confirmação."
+            },
+            {
+              "id": "F2",
+              "summary": "Fluxo principal: login retorna à área inicial ou destino protegido solicitado; saída retorna à página pública."
+            },
+            {
+              "id": "F3",
+              "summary": "Dados e exceções: cadastro não solicita dados financeiros; duplicidade permite seguir para login ou recuperação."
+            }
+          ],
+          "slices": [
+            {
+              "number": 1,
+              "title_suffix": "Política de senha no cadastro e na redefinição",
+              "estimate_hours": 3,
+              "description": {
+                "delivery": "Completar a aplicação da política de senha aprovada no cadastro e na redefinição. A base já valida os formulários, mas a regra forte depende do ambiente de produção. Preservar as validações dos demais campos e os caminhos de cadastro, confirmação e retorno ao login.",
+                "limits": "Abrange criação da conta e redefinição de senha esquecida. Não amplia gestão de perfil, autenticação social, passkeys ou dois fatores.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Cadastro e redefinição aceitam senha de 12 a 255 caracteres que contenha maiúscula, minúscula, número e símbolo, não conste em vazamentos e tenha confirmação igual."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Senha com menos de 12 ou mais de 255 caracteres impede cadastro e redefinição, com erro no campo."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "A ausência de maiúscula, minúscula, número ou símbolo impede cadastro e redefinição, com erro no campo para cada composição inválida."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Senha conhecida em vazamentos impede cadastro e redefinição e apresenta erro, mesmo quando atende ao tamanho e à composição."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Senha ou confirmação ausente, ou confirmação diferente, impede concluir os dois fluxos e apresenta erro."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "No cadastro, nome e e-mail ausentes ou maiores que 255 caracteres, e-mail inválido ou já cadastrado continuam recusados com erros; na redefinição, e-mail ausente ou inválido continua recusado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Com cadastro válido, uma única conta é criada e segue para confirmação por e-mail, sem solicitar dados financeiros."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Com link de recuperação válido e senha conforme a regra, redefinir retorna ao login; a nova senha permite entrar e a anterior deixa de permitir novos logins."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Redefinir a senha não confirma o e-mail: a conta anteriormente não confirmada continua sem acesso financeiro."
+                  }
+                ],
+                "dependencies": "Pode iniciar com os fluxos de acesso existentes. A verificação integrada da Feature inclui ‘Acesso à conta - Confirmação de e-mail com nova tentativa’ e ‘Acesso à conta - Recuperação de senha com nova tentativa’.",
+                "traceability": [
+                  "R3",
+                  "CA2",
+                  "CA8"
+                ]
+              },
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Política de senha no cadastro e na redefinição",
+              "api_delivery": false,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": []
+            },
+            {
+              "number": 2,
+              "title_suffix": "Confirmação de e-mail com nova tentativa",
+              "estimate_hours": 5,
+              "description": {
+                "delivery": "Completar a orientação de nova tentativa quando o envio de confirmação falhar no cadastro ou no reenvio, e quando um link de confirmação for recusado. Preservar o cadastro público, a confirmação pelo titular, a restrição financeira e o reenvio que já existem.",
+                "limits": "Abrange cadastro, envio/reenvio e confirmação do e-mail. A política de senha pertence a ‘Acesso à conta - Política de senha no cadastro e na redefinição’; a recuperação de senha pertence a ‘Acesso à conta - Recuperação de senha com nova tentativa’.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Cadastro válido cria uma única conta, envia o link e orienta confirmar o e-mail; receber o e-mail por si só não libera finanças."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Conta não confirmada permanece sem acesso financeiro, com orientação para confirmar, reenviar o link ou sair."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Titular com link válido da própria conta confirma o endereço e acessa a área inicial, autenticando-se antes quando necessário."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link de confirmação inválido não confirma o endereço nem libera acesso e apresenta orientação e caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link de confirmação expirado não confirma o endereço nem libera acesso e apresenta orientação e caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Link de outra conta não confirma nenhum endereço indevido nem libera acesso e permite ao usuário solicitar confirmação da própria conta."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Reabrir link ainda válido de uma conta já confirmada mantém a confirmação e permite seguir à área inicial."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Falha de envio no cadastro informa a impossibilidade de concluir a etapa dependente do e-mail e orienta nova tentativa; repetir depois da falha não cria contas duplicadas."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Falha no reenvio informa que o envio não foi concluído e orienta nova tentativa, sem mensagem de sucesso."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Restabelecido o envio, a nova tentativa permite receber o link e concluir a confirmação."
+                  }
+                ],
+                "dependencies": "Pode iniciar com cadastro e confirmação existentes. Para a jornada integrada, usar a política de senha entregue por ‘Acesso à conta - Política de senha no cadastro e na redefinição’.",
+                "traceability": [
+                  "CA4",
+                  "CA10-confirmacao"
+                ]
+              },
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Confirmação de e-mail com nova tentativa",
+              "api_delivery": false,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": []
+            },
+            {
+              "number": 3,
+              "title_suffix": "Recuperação de senha com nova tentativa",
+              "estimate_hours": 4,
+              "description": {
+                "delivery": "Completar a recuperação de senha com orientação quando o envio falhar e uma opção de novo pedido quando o link for inválido, expirado ou já utilizado. Preservar a resposta genérica, a validade de 60 minutos, o uso único e a restrição de contas sem e-mail confirmado.",
+                "limits": "Abrange solicitação e redefinição de senha esquecida. A composição da senha pertence a ‘Acesso à conta - Política de senha no cadastro e na redefinição’; envio de confirmação pertence a ‘Acesso à conta - Confirmação de e-mail com nova tentativa’.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Solicitar recuperação apresenta que um link será enviado se a conta existir, sem distinguir conta existente de inexistente; para conta existente, envia ao e-mail cadastrado."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Falha no envio orienta nova tentativa sem afirmar conclusão do envio ou revelar explicitamente se a conta existe."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Depois de restabelecer o envio, nova solicitação permite ao titular receber um link utilizável."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link de recuperação inválido não altera senha e oferece caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link de recuperação expirado após 60 minutos não altera senha e oferece caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link já utilizado com sucesso não altera senha novamente e oferece caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Link válido, dentro de 60 minutos e ainda não usado, com nova senha e confirmação válidas, permite redefinir e retorna ao login."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Após redefinição, nova senha permite novos logins e senha anterior não; o link utilizado deixa de funcionar."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Redefinição não confirma e-mail e mantém a restrição financeira das contas não confirmadas."
+                  }
+                ],
+                "dependencies": "Pode iniciar com a recuperação existente. Para concluir a jornada integrada, usar a política de senha entregue por ‘Acesso à conta - Política de senha no cadastro e na redefinição’.",
+                "traceability": [
+                  "CA9",
+                  "CA10-recuperacao"
+                ]
+              },
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Recuperação de senha com nova tentativa",
+              "api_delivery": false,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": []
+            }
+          ],
+          "coverage": [
+            {
+              "requirement_id": "R1",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "routes/web.php register em guest e UserController::store/CreateUser::handle: não há convite nem aprovação."
+            },
+            {
+              "requirement_id": "R2",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateUserRequest::rules e CreateUserPasswordRequest::rules validam obrigatoriedade, limites, unicidade e confirmação; campos mostram InputError."
+            },
+            {
+              "requirement_id": "R3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "SetDefaultPassword só aplica regra forte em produção e desativa durante testes; Requests usam defaults. Adaptar aplicação consistente da regra aprovada."
+            },
+            {
+              "requirement_id": "R4",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "routes/web.php dashboard em auth+verified, User implementa MustVerifyEmail, EnsureEmailIsVerified e confirmação explícita em fulfill."
+            },
+            {
+              "requirement_id": "R5",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "config auth.passwords.users.expire efetivo=60 minutos; PasswordBroker::reset exclui token, DatabaseTokenRepository verifica expiração; CreateUserPassword substitui senha hash."
+            },
+            {
+              "requirement_id": "R6",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "SessionController::destroy invalida sessão; SessionGuard::logout limpa recaller e renova remember token; login checkbox e guard verified continuam aplicáveis."
+            },
+            {
+              "requirement_id": "CA1",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateUser transaciona criação e Registered; listener SendEmailVerificationNotification envia; login redireciona dashboard e verified conduz verification.notice."
+            },
+            {
+              "requirement_id": "CA2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Validações e InputError já existem; política fora de produção é parcial. Preservar validações de cadastro/reset e completar R3."
+            },
+            {
+              "requirement_id": "CA3",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "dashboard auth+verified; UserEmailVerificationNotificationController::create/store e tela com send.form e logout via TextLink."
+            },
+            {
+              "requirement_id": "CA4",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "signed e EmailVerificationRequest validam assinatura/id/hash; erro atualmente resulta 403 sem orientação para novo link. Adaptar apresentação da recusa."
+            },
+            {
+              "requirement_id": "CA5",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateSessionRequest::validateCredentials/ensureIsNotRateLimited: 5 falhas por e-mail+IP; hit padrão 60 segundos; mensagem seconds/minutes; SessionController autentica. Testes executados."
+            },
+            {
+              "requirement_id": "CA6",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "SessionController::destroy e SessionGuard::clearUserDataFromStorage removem sessão/cookie; rotas auth permanecem. Cobertura de remember por leitura integral, não por teste de navegador."
+            },
+            {
+              "requirement_id": "CA7",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "UserEmailResetNotificationController ignora status identificador e devolve mesma frase; PasswordBroker envia notificação para usuário encontrado. Testes executados com Notification::fake."
+            },
+            {
+              "requirement_id": "CA8",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "CreateUserPassword preserva email_verified_at, troca hash/remember token; UserPasswordController retorna login. R3 exige adaptação compartilhada e preservação desta jornada."
+            },
+            {
+              "requirement_id": "CA9",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "PasswordBroker recusa token e Controller mostra erro; resources/js/pages/user-password/create.tsx não oferece novo pedido. Adaptar orientação/navegação."
+            },
+            {
+              "requirement_id": "CA10-confirmacao",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "CreateUser dispara Registered dentro da transação e CreateUserEmailVerificationNotification envia diretamente; não há tratamento de envio nem mensagem de erro na tela de confirmação."
+            },
+            {
+              "requirement_id": "CA10-recuperacao",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "CreateUserEmailResetNotification::handle chama broker sem tratamento; exceção de transporte escapa e tela só conhece status/erro de campo."
+            },
+            {
+              "requirement_id": "F1",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "UserEmailVerificationController retorna dashboard quando hasVerifiedEmail após validação do request; teste específico executado."
+            },
+            {
+              "requirement_id": "F2",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "SessionController::store usa redirect()->intended; destroy retorna /. Middlewares protegem destino."
+            },
+            {
+              "requirement_id": "F3",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "user/create só nome/email/senha/confirmação e link login; session/create oferece password.request. CreateUserRequest impede duplicidade."
+            }
+          ],
+          "decisions": [
+            "Proposta para revisão do tech lead; nenhuma aprovação inferida da seleção do escopo.",
+            "CA10 foi desdobrado em CA10-confirmacao e CA10-recuperacao por contexto, mantendo o significado integral. F1/F2/F3 tornam explícitos fluxos e exceções sem ID no requisito.",
+            "Sem filhas existentes: consulta com children e busca paginada para parent_id 1015909, status *, retornaram total_count 0.",
+            "Três cortes sem bloqueios de início e sem dependências externas; integração da política de senha necessária para aceite completo. Todas as três DEV bloqueiam a QA.",
+            "Estimativas independentes: avaliador A = 2,5h/5h/3,5h e QA 5,5h; avaliador B = 3h/5h/4h e QA 5,5h. Nenhuma estimativa herdada foi fornecida ou usada.",
+            "Estimativas finais assumidas: 3h para política (inclui consumidores e dados de testes existentes), 5h para confirmação (transação, recusas, mensagens e regressões), 4h para recuperação (retomada, integração e regressões), QA 5,5h. Escolha motivada por riscos de integração, não média automática.",
+            "QA pressupõe ambiente com e-mails observáveis, falhas controláveis e links expirados preparados. Provisionamento de infraestrutura não é uma entrega deste pai; indisponibilidade deve ser registrada como impedimento de execução.",
+            "DOCX obrigatório na nova publicação: fonte integral destas 28 condições; gerar condicoes-teste-r001.docx após aprovação e anexar à única QA. Markdown complementar.",
+            "Não há mudança material do requisito, API consumível, Study ou contexto técnico prescritivo nas tarefas. Pai permanece New e relação existente com Gestão de transações permanece intacta.",
+            "Conferência semântica: regras R1-R6, CA1-CA10 e fluxos/exceções mapeados; capacidades existentes também incluídas nas condições. Referências não substituem critérios completos das DEV/QA."
+          ],
+          "study_evidence": []
+        }
+      }
+    },
+    {
+      "number": 2,
+      "recorded_by": "Mário Tinelli",
+      "recorded_at": "2026-11-04T22:44:34.6307063+00:00",
+      "reason": "Estimativas alteradas por instrução explícita: DEV 2h cada e QA 1,5h",
+      "proposal_sha256": "45d29c0608b48c4e7e8ce22130f4b4b9a22ab3097755ed95e61fa6d721e5aa55",
+      "proposal": {
+        "feature": {
+          "title": "[WEB] [USUARIO] Acesso à conta",
+          "artifact_path": "feature.md",
+          "state_path": ".flow/feature-state.json",
+          "issue_id": 1015909,
+          "requirement_sha256": "00628586f7b8f20fef1c5c9740afeef71c3f1f4c719059858236479b762340f7",
+          "input_check_path": ".flow/slices-input-check.json",
+          "input_check_sha256": "4b6625db5a265c95b8ffcab2d83c5fe083032c607cd9ca3c639af6c982a11635"
+        },
+        "inspection": [
+          {
+            "path": "routes/web.php",
+            "finding": "Cadastro/login/reset em guest; dashboard em auth+verified; confirmação em auth+signed e throttle. Rotas de verificação conferidas com artisan route:list.",
+            "classification": "existing"
+          },
+          {
+            "path": "app/Http/Requests/CreateUserRequest.php; app/Http/Requests/CreateUserPasswordRequest.php; vendor/nunomaduro/essentials/src/Configurables/SetDefaultPassword.php",
+            "finding": "Ambos usam Password::defaults. Essentials 1.2.0 define 12..255/classes/uncompromised somente produção, desabilitado em testes. Config/essentials e AppServiceProvider não sobrescrevem. Aplicação fora produção precisa completar R3.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Actions/CreateUser.php; app/Http/Controllers/UserController.php; bootstrap/app.php",
+            "finding": "Registered é disparado na transação; falha de transporte propaga sem orientação específica. Preservar cadastro/rollback e repetir sem duplicar; não alterar regra de domínio do pai.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/UserEmailVerificationController.php; vendor/laravel/framework/src/Illuminate/Foundation/Auth/EmailVerificationRequest.php; resources/js/pages/user-email-verification-notification/create.tsx",
+            "finding": "Assinatura/titular/hash e idempotência existentes. Recusas retornam 403; tela mostra sucesso de reenvio, mas não erros de envio nem orientação de link recusado.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Actions/CreateUserEmailResetNotification.php; app/Http/Controllers/UserEmailResetNotificationController.php; resources/js/pages/user-email-reset-notification/create.tsx",
+            "finding": "Resposta genérica já existe para status do broker; erro de transporte não tratado. Completar orientação sem expor explicitamente existência da conta.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/UserPasswordController.php; resources/js/pages/user-password/create.tsx",
+            "finding": "Token recusado gera erro em email; tela exibe erro mas não fornece novo pedido. Completar retomada.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Actions/CreateUserPassword.php; config/auth.php; vendor/laravel/framework/src/Illuminate/Auth/Passwords/PasswordBroker.php; vendor/laravel/framework/src/Illuminate/Auth/Passwords/DatabaseTokenRepository.php",
+            "finding": "Troca password hash/remember token sem mexer email_verified_at. Broker valida e exclui token após reset; expire efetivo confirmado por artisan config:show = 60 minutos. Não confundir throttle de 60 segundos com expiração.",
+            "classification": "existing"
+          },
+          {
+            "path": "app/Http/Requests/CreateSessionRequest.php; app/Http/Controllers/SessionController.php; resources/js/pages/session/create.tsx; vendor/laravel/framework/src/Illuminate/Auth/SessionGuard.php",
+            "finding": "Login, intended, checkbox remember, cinco falhas por e-mail+IP; RateLimiter hit usa 60 segundos. Logout limpa recaller, invalida sessão e retorna /. Leitura confirma preservações; não houve teste real de navegador/SMTP.",
+            "classification": "existing"
+          },
+          {
+            "path": "tests/Feature/Controllers/SessionControllerTest.php; tests/Feature/Controllers/UserControllerTest.php; tests/Feature/Controllers/UserEmailVerificationTest.php; tests/Feature/Controllers/UserEmailVerificationNotificationControllerTest.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php; tests/Feature/Controllers/UserPasswordControllerTest.php",
+            "finding": "Executados com PHP85 do Herd: 54 testes passaram, 245 assertions. Fakes nos testes não comprovam entrega SMTP; testes atuais não cobrem todas as condições propostas. PHP padrão era 8.4; PHP85 executou com aviso de OPcache incompatível, sem impedir resultados.",
+            "classification": "existing"
+          },
+          {
+            "path": "composer.lock; package.json; vendor/laravel/framework/src/Illuminate/Auth/Listeners/SendEmailVerificationNotification.php",
+            "finding": "Versões verificadas: Laravel 13.40.0, Fortify 1.41.0, Inertia Laravel 3.7.0, Essentials 1.2.0; React/Inertia declarados no package.json. Listener padrão envia confirmação para MustVerifyEmail. Inspeção não inclui credenciais nem valida transporte real.",
+            "classification": "existing"
+          }
+        ],
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "Cadastro público sem convite ou aprovação administrativa."
+          },
+          {
+            "id": "R2",
+            "summary": "Nome/e-mail obrigatórios até 255 caracteres, e-mail válido e único, senha e confirmação obrigatórias e iguais."
+          },
+          {
+            "id": "R3",
+            "summary": "Cadastro e redefinição: senha de 12 a 255 caracteres, maiúscula, minúscula, número, símbolo e rejeição de senha vazada."
+          },
+          {
+            "id": "R4",
+            "summary": "Área financeira exige autenticação e e-mail confirmado; recebimento de e-mail não confirma."
+          },
+          {
+            "id": "R5",
+            "summary": "Recuperação válida por 60 minutos, uso único e senha anterior sem novos logins após sucesso."
+          },
+          {
+            "id": "R6",
+            "summary": "Saída encerra sessão atual; lembrar acesso não dispensa confirmação nem impede saída explícita."
+          },
+          {
+            "id": "CA1",
+            "summary": "Cadastro válido cria uma única conta, envia confirmação e apresenta fluxo de confirmação."
+          },
+          {
+            "id": "CA2",
+            "summary": "Ausências, e-mail inválido/duplicado, senha fora de R3 e confirmação diferente impedem conclusão e mostram erros aplicáveis."
+          },
+          {
+            "id": "CA3",
+            "summary": "Conta não confirmada não acessa finanças e pode confirmar, reenviar e sair."
+          },
+          {
+            "id": "CA4",
+            "summary": "Titular autenticado confirma com link válido próprio; inválido, expirado ou de outra conta é recusado e permite novo pedido."
+          },
+          {
+            "id": "CA5",
+            "summary": "Credenciais corretas entram; incorretas não; após cinco falhas, nova tentativa informa bloqueio e espera."
+          },
+          {
+            "id": "CA6",
+            "summary": "Após sair, área protegida exige login, inclusive com lembrar acesso selecionado."
+          },
+          {
+            "id": "CA7",
+            "summary": "Recuperação tem resposta genérica para e-mail existente/inexistente e envia link ao titular quando existente."
+          },
+          {
+            "id": "CA8",
+            "summary": "Redefinição válida com R3 retorna ao login; nova senha funciona, antiga não; e-mail não confirmado continua restrito."
+          },
+          {
+            "id": "CA9",
+            "summary": "Recuperação com link inválido, expirado ou utilizado não muda senha e oferece nova solicitação."
+          },
+          {
+            "id": "CA10-confirmacao",
+            "summary": "CA10 e exceções: falha de envio no cadastro/reenvio orienta nova tentativa sem afirmar conclusão dependente do e-mail."
+          },
+          {
+            "id": "CA10-recuperacao",
+            "summary": "CA10 e exceções: falha de envio de recuperação orienta nova tentativa sem afirmar conclusão dependente do e-mail."
+          },
+          {
+            "id": "F1",
+            "summary": "Exceções: reabrir link de confirmação ainda válido de conta já confirmada preserva confirmação."
+          },
+          {
+            "id": "F2",
+            "summary": "Fluxo principal: login retorna à área inicial ou destino protegido solicitado; saída retorna à página pública."
+          },
+          {
+            "id": "F3",
+            "summary": "Dados e exceções: cadastro não solicita dados financeiros; duplicidade permite seguir para login ou recuperação."
+          }
+        ],
+        "slices": [
+          {
+            "number": 1,
+            "title_suffix": "Política de senha no cadastro e na redefinição",
+            "estimate_hours": 2,
+            "description": {
+              "delivery": "Completar a aplicação da política de senha aprovada no cadastro e na redefinição. A base já valida os formulários, mas a regra forte depende do ambiente de produção. Preservar as validações dos demais campos e os caminhos de cadastro, confirmação e retorno ao login.",
+              "limits": "Abrange criação da conta e redefinição de senha esquecida. Não amplia gestão de perfil, autenticação social, passkeys ou dois fatores.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Cadastro e redefinição aceitam senha de 12 a 255 caracteres que contenha maiúscula, minúscula, número e símbolo, não conste em vazamentos e tenha confirmação igual."
+                },
+                {
+                  "kind": "error",
+                  "text": "Senha com menos de 12 ou mais de 255 caracteres impede cadastro e redefinição, com erro no campo."
+                },
+                {
+                  "kind": "error",
+                  "text": "A ausência de maiúscula, minúscula, número ou símbolo impede cadastro e redefinição, com erro no campo para cada composição inválida."
+                },
+                {
+                  "kind": "error",
+                  "text": "Senha conhecida em vazamentos impede cadastro e redefinição e apresenta erro, mesmo quando atende ao tamanho e à composição."
+                },
+                {
+                  "kind": "error",
+                  "text": "Senha ou confirmação ausente, ou confirmação diferente, impede concluir os dois fluxos e apresenta erro."
+                },
+                {
+                  "kind": "error",
+                  "text": "No cadastro, nome e e-mail ausentes ou maiores que 255 caracteres, e-mail inválido ou já cadastrado continuam recusados com erros; na redefinição, e-mail ausente ou inválido continua recusado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Com cadastro válido, uma única conta é criada e segue para confirmação por e-mail, sem solicitar dados financeiros."
+                },
+                {
+                  "kind": "success",
+                  "text": "Com link de recuperação válido e senha conforme a regra, redefinir retorna ao login; a nova senha permite entrar e a anterior deixa de permitir novos logins."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Redefinir a senha não confirma o e-mail: a conta anteriormente não confirmada continua sem acesso financeiro."
+                }
+              ],
+              "dependencies": "Pode iniciar com os fluxos de acesso existentes. A verificação integrada da Feature inclui ‘Acesso à conta - Confirmação de e-mail com nova tentativa’ e ‘Acesso à conta - Recuperação de senha com nova tentativa’.",
+              "traceability": [
+                "R3",
+                "CA2",
+                "CA8"
+              ]
+            },
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Política de senha no cadastro e na redefinição",
+            "api_delivery": false,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": []
+          },
+          {
+            "number": 2,
+            "title_suffix": "Confirmação de e-mail com nova tentativa",
+            "estimate_hours": 2,
+            "description": {
+              "delivery": "Completar a orientação de nova tentativa quando o envio de confirmação falhar no cadastro ou no reenvio, e quando um link de confirmação for recusado. Preservar o cadastro público, a confirmação pelo titular, a restrição financeira e o reenvio que já existem.",
+              "limits": "Abrange cadastro, envio/reenvio e confirmação do e-mail. A política de senha pertence a ‘Acesso à conta - Política de senha no cadastro e na redefinição’; a recuperação de senha pertence a ‘Acesso à conta - Recuperação de senha com nova tentativa’.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Cadastro válido cria uma única conta, envia o link e orienta confirmar o e-mail; receber o e-mail por si só não libera finanças."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Conta não confirmada permanece sem acesso financeiro, com orientação para confirmar, reenviar o link ou sair."
+                },
+                {
+                  "kind": "success",
+                  "text": "Titular com link válido da própria conta confirma o endereço e acessa a área inicial, autenticando-se antes quando necessário."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link de confirmação inválido não confirma o endereço nem libera acesso e apresenta orientação e caminho para solicitar outro."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link de confirmação expirado não confirma o endereço nem libera acesso e apresenta orientação e caminho para solicitar outro."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Link de outra conta não confirma nenhum endereço indevido nem libera acesso e permite ao usuário solicitar confirmação da própria conta."
+                },
+                {
+                  "kind": "success",
+                  "text": "Reabrir link ainda válido de uma conta já confirmada mantém a confirmação e permite seguir à área inicial."
+                },
+                {
+                  "kind": "error",
+                  "text": "Falha de envio no cadastro informa a impossibilidade de concluir a etapa dependente do e-mail e orienta nova tentativa; repetir depois da falha não cria contas duplicadas."
+                },
+                {
+                  "kind": "error",
+                  "text": "Falha no reenvio informa que o envio não foi concluído e orienta nova tentativa, sem mensagem de sucesso."
+                },
+                {
+                  "kind": "success",
+                  "text": "Restabelecido o envio, a nova tentativa permite receber o link e concluir a confirmação."
+                }
+              ],
+              "dependencies": "Pode iniciar com cadastro e confirmação existentes. Para a jornada integrada, usar a política de senha entregue por ‘Acesso à conta - Política de senha no cadastro e na redefinição’.",
+              "traceability": [
+                "CA4",
+                "CA10-confirmacao"
+              ]
+            },
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Confirmação de e-mail com nova tentativa",
+            "api_delivery": false,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": []
+          },
+          {
+            "number": 3,
+            "title_suffix": "Recuperação de senha com nova tentativa",
+            "estimate_hours": 2,
+            "description": {
+              "delivery": "Completar a recuperação de senha com orientação quando o envio falhar e uma opção de novo pedido quando o link for inválido, expirado ou já utilizado. Preservar a resposta genérica, a validade de 60 minutos, o uso único e a restrição de contas sem e-mail confirmado.",
+              "limits": "Abrange solicitação e redefinição de senha esquecida. A composição da senha pertence a ‘Acesso à conta - Política de senha no cadastro e na redefinição’; envio de confirmação pertence a ‘Acesso à conta - Confirmação de e-mail com nova tentativa’.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Solicitar recuperação apresenta que um link será enviado se a conta existir, sem distinguir conta existente de inexistente; para conta existente, envia ao e-mail cadastrado."
+                },
+                {
+                  "kind": "error",
+                  "text": "Falha no envio orienta nova tentativa sem afirmar conclusão do envio ou revelar explicitamente se a conta existe."
+                },
+                {
+                  "kind": "success",
+                  "text": "Depois de restabelecer o envio, nova solicitação permite ao titular receber um link utilizável."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link de recuperação inválido não altera senha e oferece caminho para solicitar outro."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link de recuperação expirado após 60 minutos não altera senha e oferece caminho para solicitar outro."
+                },
+                {
+                  "kind": "error",
+                  "text": "Link já utilizado com sucesso não altera senha novamente e oferece caminho para solicitar outro."
+                },
+                {
+                  "kind": "success",
+                  "text": "Link válido, dentro de 60 minutos e ainda não usado, com nova senha e confirmação válidas, permite redefinir e retorna ao login."
+                },
+                {
+                  "kind": "success",
+                  "text": "Após redefinição, nova senha permite novos logins e senha anterior não; o link utilizado deixa de funcionar."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Redefinição não confirma e-mail e mantém a restrição financeira das contas não confirmadas."
+                }
+              ],
+              "dependencies": "Pode iniciar com a recuperação existente. Para concluir a jornada integrada, usar a política de senha entregue por ‘Acesso à conta - Política de senha no cadastro e na redefinição’.",
+              "traceability": [
+                "CA9",
+                "CA10-recuperacao"
+              ]
+            },
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Recuperação de senha com nova tentativa",
+            "api_delivery": false,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": []
+          }
+        ],
+        "coverage": [
+          {
+            "requirement_id": "R1",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "routes/web.php register em guest e UserController::store/CreateUser::handle: não há convite nem aprovação."
+          },
+          {
+            "requirement_id": "R2",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateUserRequest::rules e CreateUserPasswordRequest::rules validam obrigatoriedade, limites, unicidade e confirmação; campos mostram InputError."
+          },
+          {
+            "requirement_id": "R3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "SetDefaultPassword só aplica regra forte em produção e desativa durante testes; Requests usam defaults. Adaptar aplicação consistente da regra aprovada."
+          },
+          {
+            "requirement_id": "R4",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "routes/web.php dashboard em auth+verified, User implementa MustVerifyEmail, EnsureEmailIsVerified e confirmação explícita em fulfill."
+          },
+          {
+            "requirement_id": "R5",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "config auth.passwords.users.expire efetivo=60 minutos; PasswordBroker::reset exclui token, DatabaseTokenRepository verifica expiração; CreateUserPassword substitui senha hash."
+          },
+          {
+            "requirement_id": "R6",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "SessionController::destroy invalida sessão; SessionGuard::logout limpa recaller e renova remember token; login checkbox e guard verified continuam aplicáveis."
+          },
+          {
+            "requirement_id": "CA1",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateUser transaciona criação e Registered; listener SendEmailVerificationNotification envia; login redireciona dashboard e verified conduz verification.notice."
+          },
+          {
+            "requirement_id": "CA2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Validações e InputError já existem; política fora de produção é parcial. Preservar validações de cadastro/reset e completar R3."
+          },
+          {
+            "requirement_id": "CA3",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "dashboard auth+verified; UserEmailVerificationNotificationController::create/store e tela com send.form e logout via TextLink."
+          },
+          {
+            "requirement_id": "CA4",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "signed e EmailVerificationRequest validam assinatura/id/hash; erro atualmente resulta 403 sem orientação para novo link. Adaptar apresentação da recusa."
+          },
+          {
+            "requirement_id": "CA5",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateSessionRequest::validateCredentials/ensureIsNotRateLimited: 5 falhas por e-mail+IP; hit padrão 60 segundos; mensagem seconds/minutes; SessionController autentica. Testes executados."
+          },
+          {
+            "requirement_id": "CA6",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "SessionController::destroy e SessionGuard::clearUserDataFromStorage removem sessão/cookie; rotas auth permanecem. Cobertura de remember por leitura integral, não por teste de navegador."
+          },
+          {
+            "requirement_id": "CA7",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "UserEmailResetNotificationController ignora status identificador e devolve mesma frase; PasswordBroker envia notificação para usuário encontrado. Testes executados com Notification::fake."
+          },
+          {
+            "requirement_id": "CA8",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "CreateUserPassword preserva email_verified_at, troca hash/remember token; UserPasswordController retorna login. R3 exige adaptação compartilhada e preservação desta jornada."
+          },
+          {
+            "requirement_id": "CA9",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "PasswordBroker recusa token e Controller mostra erro; resources/js/pages/user-password/create.tsx não oferece novo pedido. Adaptar orientação/navegação."
+          },
+          {
+            "requirement_id": "CA10-confirmacao",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "CreateUser dispara Registered dentro da transação e CreateUserEmailVerificationNotification envia diretamente; não há tratamento de envio nem mensagem de erro na tela de confirmação."
+          },
+          {
+            "requirement_id": "CA10-recuperacao",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "CreateUserEmailResetNotification::handle chama broker sem tratamento; exceção de transporte escapa e tela só conhece status/erro de campo."
+          },
+          {
+            "requirement_id": "F1",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "UserEmailVerificationController retorna dashboard quando hasVerifiedEmail após validação do request; teste específico executado."
+          },
+          {
+            "requirement_id": "F2",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "SessionController::store usa redirect()->intended; destroy retorna /. Middlewares protegem destino."
+          },
+          {
+            "requirement_id": "F3",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "user/create só nome/email/senha/confirmação e link login; session/create oferece password.request. CreateUserRequest impede duplicidade."
+          }
+        ],
+        "decisions": [
+          "Proposta para revisão do tech lead; nenhuma aprovação inferida da seleção do escopo.",
+          "CA10 foi desdobrado em CA10-confirmacao e CA10-recuperacao por contexto, mantendo o significado integral. F1/F2/F3 tornam explícitos fluxos e exceções sem ID no requisito.",
+          "Sem filhas existentes: consulta com children e busca paginada para parent_id 1015909, status *, retornaram total_count 0.",
+          "Três cortes sem bloqueios de início e sem dependências externas; integração da política de senha necessária para aceite completo. Todas as três DEV bloqueiam a QA.",
+          "Estimativas independentes: avaliador A = 2,5h/5h/3,5h e QA 5,5h; avaliador B = 3h/5h/4h e QA 5,5h. Nenhuma estimativa herdada foi fornecida ou usada.",
+          "QA pressupõe ambiente com e-mails observáveis, falhas controláveis e links expirados preparados. Provisionamento de infraestrutura não é uma entrega deste pai; indisponibilidade deve ser registrada como impedimento de execução.",
+          "DOCX obrigatório na nova publicação: fonte integral destas 28 condições; gerar condicoes-teste-r001.docx após aprovação e anexar à única QA. Markdown complementar.",
+          "Não há mudança material do requisito, API consumível, Study ou contexto técnico prescritivo nas tarefas. Pai permanece New e relação existente com Gestão de transações permanece intacta.",
+          "Conferência semântica: regras R1-R6, CA1-CA10 e fluxos/exceções mapeados; capacidades existentes também incluídas nas condições. Referências não substituem critérios completos das DEV/QA.",
+          "Estimativas substitu?das por instru??o expl?cita do tech lead nesta conversa: cada DEV 2h e QA 1,5h, total 7,5h. As avalia??es independentes anteriores ficam como hist?rico, sem determinar os valores desta revis?o. Publica??o ainda depende da aprova??o da pr?via completa."
+        ],
+        "test_conditions": {
+          "document_format": "docx",
+          "context": "Feature #1015909, Acesso à conta. Preparar contas confirmadas e não confirmadas, e-mails disponíveis/inexistentes, dados válidos e inválidos e ambiente autorizado com observação de e-mails, falha de envio controlada e links com validade conhecida. Condições para execução futura; os 54 testes da base não equivalem à aprovação destes cenários.",
+          "conditions": [
+            {
+              "id": "CT-001",
+              "title": "Cadastro público válido",
+              "verification": "Como visitante, cadastrar nome e e-mail disponíveis, senha conforme R3 e confirmação igual.",
+              "expected_result": "Uma única conta é criada sem convite, aprovação administrativa ou dados financeiros; recebe link e é orientada a confirmar, sem acesso financeiro ainda.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "CA1",
+                "F3"
+              ]
+            },
+            {
+              "id": "CT-002",
+              "title": "Campos obrigatórios",
+              "verification": "No cadastro, omitir separadamente nome, e-mail, senha e confirmação; na redefinição, omitir e-mail, senha e confirmação.",
+              "expected_result": "Cada ausência aplicável impede concluir e exibe erro no campo; conta/senha não é criada/alterada indevidamente.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-003",
+              "title": "Limites de nome e e-mail",
+              "verification": "No cadastro, usar nome/e-mail válidos com 255 caracteres e, separadamente, com 256 caracteres; demais dados válidos.",
+              "expected_result": "Até 255 caracteres é aceito; acima disso exibe erro e não conclui.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-004",
+              "title": "E-mail inválido e duplicado",
+              "verification": "Cadastrar com e-mail inválido e com e-mail já usado; testar e-mail inválido na redefinição e acessar login/recuperação pelo fluxo existente.",
+              "expected_result": "Erros impedem conclusão e duplicação; o usuário consegue seguir para entrar ou recuperar acesso.",
+              "requirement_ids": [
+                "R2",
+                "CA2",
+                "F3"
+              ]
+            },
+            {
+              "id": "CT-005",
+              "title": "Limites de senha",
+              "verification": "No cadastro e na redefinição com link válido, testar senhas não vazadas de 11, 12, 255 e 256 caracteres, com todas as classes e confirmação igual.",
+              "expected_result": "12 e 255 são aceitas; 11 e 256 são recusadas com erro, sem concluir a operação.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-006",
+              "title": "Composição da senha",
+              "verification": "Nos dois fluxos, testar separadamente senha sem maiúscula, sem minúscula, sem número e sem símbolo, mantendo demais regras válidas.",
+              "expected_result": "Cada ausência é recusada com erro; a combinação completa não é recusada por composição.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-007",
+              "title": "Senha conhecida em vazamentos",
+              "verification": "Usar dado de teste reconhecido como vazado, que atenda tamanho e composição, no cadastro e na redefinição.",
+              "expected_result": "Ambos recusam com erro e não concluem.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-008",
+              "title": "Confirmação diferente",
+              "verification": "No cadastro e redefinição, informar senha válida e confirmação diferente.",
+              "expected_result": "Erro impede criar a conta ou alterar a senha.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-009",
+              "title": "Acesso sem autenticação",
+              "verification": "Como visitante, abrir a área inicial protegida.",
+              "expected_result": "Exige login e não apresenta área financeira.",
+              "requirement_ids": [
+                "R4"
+              ]
+            },
+            {
+              "id": "CT-010",
+              "title": "Conta não confirmada",
+              "verification": "Entrar com conta não confirmada, tentar área protegida e reenviar confirmação; repetir com lembrar acesso selecionado.",
+              "expected_result": "Mantém restrição financeira, mostra orientação e permite reenviar/sair. Receber e-mail ou lembrar acesso não confirma a conta.",
+              "requirement_ids": [
+                "R4",
+                "R6",
+                "CA3"
+              ]
+            },
+            {
+              "id": "CT-011",
+              "title": "Confirmação válida",
+              "verification": "Abrir link válido próprio como titular autenticado; repetir jornada começando sem sessão.",
+              "expected_result": "Solicita autenticação quando necessária, confirma o endereço do titular e libera a área inicial.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-012",
+              "title": "Confirmação com link inválido",
+              "verification": "Alterar um link de confirmação e abri-lo como titular não confirmado.",
+              "expected_result": "Recusa confirmação e acesso financeiro, orienta e oferece novo pedido.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-013",
+              "title": "Confirmação expirada",
+              "verification": "Abrir link cuja validade tenha expirado, com titular não confirmado.",
+              "expected_result": "Recusa confirmação e acesso financeiro, orienta e oferece novo pedido.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-014",
+              "title": "Confirmação de outra conta",
+              "verification": "Autenticado como A não confirmado, abrir link válido de B.",
+              "expected_result": "Não confirma A nem B indevidamente, não libera finanças e permite solicitar link da própria conta.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-015",
+              "title": "Reabertura de confirmação",
+              "verification": "Confirmar conta e reabrir o mesmo link ainda válido como titular.",
+              "expected_result": "Mantém confirmação e permite seguir à área inicial, sem desfazer estado.",
+              "requirement_ids": [
+                "F1"
+              ]
+            },
+            {
+              "id": "CT-016",
+              "title": "Falha de envio no cadastro",
+              "verification": "Provocar falha controlada no envio durante cadastro válido; restaurar envio e repetir conforme orientação.",
+              "expected_result": "Informa falha e nova tentativa sem falso sucesso; retomada permite receber confirmação sem contas duplicadas.",
+              "requirement_ids": [
+                "CA10-confirmacao",
+                "CA1"
+              ]
+            },
+            {
+              "id": "CT-017",
+              "title": "Falha de envio no reenvio",
+              "verification": "Com conta não confirmada, provocar falha de reenvio, restaurar serviço e tentar novamente.",
+              "expected_result": "Apresenta orientação sem alegar envio concluído; nova tentativa recebe link e permite confirmação.",
+              "requirement_ids": [
+                "CA10-confirmacao",
+                "CA3"
+              ]
+            },
+            {
+              "id": "CT-018",
+              "title": "Login e destino solicitado",
+              "verification": "Com conta confirmada, entrar com credenciais corretas diretamente e após solicitar página protegida.",
+              "expected_result": "Acessa área inicial ou destino protegido solicitado.",
+              "requirement_ids": [
+                "CA5",
+                "F2"
+              ]
+            },
+            {
+              "id": "CT-019",
+              "title": "Credenciais incorretas",
+              "verification": "Tentar entrar com senha errada ou conta inexistente.",
+              "expected_result": "Não autentica e apresenta erro.",
+              "requirement_ids": [
+                "CA5"
+              ]
+            },
+            {
+              "id": "CT-020",
+              "title": "Bloqueio temporário de login",
+              "verification": "Para o mesmo e-mail e origem, realizar cinco falhas consecutivas; tentar novamente durante bloqueio e após a espera informada.",
+              "expected_result": "A nova tentativa durante bloqueio informa espera sem autenticar; terminado o prazo, credenciais válidas permitem entrar.",
+              "requirement_ids": [
+                "CA5"
+              ]
+            },
+            {
+              "id": "CT-021",
+              "title": "Saída explícita",
+              "verification": "Entrar em conta confirmada, sair e reabrir área protegida; repetir com lembrar acesso selecionado.",
+              "expected_result": "Retorna à página pública, encerra sessão atual e exige login novamente mesmo com lembrança anterior.",
+              "requirement_ids": [
+                "R6",
+                "CA6",
+                "F2"
+              ]
+            },
+            {
+              "id": "CT-022",
+              "title": "Resposta genérica de recuperação",
+              "verification": "Solicitar recuperação para e-mail cadastrado e para e-mail inexistente, com envio disponível.",
+              "expected_result": "Exibe a mesma resposta genérica; titular cadastrado recebe link sem informação de existência ao solicitante.",
+              "requirement_ids": [
+                "CA7"
+              ]
+            },
+            {
+              "id": "CT-023",
+              "title": "Redefinição válida",
+              "verification": "Com link próprio não usado, antes de 60 minutos, definir senha conforme R3 e confirmação igual; testar logins com senha anterior e nova.",
+              "expected_result": "Retorna ao login; nova senha funciona e antiga não permite novos logins.",
+              "requirement_ids": [
+                "R3",
+                "R5",
+                "CA8"
+              ]
+            },
+            {
+              "id": "CT-024",
+              "title": "Redefinição de conta não confirmada",
+              "verification": "Redefinir com link válido uma conta não confirmada e entrar com a nova senha.",
+              "expected_result": "Senha é alterada, mas e-mail não é confirmado e finanças continuam restritas.",
+              "requirement_ids": [
+                "R4",
+                "CA8"
+              ]
+            },
+            {
+              "id": "CT-025",
+              "title": "Recuperação com token inválido",
+              "verification": "Tentar redefinir com token inválido e senha válida; usar opção de novo pedido.",
+              "expected_result": "Não altera senha e permite solicitar outro link.",
+              "requirement_ids": [
+                "CA9"
+              ]
+            },
+            {
+              "id": "CT-026",
+              "title": "Recuperação expirada",
+              "verification": "Tentar redefinir após ultrapassar 60 minutos da emissão, com senha válida; solicitar novo link.",
+              "expected_result": "Recusa sem alterar senha e oferece nova solicitação; link novo válido permite retomar.",
+              "requirement_ids": [
+                "R5",
+                "CA9"
+              ]
+            },
+            {
+              "id": "CT-027",
+              "title": "Recuperação já utilizada",
+              "verification": "Após redefinição bem-sucedida, reutilizar o link para outra senha e usar novo pedido.",
+              "expected_result": "Não altera novamente a senha; informa recusa e permite solicitar outro link.",
+              "requirement_ids": [
+                "R5",
+                "CA9"
+              ]
+            },
+            {
+              "id": "CT-028",
+              "title": "Falha no envio da recuperação",
+              "verification": "Provocar falha controlada no envio, observar orientação e repetir após restabelecimento.",
+              "expected_result": "Orienta nova tentativa sem falso sucesso nem afirmação explícita de existência da conta; nova solicitação permite ao titular receber link.",
+              "requirement_ids": [
+                "CA10-recuperacao",
+                "CA7"
+              ]
+            }
+          ]
+        }
+      },
+      "semantic_baseline": {
+        "requirement_sha256": "00628586f7b8f20fef1c5c9740afeef71c3f1f4c719059858236479b762340f7",
+        "semantic_model_sha256": "50cf6b80b10233b0f10616b6b786477a94c55f7d19fa529dcc96439af7d4b92e",
+        "semantic_model": {
+          "requirements": [
+            {
+              "id": "R1",
+              "summary": "Cadastro público sem convite ou aprovação administrativa."
+            },
+            {
+              "id": "R2",
+              "summary": "Nome/e-mail obrigatórios até 255 caracteres, e-mail válido e único, senha e confirmação obrigatórias e iguais."
+            },
+            {
+              "id": "R3",
+              "summary": "Cadastro e redefinição: senha de 12 a 255 caracteres, maiúscula, minúscula, número, símbolo e rejeição de senha vazada."
+            },
+            {
+              "id": "R4",
+              "summary": "Área financeira exige autenticação e e-mail confirmado; recebimento de e-mail não confirma."
+            },
+            {
+              "id": "R5",
+              "summary": "Recuperação válida por 60 minutos, uso único e senha anterior sem novos logins após sucesso."
+            },
+            {
+              "id": "R6",
+              "summary": "Saída encerra sessão atual; lembrar acesso não dispensa confirmação nem impede saída explícita."
+            },
+            {
+              "id": "CA1",
+              "summary": "Cadastro válido cria uma única conta, envia confirmação e apresenta fluxo de confirmação."
+            },
+            {
+              "id": "CA2",
+              "summary": "Ausências, e-mail inválido/duplicado, senha fora de R3 e confirmação diferente impedem conclusão e mostram erros aplicáveis."
+            },
+            {
+              "id": "CA3",
+              "summary": "Conta não confirmada não acessa finanças e pode confirmar, reenviar e sair."
+            },
+            {
+              "id": "CA4",
+              "summary": "Titular autenticado confirma com link válido próprio; inválido, expirado ou de outra conta é recusado e permite novo pedido."
+            },
+            {
+              "id": "CA5",
+              "summary": "Credenciais corretas entram; incorretas não; após cinco falhas, nova tentativa informa bloqueio e espera."
+            },
+            {
+              "id": "CA6",
+              "summary": "Após sair, área protegida exige login, inclusive com lembrar acesso selecionado."
+            },
+            {
+              "id": "CA7",
+              "summary": "Recuperação tem resposta genérica para e-mail existente/inexistente e envia link ao titular quando existente."
+            },
+            {
+              "id": "CA8",
+              "summary": "Redefinição válida com R3 retorna ao login; nova senha funciona, antiga não; e-mail não confirmado continua restrito."
+            },
+            {
+              "id": "CA9",
+              "summary": "Recuperação com link inválido, expirado ou utilizado não muda senha e oferece nova solicitação."
+            },
+            {
+              "id": "CA10-confirmacao",
+              "summary": "CA10 e exceções: falha de envio no cadastro/reenvio orienta nova tentativa sem afirmar conclusão dependente do e-mail."
+            },
+            {
+              "id": "CA10-recuperacao",
+              "summary": "CA10 e exceções: falha de envio de recuperação orienta nova tentativa sem afirmar conclusão dependente do e-mail."
+            },
+            {
+              "id": "F1",
+              "summary": "Exceções: reabrir link de confirmação ainda válido de conta já confirmada preserva confirmação."
+            },
+            {
+              "id": "F2",
+              "summary": "Fluxo principal: login retorna à área inicial ou destino protegido solicitado; saída retorna à página pública."
+            },
+            {
+              "id": "F3",
+              "summary": "Dados e exceções: cadastro não solicita dados financeiros; duplicidade permite seguir para login ou recuperação."
+            }
+          ],
+          "slices": [
+            {
+              "number": 1,
+              "title_suffix": "Política de senha no cadastro e na redefinição",
+              "estimate_hours": 2,
+              "description": {
+                "delivery": "Completar a aplicação da política de senha aprovada no cadastro e na redefinição. A base já valida os formulários, mas a regra forte depende do ambiente de produção. Preservar as validações dos demais campos e os caminhos de cadastro, confirmação e retorno ao login.",
+                "limits": "Abrange criação da conta e redefinição de senha esquecida. Não amplia gestão de perfil, autenticação social, passkeys ou dois fatores.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Cadastro e redefinição aceitam senha de 12 a 255 caracteres que contenha maiúscula, minúscula, número e símbolo, não conste em vazamentos e tenha confirmação igual."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Senha com menos de 12 ou mais de 255 caracteres impede cadastro e redefinição, com erro no campo."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "A ausência de maiúscula, minúscula, número ou símbolo impede cadastro e redefinição, com erro no campo para cada composição inválida."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Senha conhecida em vazamentos impede cadastro e redefinição e apresenta erro, mesmo quando atende ao tamanho e à composição."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Senha ou confirmação ausente, ou confirmação diferente, impede concluir os dois fluxos e apresenta erro."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "No cadastro, nome e e-mail ausentes ou maiores que 255 caracteres, e-mail inválido ou já cadastrado continuam recusados com erros; na redefinição, e-mail ausente ou inválido continua recusado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Com cadastro válido, uma única conta é criada e segue para confirmação por e-mail, sem solicitar dados financeiros."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Com link de recuperação válido e senha conforme a regra, redefinir retorna ao login; a nova senha permite entrar e a anterior deixa de permitir novos logins."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Redefinir a senha não confirma o e-mail: a conta anteriormente não confirmada continua sem acesso financeiro."
+                  }
+                ],
+                "dependencies": "Pode iniciar com os fluxos de acesso existentes. A verificação integrada da Feature inclui ‘Acesso à conta - Confirmação de e-mail com nova tentativa’ e ‘Acesso à conta - Recuperação de senha com nova tentativa’.",
+                "traceability": [
+                  "R3",
+                  "CA2",
+                  "CA8"
+                ]
+              },
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Política de senha no cadastro e na redefinição",
+              "api_delivery": false,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": []
+            },
+            {
+              "number": 2,
+              "title_suffix": "Confirmação de e-mail com nova tentativa",
+              "estimate_hours": 2,
+              "description": {
+                "delivery": "Completar a orientação de nova tentativa quando o envio de confirmação falhar no cadastro ou no reenvio, e quando um link de confirmação for recusado. Preservar o cadastro público, a confirmação pelo titular, a restrição financeira e o reenvio que já existem.",
+                "limits": "Abrange cadastro, envio/reenvio e confirmação do e-mail. A política de senha pertence a ‘Acesso à conta - Política de senha no cadastro e na redefinição’; a recuperação de senha pertence a ‘Acesso à conta - Recuperação de senha com nova tentativa’.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Cadastro válido cria uma única conta, envia o link e orienta confirmar o e-mail; receber o e-mail por si só não libera finanças."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Conta não confirmada permanece sem acesso financeiro, com orientação para confirmar, reenviar o link ou sair."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Titular com link válido da própria conta confirma o endereço e acessa a área inicial, autenticando-se antes quando necessário."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link de confirmação inválido não confirma o endereço nem libera acesso e apresenta orientação e caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link de confirmação expirado não confirma o endereço nem libera acesso e apresenta orientação e caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Link de outra conta não confirma nenhum endereço indevido nem libera acesso e permite ao usuário solicitar confirmação da própria conta."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Reabrir link ainda válido de uma conta já confirmada mantém a confirmação e permite seguir à área inicial."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Falha de envio no cadastro informa a impossibilidade de concluir a etapa dependente do e-mail e orienta nova tentativa; repetir depois da falha não cria contas duplicadas."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Falha no reenvio informa que o envio não foi concluído e orienta nova tentativa, sem mensagem de sucesso."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Restabelecido o envio, a nova tentativa permite receber o link e concluir a confirmação."
+                  }
+                ],
+                "dependencies": "Pode iniciar com cadastro e confirmação existentes. Para a jornada integrada, usar a política de senha entregue por ‘Acesso à conta - Política de senha no cadastro e na redefinição’.",
+                "traceability": [
+                  "CA4",
+                  "CA10-confirmacao"
+                ]
+              },
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Confirmação de e-mail com nova tentativa",
+              "api_delivery": false,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": []
+            },
+            {
+              "number": 3,
+              "title_suffix": "Recuperação de senha com nova tentativa",
+              "estimate_hours": 2,
+              "description": {
+                "delivery": "Completar a recuperação de senha com orientação quando o envio falhar e uma opção de novo pedido quando o link for inválido, expirado ou já utilizado. Preservar a resposta genérica, a validade de 60 minutos, o uso único e a restrição de contas sem e-mail confirmado.",
+                "limits": "Abrange solicitação e redefinição de senha esquecida. A composição da senha pertence a ‘Acesso à conta - Política de senha no cadastro e na redefinição’; envio de confirmação pertence a ‘Acesso à conta - Confirmação de e-mail com nova tentativa’.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Solicitar recuperação apresenta que um link será enviado se a conta existir, sem distinguir conta existente de inexistente; para conta existente, envia ao e-mail cadastrado."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Falha no envio orienta nova tentativa sem afirmar conclusão do envio ou revelar explicitamente se a conta existe."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Depois de restabelecer o envio, nova solicitação permite ao titular receber um link utilizável."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link de recuperação inválido não altera senha e oferece caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link de recuperação expirado após 60 minutos não altera senha e oferece caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Link já utilizado com sucesso não altera senha novamente e oferece caminho para solicitar outro."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Link válido, dentro de 60 minutos e ainda não usado, com nova senha e confirmação válidas, permite redefinir e retorna ao login."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Após redefinição, nova senha permite novos logins e senha anterior não; o link utilizado deixa de funcionar."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Redefinição não confirma e-mail e mantém a restrição financeira das contas não confirmadas."
+                  }
+                ],
+                "dependencies": "Pode iniciar com a recuperação existente. Para concluir a jornada integrada, usar a política de senha entregue por ‘Acesso à conta - Política de senha no cadastro e na redefinição’.",
+                "traceability": [
+                  "CA9",
+                  "CA10-recuperacao"
+                ]
+              },
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta - Recuperação de senha com nova tentativa",
+              "api_delivery": false,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": []
+            }
+          ],
+          "coverage": [
+            {
+              "requirement_id": "R1",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "routes/web.php register em guest e UserController::store/CreateUser::handle: não há convite nem aprovação."
+            },
+            {
+              "requirement_id": "R2",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateUserRequest::rules e CreateUserPasswordRequest::rules validam obrigatoriedade, limites, unicidade e confirmação; campos mostram InputError."
+            },
+            {
+              "requirement_id": "R3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "SetDefaultPassword só aplica regra forte em produção e desativa durante testes; Requests usam defaults. Adaptar aplicação consistente da regra aprovada."
+            },
+            {
+              "requirement_id": "R4",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "routes/web.php dashboard em auth+verified, User implementa MustVerifyEmail, EnsureEmailIsVerified e confirmação explícita em fulfill."
+            },
+            {
+              "requirement_id": "R5",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "config auth.passwords.users.expire efetivo=60 minutos; PasswordBroker::reset exclui token, DatabaseTokenRepository verifica expiração; CreateUserPassword substitui senha hash."
+            },
+            {
+              "requirement_id": "R6",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "SessionController::destroy invalida sessão; SessionGuard::logout limpa recaller e renova remember token; login checkbox e guard verified continuam aplicáveis."
+            },
+            {
+              "requirement_id": "CA1",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateUser transaciona criação e Registered; listener SendEmailVerificationNotification envia; login redireciona dashboard e verified conduz verification.notice."
+            },
+            {
+              "requirement_id": "CA2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Validações e InputError já existem; política fora de produção é parcial. Preservar validações de cadastro/reset e completar R3."
+            },
+            {
+              "requirement_id": "CA3",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "dashboard auth+verified; UserEmailVerificationNotificationController::create/store e tela com send.form e logout via TextLink."
+            },
+            {
+              "requirement_id": "CA4",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "signed e EmailVerificationRequest validam assinatura/id/hash; erro atualmente resulta 403 sem orientação para novo link. Adaptar apresentação da recusa."
+            },
+            {
+              "requirement_id": "CA5",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateSessionRequest::validateCredentials/ensureIsNotRateLimited: 5 falhas por e-mail+IP; hit padrão 60 segundos; mensagem seconds/minutes; SessionController autentica. Testes executados."
+            },
+            {
+              "requirement_id": "CA6",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "SessionController::destroy e SessionGuard::clearUserDataFromStorage removem sessão/cookie; rotas auth permanecem. Cobertura de remember por leitura integral, não por teste de navegador."
+            },
+            {
+              "requirement_id": "CA7",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "UserEmailResetNotificationController ignora status identificador e devolve mesma frase; PasswordBroker envia notificação para usuário encontrado. Testes executados com Notification::fake."
+            },
+            {
+              "requirement_id": "CA8",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "CreateUserPassword preserva email_verified_at, troca hash/remember token; UserPasswordController retorna login. R3 exige adaptação compartilhada e preservação desta jornada."
+            },
+            {
+              "requirement_id": "CA9",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "PasswordBroker recusa token e Controller mostra erro; resources/js/pages/user-password/create.tsx não oferece novo pedido. Adaptar orientação/navegação."
+            },
+            {
+              "requirement_id": "CA10-confirmacao",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "CreateUser dispara Registered dentro da transação e CreateUserEmailVerificationNotification envia diretamente; não há tratamento de envio nem mensagem de erro na tela de confirmação."
+            },
+            {
+              "requirement_id": "CA10-recuperacao",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "CreateUserEmailResetNotification::handle chama broker sem tratamento; exceção de transporte escapa e tela só conhece status/erro de campo."
+            },
+            {
+              "requirement_id": "F1",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "UserEmailVerificationController retorna dashboard quando hasVerifiedEmail após validação do request; teste específico executado."
+            },
+            {
+              "requirement_id": "F2",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "SessionController::store usa redirect()->intended; destroy retorna /. Middlewares protegem destino."
+            },
+            {
+              "requirement_id": "F3",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "user/create só nome/email/senha/confirmação e link login; session/create oferece password.request. CreateUserRequest impede duplicidade."
+            }
+          ],
+          "decisions": [
+            "Proposta para revisão do tech lead; nenhuma aprovação inferida da seleção do escopo.",
+            "CA10 foi desdobrado em CA10-confirmacao e CA10-recuperacao por contexto, mantendo o significado integral. F1/F2/F3 tornam explícitos fluxos e exceções sem ID no requisito.",
+            "Sem filhas existentes: consulta com children e busca paginada para parent_id 1015909, status *, retornaram total_count 0.",
+            "Três cortes sem bloqueios de início e sem dependências externas; integração da política de senha necessária para aceite completo. Todas as três DEV bloqueiam a QA.",
+            "Estimativas independentes: avaliador A = 2,5h/5h/3,5h e QA 5,5h; avaliador B = 3h/5h/4h e QA 5,5h. Nenhuma estimativa herdada foi fornecida ou usada.",
+            "QA pressupõe ambiente com e-mails observáveis, falhas controláveis e links expirados preparados. Provisionamento de infraestrutura não é uma entrega deste pai; indisponibilidade deve ser registrada como impedimento de execução.",
+            "DOCX obrigatório na nova publicação: fonte integral destas 28 condições; gerar condicoes-teste-r001.docx após aprovação e anexar à única QA. Markdown complementar.",
+            "Não há mudança material do requisito, API consumível, Study ou contexto técnico prescritivo nas tarefas. Pai permanece New e relação existente com Gestão de transações permanece intacta.",
+            "Conferência semântica: regras R1-R6, CA1-CA10 e fluxos/exceções mapeados; capacidades existentes também incluídas nas condições. Referências não substituem critérios completos das DEV/QA.",
+            "Estimativas substitu?das por instru??o expl?cita do tech lead nesta conversa: cada DEV 2h e QA 1,5h, total 7,5h. As avalia??es independentes anteriores ficam como hist?rico, sem determinar os valores desta revis?o. Publica??o ainda depende da aprova??o da pr?via completa."
+          ],
+          "study_evidence": []
+        }
+      }
+    }
+  ],
+  "approvals": [
+    {
+      "revision": 2,
+      "proposal_sha256": "45d29c0608b48c4e7e8ce22130f4b4b9a22ab3097755ed95e61fa6d721e5aa55",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-04T22:45:17.5200239+00:00",
+      "status": "valid"
+    }
+  ]
+}

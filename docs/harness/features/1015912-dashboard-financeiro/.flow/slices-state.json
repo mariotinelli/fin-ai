@@ -1,0 +1,2596 @@
+{
+  "schema_version": 3,
+  "status": "approved",
+  "current_revision": 2,
+  "revisions": [
+    {
+      "number": 1,
+      "recorded_by": "Assistente — proposta para Mário Tinelli",
+      "recorded_at": "2026-11-04T23:14:57.091Z",
+      "reason": "Dashboard: resultados funcionais e integração com tarefas fornecedoras",
+      "proposal_sha256": "72b3cbc1589942f79810c73953f291cf6958aa4dfef43b050d3978d08097cfec",
+      "proposal": {
+        "feature": {
+          "title": "[WEB] [USUARIO] Dashboard financeiro",
+          "artifact_path": "feature.md",
+          "state_path": ".flow/feature-state.json",
+          "issue_id": 1015912,
+          "requirement_sha256": "334ca3a6cf7b5b5beb1cff955e705c1a43a289bd9f9b461f64df87493263a7a8",
+          "input_check_path": ".flow/slices-input-check.json",
+          "input_check_sha256": "ca2e3a7c3a1fbbbd13f6f2618e39e733dcb80761cee09ec204296c8780823e10"
+        },
+        "inspection": [
+          {
+            "path": "resources/js/pages/dashboard.tsx; routes/web.php",
+            "finding": "Rota protegida por auth/verified existe, página somente placeholders sem props financeiros. Indicadores, recentes, estados financeiros e integração de operações são novos.",
+            "classification": "create"
+          },
+          {
+            "path": "resources/js/layouts/app-layout.tsx; resources/js/components/app-sidebar.tsx; resources/js/components/ui/card.tsx; resources/js/components/ui/select.tsx; resources/js/components/ui/skeleton.tsx; resources/js/components/ui/alert.tsx",
+            "finding": "Layout, navegação e primitivas reutilizáveis existem. Comparativo é representação simples dos totais aprovados; não requer ampliar dependências ou criar gráficos avançados.",
+            "classification": "existing"
+          },
+          {
+            "path": "app/Models; app/Actions; database/migrations; tests/Pest.php",
+            "finding": "Inventário ainda só acesso/infraestrutura, sem transações/cálculo implementados. Testes têm banco e relógio controlável; não foram executados testes financeiros inexistentes.",
+            "classification": "create"
+          },
+          {
+            "path": "docs/harness/features/1015911-gestao-de-transacoes/feature.md; .work/slices-provider-graph.json",
+            "finding": "MCP conferiu #1015930/31/33/34/35 em New: fornecem cadastro/leitura, histórico, competência, edição e exclusão. Publicação não comprova implementação; dashboard consome, não duplica capacidades. Grafo alcançável lido integralmente (15 issues).",
+            "classification": "create"
+          },
+          {
+            "path": "config/app.php; config/database.php; docs/harness/scopes/2026-11-04-finai-mvp/sources/design-001.md",
+            "finding": "Inspeção anterior confirmou appUTC/bancoSQLite; competência aprovada usa America/Sao_Paulo. Design apenas referência visual, sem adotar armazenamento local ou assistente simulado.",
+            "classification": "adapt"
+          }
+        ],
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "Elegíveis são somente transações próprias não excluídas e com data até hoje em America/Sao_Paulo; dashboard exige autenticação e e-mail confirmado."
+          },
+          {
+            "id": "R2",
+            "summary": "Saldo geral soma receitas elegíveis menos despesas de todo histórico, aceita negativo e não muda por selecionar outro mês; sem saldo inicial separado."
+          },
+          {
+            "id": "R3",
+            "summary": "Totais mensais somam receitas/despesas elegíveis por data dentro do mês selecionado; atual só até hoje, passado seus registros, futuro sem antecipação."
+          },
+          {
+            "id": "R4",
+            "summary": "Recentes usa todo histórico elegível, independente do mês, data decrescente e cadastro mais recente em empate, limite5; com menos5 exibe todos e futuras só entram na data."
+          },
+          {
+            "id": "R5",
+            "summary": "Duplicados permitidos contam individualmente; edição/exclusão recalculam indicadores e podem mudar recentes."
+          },
+          {
+            "id": "R6",
+            "summary": "Comparação simples de receitas/despesas e resultado mensal usam exatamente os totais dos indicadores; resultado=receitas−despesas. Sem projeções, tendências ou relatórios avançados."
+          },
+          {
+            "id": "R7-abertura",
+            "summary": "Ao abrir o dashboard consultar valores atuais; mês inicial é o atual em Brasília, sem usar o calendário UTC incorretamente."
+          },
+          {
+            "id": "R7-retorno",
+            "summary": "Ao retornar de outras áreas e após alteração concluída no dashboard consultar valores atuais. Tela ociosa na virada só precisa atualizar ao ser consultada novamente; não exige polling nem sincronização instantânea entre dispositivos."
+          },
+          {
+            "id": "R8-valores",
+            "summary": "Exibir valores em reais com duas casas, identificando saldo geral e mês selecionado."
+          },
+          {
+            "id": "R8-recentes",
+            "summary": "Identificar que recentes considera todo histórico até hoje; listar descrição, tipo, valor, categoria e data, com campos completos nos detalhes se layout compacto reduzir a lista."
+          },
+          {
+            "id": "CA1",
+            "summary": "Abrir no mês atual de Brasília e mostrar só números/registros do titular autenticado e confirmado."
+          },
+          {
+            "id": "CA2",
+            "summary": "Saldo, totais e resultado mensal correspondem a R2/R3/R6, inclusive negativo."
+          },
+          {
+            "id": "CA3",
+            "summary": "Trocar mês altera somente totais/comparativo do período, não saldo geral nem conjunto de recentes."
+          },
+          {
+            "id": "CA4",
+            "summary": "Futuras não entram em indicadores/recentes antes da data; próxima consulta após início da data em Brasília inclui automaticamente, sem confirmar pagamento/recebimento."
+          },
+          {
+            "id": "CA5",
+            "summary": "Mostrar cinco elegíveis mais recentes por data/cadastro ou todos se menos5, incluindo outros meses."
+          },
+          {
+            "id": "CA6-indicadores",
+            "summary": "Sem movimentações mostrar R$0,00 e orientação de primeiro cadastro; só futuras mostrar zeros reais e orientação de agendamentos no histórico; mês vazio zera só totais, preservando saldo e recentes globais."
+          },
+          {
+            "id": "CA6-recentes",
+            "summary": "Sem elegíveis recentes fica vazio; só futuras não preenche recentes com agendadas e informa consulta pelo histórico."
+          },
+          {
+            "id": "CA7-detalhes",
+            "summary": "Abrir detalhes reutiliza a consulta de Gestão de transações, sem construir leitura duplicada."
+          },
+          {
+            "id": "CA7-atalhos",
+            "summary": "Nova transação reutiliza cadastro; Ver todas abre histórico integral, sem transportar filtro mensal que contradiga recentes globais."
+          },
+          {
+            "id": "CA8",
+            "summary": "Cadastro/edição/exclusão concluídos a partir do dashboard atualizam números/recentes sem recarga manual; cancelar conserva valores; retornar de outras áreas consulta dados atuais."
+          },
+          {
+            "id": "CA9-indicadores",
+            "summary": "Indicadores mostram carregamento durante consulta; falha mostra indisponibilidade e tentar novamente, sem substituir por zeros aparentando dados reais; sucesso posterior mostra valores reais."
+          },
+          {
+            "id": "CA9-recentes",
+            "summary": "Lista mostra carregamento/indisponibilidade e nova tentativa quando sua leitura falha; não confundir falha com lista realmente vazia."
+          },
+          {
+            "id": "CA10-indicadores",
+            "summary": "Nenhum usuário acessa indicadores de outra conta, inclusive tentativa direta de trocar identificador."
+          },
+          {
+            "id": "CA10-recentes",
+            "summary": "Recentes/detalhes não revelam registros alheios; transação removida antes de abrir informa indisponibilidade e permite atualizar a lista."
+          },
+          {
+            "id": "F-persistencia",
+            "summary": "Fluxos alternativos: só refletir alterações efetivamente persistidas; cancelamento ou falha das operações não gera alteração financeira falsa."
+          }
+        ],
+        "slices": [
+          {
+            "number": 1,
+            "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Indicadores e consulta por mês",
+            "title_suffix": "Indicadores e consulta por mês",
+            "api_delivery": false,
+            "estimate_hours": 4,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [],
+            "description": {
+              "delivery": "Substituir os placeholders por saldo geral e totais mensais reais do titular, com seleção do mês, comparação simples e resultado mensal coerentes. Reutilizar os cálculos de Gestão de transações.",
+              "limits": "Não reimplementa cálculo de competência, não antecipa futuras nem cria projeções/relatórios avançados. Recentes é outra entrega; a preservação do seu conjunto na troca de mês é conferida na integração.",
+              "dependencies": "Para iniciar: layout e autenticação existentes e requisitos funcionais aprovados permitem preparar apresentação e casos de teste. Para concluir: consumir dados/cálculos reais de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’, alimentados por ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’; integração com ‘Dashboard financeiro - Movimentações recentes e detalhes’ verifica que trocar mês não muda recentes. Não concluir com dados simulados.",
+              "criteria": [
+                {
+                  "kind": "permission",
+                  "text": "Elegíveis são somente transações próprias não excluídas e com data até hoje em America/Sao_Paulo; dashboard exige autenticação e e-mail confirmado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Saldo geral soma receitas elegíveis menos despesas de todo histórico, aceita negativo e não muda por selecionar outro mês; sem saldo inicial separado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Totais mensais somam receitas/despesas elegíveis por data dentro do mês selecionado; atual só até hoje, passado seus registros, futuro sem antecipação."
+                },
+                {
+                  "kind": "success",
+                  "text": "Comparação simples de receitas/despesas e resultado mensal usam exatamente os totais dos indicadores; resultado=receitas−despesas. Sem projeções, tendências ou relatórios avançados."
+                },
+                {
+                  "kind": "success",
+                  "text": "Ao abrir o dashboard consultar valores atuais; mês inicial é o atual em Brasília, sem usar o calendário UTC incorretamente."
+                },
+                {
+                  "kind": "success",
+                  "text": "Exibir valores em reais com duas casas, identificando saldo geral e mês selecionado."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Abrir no mês atual de Brasília e mostrar só números/registros do titular autenticado e confirmado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Saldo, totais e resultado mensal correspondem a R2/R3/R6, inclusive negativo."
+                },
+                {
+                  "kind": "success",
+                  "text": "Trocar mês altera somente totais/comparativo do período, não saldo geral nem conjunto de recentes."
+                },
+                {
+                  "kind": "success",
+                  "text": "Sem movimentações mostrar R$0,00 e orientação de primeiro cadastro; só futuras mostrar zeros reais e orientação de agendamentos no histórico; mês vazio zera só totais, preservando saldo e recentes globais."
+                },
+                {
+                  "kind": "error",
+                  "text": "Indicadores mostram carregamento durante consulta; falha mostra indisponibilidade e tentar novamente, sem substituir por zeros aparentando dados reais; sucesso posterior mostra valores reais."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Nenhum usuário acessa indicadores de outra conta, inclusive tentativa direta de trocar identificador."
+                }
+              ],
+              "traceability": [
+                "R1",
+                "R2",
+                "R3",
+                "R6",
+                "R7-abertura",
+                "R8-valores",
+                "CA1",
+                "CA2",
+                "CA3",
+                "CA6-indicadores",
+                "CA9-indicadores",
+                "CA10-indicadores"
+              ]
+            }
+          },
+          {
+            "number": 2,
+            "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Movimentações recentes e detalhes",
+            "title_suffix": "Movimentações recentes e detalhes",
+            "api_delivery": false,
+            "estimate_hours": 3,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [],
+            "description": {
+              "delivery": "Apresentar as cinco movimentações elegíveis mais recentes do titular, independentemente do mês dos indicadores, com abertura da consulta individual existente.",
+              "limits": "Não cria outra tela de detalhes nem usa o mês selecionado para restringir a lista. Operações e retorno integrado pertencem à entrega específica.",
+              "dependencies": "Para iniciar: layout e contrato funcional aprovados permitem preparar lista e casos de teste. Para concluir: integrar registros/leitura individual de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’ e elegibilidade de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’; lista e detalhe devem usar dados reais, sem implementar essas capacidades novamente.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Recentes usa todo histórico elegível, independente do mês, data decrescente e cadastro mais recente em empate, limite5; com menos5 exibe todos e futuras só entram na data."
+                },
+                {
+                  "kind": "success",
+                  "text": "Identificar que recentes considera todo histórico até hoje; listar descrição, tipo, valor, categoria e data, com campos completos nos detalhes se layout compacto reduzir a lista."
+                },
+                {
+                  "kind": "success",
+                  "text": "Mostrar cinco elegíveis mais recentes por data/cadastro ou todos se menos5, incluindo outros meses."
+                },
+                {
+                  "kind": "success",
+                  "text": "Sem elegíveis recentes fica vazio; só futuras não preenche recentes com agendadas e informa consulta pelo histórico."
+                },
+                {
+                  "kind": "success",
+                  "text": "Abrir detalhes reutiliza a consulta de Gestão de transações, sem construir leitura duplicada."
+                },
+                {
+                  "kind": "error",
+                  "text": "Lista mostra carregamento/indisponibilidade e nova tentativa quando sua leitura falha; não confundir falha com lista realmente vazia."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Recentes/detalhes não revelam registros alheios; transação removida antes de abrir informa indisponibilidade e permite atualizar a lista."
+                }
+              ],
+              "traceability": [
+                "R4",
+                "R8-recentes",
+                "CA5",
+                "CA6-recentes",
+                "CA7-detalhes",
+                "CA9-recentes",
+                "CA10-recentes"
+              ]
+            }
+          },
+          {
+            "number": 3,
+            "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Operações e atualização do dashboard",
+            "title_suffix": "Operações e atualização do dashboard",
+            "api_delivery": false,
+            "estimate_hours": 4,
+            "estimate_exception": null,
+            "blocked_by": [
+              1,
+              2
+            ],
+            "external_blockers": [],
+            "description": {
+              "delivery": "Conectar cadastro e histórico existentes ao dashboard e atualizar os indicadores e recentes após operações concluídas ou retorno, preservando valores ao cancelar ou falhar.",
+              "limits": "Não reimplementa cadastro, edição, exclusão ou histórico. Sem atualização contínua da tela ociosa nem sincronização instantânea entre dispositivos.",
+              "dependencies": "Para iniciar: ‘Dashboard financeiro - Indicadores e consulta por mês’ e ‘Dashboard financeiro - Movimentações recentes e detalhes’ fornecem os blocos a conectar. Para concluir: integrar ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’, ‘[DEV] [WEB] [USUARIO] Gestão de transações - Histórico por período (#1015931)’, ‘[DEV] [WEB] [USUARIO] Gestão de transações - Edição de transação com efeitos financeiros (#1015934)’ e ‘[DEV] [WEB] [USUARIO] Gestão de transações - Exclusão confirmada com efeito único (#1015935)’, com os cálculos de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’. Operações reais e seus efeitos devem estar verificados; navegação isolada não conclui.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Duplicados permitidos contam individualmente; edição/exclusão recalculam indicadores e podem mudar recentes."
+                },
+                {
+                  "kind": "success",
+                  "text": "Ao retornar de outras áreas e após alteração concluída no dashboard consultar valores atuais. Tela ociosa na virada só precisa atualizar ao ser consultada novamente; não exige polling nem sincronização instantânea entre dispositivos."
+                },
+                {
+                  "kind": "success",
+                  "text": "Futuras não entram em indicadores/recentes antes da data; próxima consulta após início da data em Brasília inclui automaticamente, sem confirmar pagamento/recebimento."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nova transação reutiliza cadastro; Ver todas abre histórico integral, sem transportar filtro mensal que contradiga recentes globais."
+                },
+                {
+                  "kind": "success",
+                  "text": "Cadastro/edição/exclusão concluídos a partir do dashboard atualizam números/recentes sem recarga manual; cancelar conserva valores; retornar de outras áreas consulta dados atuais."
+                },
+                {
+                  "kind": "error",
+                  "text": "Fluxos alternativos: só refletir alterações efetivamente persistidas; cancelamento ou falha das operações não gera alteração financeira falsa."
+                }
+              ],
+              "traceability": [
+                "R5",
+                "R7-retorno",
+                "CA4",
+                "CA7-atalhos",
+                "CA8",
+                "F-persistencia"
+              ]
+            }
+          }
+        ],
+        "coverage": [
+          {
+            "requirement_id": "R1",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R4",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R5",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R6",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R7-abertura",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R7-retorno",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R8-valores",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R8-recentes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA1",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA4",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA5",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA6-indicadores",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA6-recentes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA7-detalhes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA7-atalhos",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA8",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA9-indicadores",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA9-recentes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA10-indicadores",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA10-recentes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "F-persistencia",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          }
+        ],
+        "decisions": [
+          "Prévia inicial pendente de revisão; aprovação de Gestão de transações não autoriza publicação deste item.",
+          "R6 conserva a expressão proposta visual no documento, mas integra requisito concluído e aprovado; comparar apenas os mesmos totais reais.",
+          "Dois avaliadores independentes: A propôs separar mês atual e seleção/comparação, quatroDEV3,25/2,5/2,75/2,75h QA4,5h; B agrupou indicadores/períodos, trêsDEV4/3/4h QA4h. Não foram usadas estimativas herdadas.",
+          "Adotados três cortes por jornadas: indicadores com seleção/comparação compartilham consulta e feedback; recentes é consulta global própria; operações conecta ambos. Estimativas4/3/4h; QA4,5h contempla três mutações, cancelamentos/falhas e virada. Total15,5h. Teto conferido posteriormente.",
+          "Esforço indicadores: integração0,75h; cartões/seletor/resumo1,25h; estados0,75h; regressões1h; revisão0,25h. Recentes: consulta0,75h; lista/detalhe0,75h; estados0,5h; regressões0,75h; revisão0,25h. Operações: atalhos/retorno0,75h; integração1h; atualização/cancelamento0,75h; regressões1h; revisão0,5h.",
+          "QA: preparação0,5h; indicadores/períodos1h; recentes0,75h; operações/cancelamentos1h; erros/permissões/data0,75h; evidências0,5h. Sem margem genérica; infraestrutura não incluída.",
+          "Dependências de conclusão específicas constam das descrições. Não criar external_blockers de início: apresentação, casos de teste e navegação podem começar com contratos funcionais aprovados. Nenhum aceite com mocks substitui integração real. Relação Feature1015911→1015912 preservada.",
+          "Bloqueios nativos propostos: indicadores e recentes bloqueiam operações; as três DEV bloqueiam QA. Não há relações externas novas, substituição de bloqueio de pai nem remoção de relações existentes.",
+          "Incertezas concretas: contratos internos das fornecedoras ainda não implementados; retorno das operações deve respeitar navegação entregue; cache não pode preservar dados obsoletos; falha não pode aparentar zero. Revalidar integração ao receber fornecedores, sem acrescentar margem genérica.",
+          "CTs distinguem conta vazia, somente futuras, mês vazio, erro, transição da data e retorno. DOCX obrigatório gerado após aprovação e anexado à QA. Nenhuma API, Study ou mudança de requisito."
+        ],
+        "test_conditions": {
+          "document_format": "docx",
+          "context": "Preparar duas contas confirmadas, uma não confirmada, dados persistidos de novembro/dezembro, futuras/excluídas, mais de5 elegíveis e empates por data. Relógio controlado em America/Sao_Paulo, falhas de leitura/persistência reproduzíveis. Verificar números na interface contra massa independente e capacidades reais das tarefas1015930/31/33/34/35; não concluir com dados simulados. Cada cenário começa com massa própria. Não foram executadas estas condições.",
+          "conditions": [
+            {
+              "id": "CT-001",
+              "title": "R1 — Indicadores e consulta por mês",
+              "verification": "Com duas contas, registros excluídos/futuros e sessão ausente/não confirmada, abrir dashboard.",
+              "expected_result": "Somente titular habilitado acessa seus dados elegíveis; não inclui excluídos, futuros ou dados alheios.",
+              "requirement_ids": [
+                "R1"
+              ]
+            },
+            {
+              "id": "CT-002",
+              "title": "R2 — Indicadores e consulta por mês",
+              "verification": "Usar receita100/despesa30 em novembro e receita20/despesa5 em dezembro, hoje01/12; trocar meses e testar conta apenas com despesa10.",
+              "expected_result": "Saldo85 em ambos os meses; conta só com despesa tem saldo-10; não há saldo inicial.",
+              "requirement_ids": [
+                "R2"
+              ]
+            },
+            {
+              "id": "CT-003",
+              "title": "R3 — Indicadores e consulta por mês",
+              "verification": "Na massa de referência selecionar novembro, dezembro e janeiro futuro, com uma receita futura999 em02/12.",
+              "expected_result": "Novembro100/30; dezembro20/5; janeiro0/0; futura999 não entra.",
+              "requirement_ids": [
+                "R3"
+              ]
+            },
+            {
+              "id": "CT-004",
+              "title": "R4 — Movimentações recentes e detalhes",
+              "verification": "Preparar seis elegíveis de meses diferentes, dois na mesma data com cadastros distintos, mais futura/excluída; repetir com três elegíveis e trocar mês.",
+              "expected_result": "Exibe cinco na ordem definida ou os três existentes; troca de mês não altera conjunto; futura/excluída ausentes.",
+              "requirement_ids": [
+                "R4"
+              ]
+            },
+            {
+              "id": "CT-005",
+              "title": "R5 — Operações e atualização do dashboard",
+              "verification": "Cadastrar dois registros iguais a partir do dashboard, editar um e excluir o outro, verificando indicadores e recentes a cada conclusão.",
+              "expected_result": "Ambos inicialmente contam; operações independentes atualizam números e seleção recentes sem contribuições obsoletas.",
+              "requirement_ids": [
+                "R5"
+              ]
+            },
+            {
+              "id": "CT-006",
+              "title": "R6 — Indicadores e consulta por mês",
+              "verification": "Comparar valores exibidos no resumo e indicadores para novembro100/30 e dezembro20/5, além de resultado negativo.",
+              "expected_result": "Resumo usa mesmos totais; resultados70 e15 respectivamente, e negativo quando despesas excedem receitas.",
+              "requirement_ids": [
+                "R6"
+              ]
+            },
+            {
+              "id": "CT-007",
+              "title": "R7-abertura — Indicadores e consulta por mês",
+              "verification": "Abrir durante intervalo em que UTC já é outro dia/mês mas Brasília ainda não; conferir mês e números.",
+              "expected_result": "Seleciona mês de Brasília e dados reais atuais do titular.",
+              "requirement_ids": [
+                "R7-abertura"
+              ]
+            },
+            {
+              "id": "CT-008",
+              "title": "R7-retorno — Operações e atualização do dashboard",
+              "verification": "Manter tela aberta na virada local, voltar a consultá-la; alterar transação em outra área e retornar.",
+              "expected_result": "Próxima consulta incorpora data/operações; não depende de recarga manual após operação concluída nele, nem exige atualização contínua ociosa.",
+              "requirement_ids": [
+                "R7-retorno"
+              ]
+            },
+            {
+              "id": "CT-009",
+              "title": "R8-valores — Indicadores e consulta por mês",
+              "verification": "Conferir zero, centavos, positivos e negativos e rótulos do período.",
+              "expected_result": "Valores em R$ com duas casas e escopo global/mensal claro.",
+              "requirement_ids": [
+                "R8-valores"
+              ]
+            },
+            {
+              "id": "CT-010",
+              "title": "R8-recentes — Movimentações recentes e detalhes",
+              "verification": "Conferir rótulo dos recentes e abrir detalhes de um registro com campos reduzidos na lista compacta.",
+              "expected_result": "Escopo global explícito e todos os campos disponíveis na leitura individual reutilizada.",
+              "requirement_ids": [
+                "R8-recentes"
+              ]
+            },
+            {
+              "id": "CT-011",
+              "title": "CA1 — Indicadores e consulta por mês",
+              "verification": "Testar titular A, titular B, visitante e conta não confirmada no calendário controlado.",
+              "expected_result": "Apenas acesso autorizado; nenhuma mistura entre contas e período inicial correto.",
+              "requirement_ids": [
+                "CA1"
+              ]
+            },
+            {
+              "id": "CT-012",
+              "title": "CA2 — Indicadores e consulta por mês",
+              "verification": "Comparar números visuais com massa persistida conhecida e resultado interno fornecido por transações.",
+              "expected_result": "Correspondência exata sem cálculo paralelo divergente no dashboard.",
+              "requirement_ids": [
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-013",
+              "title": "CA3 — Indicadores e consulta por mês",
+              "verification": "Com elegíveis em meses diferentes, alternar seletor e comparar todos os blocos.",
+              "expected_result": "Somente indicadores mensais/comparativo mudam pela seleção.",
+              "requirement_ids": [
+                "CA3"
+              ]
+            },
+            {
+              "id": "CT-014",
+              "title": "CA4 — Operações e atualização do dashboard",
+              "verification": "Massa: novembro100 receita/30 despesa; dezembro01 receita20/despesa5. Consultar30/11 23:59:59 e01/12 00:00:00 em Brasília.",
+              "expected_result": "Saldo70→85; antes dezembro0/0 e registros01/12 fora dos recentes; depois dezembro20/5 e tornam-se elegíveis sem confirmação.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-015",
+              "title": "CA5 — Movimentações recentes e detalhes",
+              "verification": "Criar mais5 elegíveis com empate, conferir IDs e ordem; repetir com menos5 e período selecionado distinto.",
+              "expected_result": "Lista correta e global, sem preencher com registros fictícios.",
+              "requirement_ids": [
+                "CA5"
+              ]
+            },
+            {
+              "id": "CT-016",
+              "title": "CA6-indicadores — Indicadores e consulta por mês",
+              "verification": "Comparar conta vazia, conta só futura e conta com dados em outro mês; selecionar também mês futuro.",
+              "expected_result": "Estados distinguem ausência geral, somente agendamentos e mês vazio; saldo/recentes de outros meses não desaparecem.",
+              "requirement_ids": [
+                "CA6-indicadores"
+              ]
+            },
+            {
+              "id": "CT-017",
+              "title": "CA6-recentes — Movimentações recentes e detalhes",
+              "verification": "Abrir conta sem registros e só futuras.",
+              "expected_result": "Lista vazia coerente e orientação adequada; nenhuma movimentação futura tratada como realizada.",
+              "requirement_ids": [
+                "CA6-recentes"
+              ]
+            },
+            {
+              "id": "CT-018",
+              "title": "CA7-detalhes — Movimentações recentes e detalhes",
+              "verification": "Abrir registro recente e conferir dados na consulta individual fornecida.",
+              "expected_result": "Mesmos dados e autorização; usa entrega Cadastro e conferência de uma transação própria #1015930.",
+              "requirement_ids": [
+                "CA7-detalhes"
+              ]
+            },
+            {
+              "id": "CT-019",
+              "title": "CA7-atalhos — Operações e atualização do dashboard",
+              "verification": "Selecionar mês distinto e usar Ver todas; usar Nova transação e acesso de primeiro cadastro/agendamentos.",
+              "expected_result": "Histórico integral de #1015931 e cadastro de #1015930 abrem corretamente, sem filtro mensal indevido.",
+              "requirement_ids": [
+                "CA7-atalhos"
+              ]
+            },
+            {
+              "id": "CT-020",
+              "title": "CA8 — Operações e atualização do dashboard",
+              "verification": "Exercer as três operações reais e seus cancelamentos, além de alterar em outra área e retornar.",
+              "expected_result": "Consulta atualizada após sucesso, preservada ao cancelar; nenhum dado simulado serve como aceite.",
+              "requirement_ids": [
+                "CA8"
+              ]
+            },
+            {
+              "id": "CT-021",
+              "title": "CA9-indicadores — Indicadores e consulta por mês",
+              "verification": "Controlar atraso e falha da leitura de indicadores, tentar novamente após restabelecer.",
+              "expected_result": "Carregamento visível, erro distinguível de zero real e recuperação correta.",
+              "requirement_ids": [
+                "CA9-indicadores"
+              ]
+            },
+            {
+              "id": "CT-022",
+              "title": "CA9-recentes — Movimentações recentes e detalhes",
+              "verification": "Provocar atraso/falha na consulta de recentes e repetir com leitura disponível.",
+              "expected_result": "Estado de leitura apropriado e lista real recuperada.",
+              "requirement_ids": [
+                "CA9-recentes"
+              ]
+            },
+            {
+              "id": "CT-023",
+              "title": "CA10-indicadores — Indicadores e consulta por mês",
+              "verification": "Como B, tentar solicitar números de A.",
+              "expected_result": "Acesso alheio negado ou resultado restrito a B, sem exposição.",
+              "requirement_ids": [
+                "CA10-indicadores"
+              ]
+            },
+            {
+              "id": "CT-024",
+              "title": "CA10-recentes — Movimentações recentes e detalhes",
+              "verification": "Como B tentar detalhe de A; remover registro apresentado antes de abri-lo e atualizar lista.",
+              "expected_result": "Sem dados alheios; indisponibilidade clara e lista pode ser atualizada.",
+              "requirement_ids": [
+                "CA10-recentes"
+              ]
+            },
+            {
+              "id": "CT-025",
+              "title": "F-persistencia — Operações e atualização do dashboard",
+              "verification": "Provocar cancelamento e falha controlada de persistência em cadastro, edição e exclusão iniciados pelo dashboard.",
+              "expected_result": "Valores anteriores preservados; não apresentar alteração que não foi persistida.",
+              "requirement_ids": [
+                "F-persistencia"
+              ]
+            }
+          ]
+        }
+      },
+      "semantic_baseline": {
+        "requirement_sha256": "334ca3a6cf7b5b5beb1cff955e705c1a43a289bd9f9b461f64df87493263a7a8",
+        "semantic_model_sha256": "8375b74280e038cb9bb9ad45c82f2ff50ef9cd54af90fa0efdcf775262ceed14",
+        "semantic_model": {
+          "requirements": [
+            {
+              "id": "R1",
+              "summary": "Elegíveis são somente transações próprias não excluídas e com data até hoje em America/Sao_Paulo; dashboard exige autenticação e e-mail confirmado."
+            },
+            {
+              "id": "R2",
+              "summary": "Saldo geral soma receitas elegíveis menos despesas de todo histórico, aceita negativo e não muda por selecionar outro mês; sem saldo inicial separado."
+            },
+            {
+              "id": "R3",
+              "summary": "Totais mensais somam receitas/despesas elegíveis por data dentro do mês selecionado; atual só até hoje, passado seus registros, futuro sem antecipação."
+            },
+            {
+              "id": "R4",
+              "summary": "Recentes usa todo histórico elegível, independente do mês, data decrescente e cadastro mais recente em empate, limite5; com menos5 exibe todos e futuras só entram na data."
+            },
+            {
+              "id": "R5",
+              "summary": "Duplicados permitidos contam individualmente; edição/exclusão recalculam indicadores e podem mudar recentes."
+            },
+            {
+              "id": "R6",
+              "summary": "Comparação simples de receitas/despesas e resultado mensal usam exatamente os totais dos indicadores; resultado=receitas−despesas. Sem projeções, tendências ou relatórios avançados."
+            },
+            {
+              "id": "R7-abertura",
+              "summary": "Ao abrir o dashboard consultar valores atuais; mês inicial é o atual em Brasília, sem usar o calendário UTC incorretamente."
+            },
+            {
+              "id": "R7-retorno",
+              "summary": "Ao retornar de outras áreas e após alteração concluída no dashboard consultar valores atuais. Tela ociosa na virada só precisa atualizar ao ser consultada novamente; não exige polling nem sincronização instantânea entre dispositivos."
+            },
+            {
+              "id": "R8-valores",
+              "summary": "Exibir valores em reais com duas casas, identificando saldo geral e mês selecionado."
+            },
+            {
+              "id": "R8-recentes",
+              "summary": "Identificar que recentes considera todo histórico até hoje; listar descrição, tipo, valor, categoria e data, com campos completos nos detalhes se layout compacto reduzir a lista."
+            },
+            {
+              "id": "CA1",
+              "summary": "Abrir no mês atual de Brasília e mostrar só números/registros do titular autenticado e confirmado."
+            },
+            {
+              "id": "CA2",
+              "summary": "Saldo, totais e resultado mensal correspondem a R2/R3/R6, inclusive negativo."
+            },
+            {
+              "id": "CA3",
+              "summary": "Trocar mês altera somente totais/comparativo do período, não saldo geral nem conjunto de recentes."
+            },
+            {
+              "id": "CA4",
+              "summary": "Futuras não entram em indicadores/recentes antes da data; próxima consulta após início da data em Brasília inclui automaticamente, sem confirmar pagamento/recebimento."
+            },
+            {
+              "id": "CA5",
+              "summary": "Mostrar cinco elegíveis mais recentes por data/cadastro ou todos se menos5, incluindo outros meses."
+            },
+            {
+              "id": "CA6-indicadores",
+              "summary": "Sem movimentações mostrar R$0,00 e orientação de primeiro cadastro; só futuras mostrar zeros reais e orientação de agendamentos no histórico; mês vazio zera só totais, preservando saldo e recentes globais."
+            },
+            {
+              "id": "CA6-recentes",
+              "summary": "Sem elegíveis recentes fica vazio; só futuras não preenche recentes com agendadas e informa consulta pelo histórico."
+            },
+            {
+              "id": "CA7-detalhes",
+              "summary": "Abrir detalhes reutiliza a consulta de Gestão de transações, sem construir leitura duplicada."
+            },
+            {
+              "id": "CA7-atalhos",
+              "summary": "Nova transação reutiliza cadastro; Ver todas abre histórico integral, sem transportar filtro mensal que contradiga recentes globais."
+            },
+            {
+              "id": "CA8",
+              "summary": "Cadastro/edição/exclusão concluídos a partir do dashboard atualizam números/recentes sem recarga manual; cancelar conserva valores; retornar de outras áreas consulta dados atuais."
+            },
+            {
+              "id": "CA9-indicadores",
+              "summary": "Indicadores mostram carregamento durante consulta; falha mostra indisponibilidade e tentar novamente, sem substituir por zeros aparentando dados reais; sucesso posterior mostra valores reais."
+            },
+            {
+              "id": "CA9-recentes",
+              "summary": "Lista mostra carregamento/indisponibilidade e nova tentativa quando sua leitura falha; não confundir falha com lista realmente vazia."
+            },
+            {
+              "id": "CA10-indicadores",
+              "summary": "Nenhum usuário acessa indicadores de outra conta, inclusive tentativa direta de trocar identificador."
+            },
+            {
+              "id": "CA10-recentes",
+              "summary": "Recentes/detalhes não revelam registros alheios; transação removida antes de abrir informa indisponibilidade e permite atualizar a lista."
+            },
+            {
+              "id": "F-persistencia",
+              "summary": "Fluxos alternativos: só refletir alterações efetivamente persistidas; cancelamento ou falha das operações não gera alteração financeira falsa."
+            }
+          ],
+          "slices": [
+            {
+              "number": 1,
+              "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Indicadores e consulta por mês",
+              "title_suffix": "Indicadores e consulta por mês",
+              "api_delivery": false,
+              "estimate_hours": 4,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [],
+              "description": {
+                "delivery": "Substituir os placeholders por saldo geral e totais mensais reais do titular, com seleção do mês, comparação simples e resultado mensal coerentes. Reutilizar os cálculos de Gestão de transações.",
+                "limits": "Não reimplementa cálculo de competência, não antecipa futuras nem cria projeções/relatórios avançados. Recentes é outra entrega; a preservação do seu conjunto na troca de mês é conferida na integração.",
+                "dependencies": "Para iniciar: layout e autenticação existentes e requisitos funcionais aprovados permitem preparar apresentação e casos de teste. Para concluir: consumir dados/cálculos reais de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’, alimentados por ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’; integração com ‘Dashboard financeiro - Movimentações recentes e detalhes’ verifica que trocar mês não muda recentes. Não concluir com dados simulados.",
+                "criteria": [
+                  {
+                    "kind": "permission",
+                    "text": "Elegíveis são somente transações próprias não excluídas e com data até hoje em America/Sao_Paulo; dashboard exige autenticação e e-mail confirmado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Saldo geral soma receitas elegíveis menos despesas de todo histórico, aceita negativo e não muda por selecionar outro mês; sem saldo inicial separado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Totais mensais somam receitas/despesas elegíveis por data dentro do mês selecionado; atual só até hoje, passado seus registros, futuro sem antecipação."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Comparação simples de receitas/despesas e resultado mensal usam exatamente os totais dos indicadores; resultado=receitas−despesas. Sem projeções, tendências ou relatórios avançados."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Ao abrir o dashboard consultar valores atuais; mês inicial é o atual em Brasília, sem usar o calendário UTC incorretamente."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Exibir valores em reais com duas casas, identificando saldo geral e mês selecionado."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Abrir no mês atual de Brasília e mostrar só números/registros do titular autenticado e confirmado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Saldo, totais e resultado mensal correspondem a R2/R3/R6, inclusive negativo."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Trocar mês altera somente totais/comparativo do período, não saldo geral nem conjunto de recentes."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Sem movimentações mostrar R$0,00 e orientação de primeiro cadastro; só futuras mostrar zeros reais e orientação de agendamentos no histórico; mês vazio zera só totais, preservando saldo e recentes globais."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Indicadores mostram carregamento durante consulta; falha mostra indisponibilidade e tentar novamente, sem substituir por zeros aparentando dados reais; sucesso posterior mostra valores reais."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Nenhum usuário acessa indicadores de outra conta, inclusive tentativa direta de trocar identificador."
+                  }
+                ],
+                "traceability": [
+                  "R1",
+                  "R2",
+                  "R3",
+                  "R6",
+                  "R7-abertura",
+                  "R8-valores",
+                  "CA1",
+                  "CA2",
+                  "CA3",
+                  "CA6-indicadores",
+                  "CA9-indicadores",
+                  "CA10-indicadores"
+                ]
+              }
+            },
+            {
+              "number": 2,
+              "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Movimentações recentes e detalhes",
+              "title_suffix": "Movimentações recentes e detalhes",
+              "api_delivery": false,
+              "estimate_hours": 3,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [],
+              "description": {
+                "delivery": "Apresentar as cinco movimentações elegíveis mais recentes do titular, independentemente do mês dos indicadores, com abertura da consulta individual existente.",
+                "limits": "Não cria outra tela de detalhes nem usa o mês selecionado para restringir a lista. Operações e retorno integrado pertencem à entrega específica.",
+                "dependencies": "Para iniciar: layout e contrato funcional aprovados permitem preparar lista e casos de teste. Para concluir: integrar registros/leitura individual de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’ e elegibilidade de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’; lista e detalhe devem usar dados reais, sem implementar essas capacidades novamente.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Recentes usa todo histórico elegível, independente do mês, data decrescente e cadastro mais recente em empate, limite5; com menos5 exibe todos e futuras só entram na data."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Identificar que recentes considera todo histórico até hoje; listar descrição, tipo, valor, categoria e data, com campos completos nos detalhes se layout compacto reduzir a lista."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Mostrar cinco elegíveis mais recentes por data/cadastro ou todos se menos5, incluindo outros meses."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Sem elegíveis recentes fica vazio; só futuras não preenche recentes com agendadas e informa consulta pelo histórico."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Abrir detalhes reutiliza a consulta de Gestão de transações, sem construir leitura duplicada."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Lista mostra carregamento/indisponibilidade e nova tentativa quando sua leitura falha; não confundir falha com lista realmente vazia."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Recentes/detalhes não revelam registros alheios; transação removida antes de abrir informa indisponibilidade e permite atualizar a lista."
+                  }
+                ],
+                "traceability": [
+                  "R4",
+                  "R8-recentes",
+                  "CA5",
+                  "CA6-recentes",
+                  "CA7-detalhes",
+                  "CA9-recentes",
+                  "CA10-recentes"
+                ]
+              }
+            },
+            {
+              "number": 3,
+              "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Operações e atualização do dashboard",
+              "title_suffix": "Operações e atualização do dashboard",
+              "api_delivery": false,
+              "estimate_hours": 4,
+              "estimate_exception": null,
+              "blocked_by": [
+                1,
+                2
+              ],
+              "external_blockers": [],
+              "description": {
+                "delivery": "Conectar cadastro e histórico existentes ao dashboard e atualizar os indicadores e recentes após operações concluídas ou retorno, preservando valores ao cancelar ou falhar.",
+                "limits": "Não reimplementa cadastro, edição, exclusão ou histórico. Sem atualização contínua da tela ociosa nem sincronização instantânea entre dispositivos.",
+                "dependencies": "Para iniciar: ‘Dashboard financeiro - Indicadores e consulta por mês’ e ‘Dashboard financeiro - Movimentações recentes e detalhes’ fornecem os blocos a conectar. Para concluir: integrar ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’, ‘[DEV] [WEB] [USUARIO] Gestão de transações - Histórico por período (#1015931)’, ‘[DEV] [WEB] [USUARIO] Gestão de transações - Edição de transação com efeitos financeiros (#1015934)’ e ‘[DEV] [WEB] [USUARIO] Gestão de transações - Exclusão confirmada com efeito único (#1015935)’, com os cálculos de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’. Operações reais e seus efeitos devem estar verificados; navegação isolada não conclui.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Duplicados permitidos contam individualmente; edição/exclusão recalculam indicadores e podem mudar recentes."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Ao retornar de outras áreas e após alteração concluída no dashboard consultar valores atuais. Tela ociosa na virada só precisa atualizar ao ser consultada novamente; não exige polling nem sincronização instantânea entre dispositivos."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Futuras não entram em indicadores/recentes antes da data; próxima consulta após início da data em Brasília inclui automaticamente, sem confirmar pagamento/recebimento."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nova transação reutiliza cadastro; Ver todas abre histórico integral, sem transportar filtro mensal que contradiga recentes globais."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Cadastro/edição/exclusão concluídos a partir do dashboard atualizam números/recentes sem recarga manual; cancelar conserva valores; retornar de outras áreas consulta dados atuais."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Fluxos alternativos: só refletir alterações efetivamente persistidas; cancelamento ou falha das operações não gera alteração financeira falsa."
+                  }
+                ],
+                "traceability": [
+                  "R5",
+                  "R7-retorno",
+                  "CA4",
+                  "CA7-atalhos",
+                  "CA8",
+                  "F-persistencia"
+                ]
+              }
+            }
+          ],
+          "coverage": [
+            {
+              "requirement_id": "R1",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R4",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R5",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R6",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R7-abertura",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R7-retorno",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R8-valores",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R8-recentes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA1",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA4",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA5",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA6-indicadores",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA6-recentes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA7-detalhes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA7-atalhos",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA8",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA9-indicadores",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA9-recentes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA10-indicadores",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA10-recentes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "F-persistencia",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            }
+          ],
+          "decisions": [
+            "Prévia inicial pendente de revisão; aprovação de Gestão de transações não autoriza publicação deste item.",
+            "R6 conserva a expressão proposta visual no documento, mas integra requisito concluído e aprovado; comparar apenas os mesmos totais reais.",
+            "Dois avaliadores independentes: A propôs separar mês atual e seleção/comparação, quatroDEV3,25/2,5/2,75/2,75h QA4,5h; B agrupou indicadores/períodos, trêsDEV4/3/4h QA4h. Não foram usadas estimativas herdadas.",
+            "Adotados três cortes por jornadas: indicadores com seleção/comparação compartilham consulta e feedback; recentes é consulta global própria; operações conecta ambos. Estimativas4/3/4h; QA4,5h contempla três mutações, cancelamentos/falhas e virada. Total15,5h. Teto conferido posteriormente.",
+            "Esforço indicadores: integração0,75h; cartões/seletor/resumo1,25h; estados0,75h; regressões1h; revisão0,25h. Recentes: consulta0,75h; lista/detalhe0,75h; estados0,5h; regressões0,75h; revisão0,25h. Operações: atalhos/retorno0,75h; integração1h; atualização/cancelamento0,75h; regressões1h; revisão0,5h.",
+            "QA: preparação0,5h; indicadores/períodos1h; recentes0,75h; operações/cancelamentos1h; erros/permissões/data0,75h; evidências0,5h. Sem margem genérica; infraestrutura não incluída.",
+            "Dependências de conclusão específicas constam das descrições. Não criar external_blockers de início: apresentação, casos de teste e navegação podem começar com contratos funcionais aprovados. Nenhum aceite com mocks substitui integração real. Relação Feature1015911→1015912 preservada.",
+            "Bloqueios nativos propostos: indicadores e recentes bloqueiam operações; as três DEV bloqueiam QA. Não há relações externas novas, substituição de bloqueio de pai nem remoção de relações existentes.",
+            "Incertezas concretas: contratos internos das fornecedoras ainda não implementados; retorno das operações deve respeitar navegação entregue; cache não pode preservar dados obsoletos; falha não pode aparentar zero. Revalidar integração ao receber fornecedores, sem acrescentar margem genérica.",
+            "CTs distinguem conta vazia, somente futuras, mês vazio, erro, transição da data e retorno. DOCX obrigatório gerado após aprovação e anexado à QA. Nenhuma API, Study ou mudança de requisito."
+          ],
+          "study_evidence": []
+        }
+      }
+    },
+    {
+      "number": 2,
+      "recorded_by": "Mário Tinelli",
+      "recorded_at": "2026-11-04T23:25:21.8247164+00:00",
+      "reason": "Estimativas DEV e QA ajustadas para 1,5h cada",
+      "proposal_sha256": "50a770e0fa2bbafe0229880fa25c8ae6e986bd93c711d4199231dfadd4099a60",
+      "proposal": {
+        "feature": {
+          "title": "[WEB] [USUARIO] Dashboard financeiro",
+          "artifact_path": "feature.md",
+          "state_path": ".flow/feature-state.json",
+          "issue_id": 1015912,
+          "requirement_sha256": "334ca3a6cf7b5b5beb1cff955e705c1a43a289bd9f9b461f64df87493263a7a8",
+          "input_check_path": ".flow/slices-input-check.json",
+          "input_check_sha256": "ca2e3a7c3a1fbbbd13f6f2618e39e733dcb80761cee09ec204296c8780823e10"
+        },
+        "inspection": [
+          {
+            "path": "resources/js/pages/dashboard.tsx; routes/web.php",
+            "finding": "Rota protegida por auth/verified existe, página somente placeholders sem props financeiros. Indicadores, recentes, estados financeiros e integração de operações são novos.",
+            "classification": "create"
+          },
+          {
+            "path": "resources/js/layouts/app-layout.tsx; resources/js/components/app-sidebar.tsx; resources/js/components/ui/card.tsx; resources/js/components/ui/select.tsx; resources/js/components/ui/skeleton.tsx; resources/js/components/ui/alert.tsx",
+            "finding": "Layout, navegação e primitivas reutilizáveis existem. Comparativo é representação simples dos totais aprovados; não requer ampliar dependências ou criar gráficos avançados.",
+            "classification": "existing"
+          },
+          {
+            "path": "app/Models; app/Actions; database/migrations; tests/Pest.php",
+            "finding": "Inventário ainda só acesso/infraestrutura, sem transações/cálculo implementados. Testes têm banco e relógio controlável; não foram executados testes financeiros inexistentes.",
+            "classification": "create"
+          },
+          {
+            "path": "docs/harness/features/1015911-gestao-de-transacoes/feature.md; .work/slices-provider-graph.json",
+            "finding": "MCP conferiu #1015930/31/33/34/35 em New: fornecem cadastro/leitura, histórico, competência, edição e exclusão. Publicação não comprova implementação; dashboard consome, não duplica capacidades. Grafo alcançável lido integralmente (15 issues).",
+            "classification": "create"
+          },
+          {
+            "path": "config/app.php; config/database.php; docs/harness/scopes/2026-11-04-finai-mvp/sources/design-001.md",
+            "finding": "Inspeção anterior confirmou appUTC/bancoSQLite; competência aprovada usa America/Sao_Paulo. Design apenas referência visual, sem adotar armazenamento local ou assistente simulado.",
+            "classification": "adapt"
+          }
+        ],
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "Elegíveis são somente transações próprias não excluídas e com data até hoje em America/Sao_Paulo; dashboard exige autenticação e e-mail confirmado."
+          },
+          {
+            "id": "R2",
+            "summary": "Saldo geral soma receitas elegíveis menos despesas de todo histórico, aceita negativo e não muda por selecionar outro mês; sem saldo inicial separado."
+          },
+          {
+            "id": "R3",
+            "summary": "Totais mensais somam receitas/despesas elegíveis por data dentro do mês selecionado; atual só até hoje, passado seus registros, futuro sem antecipação."
+          },
+          {
+            "id": "R4",
+            "summary": "Recentes usa todo histórico elegível, independente do mês, data decrescente e cadastro mais recente em empate, limite5; com menos5 exibe todos e futuras só entram na data."
+          },
+          {
+            "id": "R5",
+            "summary": "Duplicados permitidos contam individualmente; edição/exclusão recalculam indicadores e podem mudar recentes."
+          },
+          {
+            "id": "R6",
+            "summary": "Comparação simples de receitas/despesas e resultado mensal usam exatamente os totais dos indicadores; resultado=receitas−despesas. Sem projeções, tendências ou relatórios avançados."
+          },
+          {
+            "id": "R7-abertura",
+            "summary": "Ao abrir o dashboard consultar valores atuais; mês inicial é o atual em Brasília, sem usar o calendário UTC incorretamente."
+          },
+          {
+            "id": "R7-retorno",
+            "summary": "Ao retornar de outras áreas e após alteração concluída no dashboard consultar valores atuais. Tela ociosa na virada só precisa atualizar ao ser consultada novamente; não exige polling nem sincronização instantânea entre dispositivos."
+          },
+          {
+            "id": "R8-valores",
+            "summary": "Exibir valores em reais com duas casas, identificando saldo geral e mês selecionado."
+          },
+          {
+            "id": "R8-recentes",
+            "summary": "Identificar que recentes considera todo histórico até hoje; listar descrição, tipo, valor, categoria e data, com campos completos nos detalhes se layout compacto reduzir a lista."
+          },
+          {
+            "id": "CA1",
+            "summary": "Abrir no mês atual de Brasília e mostrar só números/registros do titular autenticado e confirmado."
+          },
+          {
+            "id": "CA2",
+            "summary": "Saldo, totais e resultado mensal correspondem a R2/R3/R6, inclusive negativo."
+          },
+          {
+            "id": "CA3",
+            "summary": "Trocar mês altera somente totais/comparativo do período, não saldo geral nem conjunto de recentes."
+          },
+          {
+            "id": "CA4",
+            "summary": "Futuras não entram em indicadores/recentes antes da data; próxima consulta após início da data em Brasília inclui automaticamente, sem confirmar pagamento/recebimento."
+          },
+          {
+            "id": "CA5",
+            "summary": "Mostrar cinco elegíveis mais recentes por data/cadastro ou todos se menos5, incluindo outros meses."
+          },
+          {
+            "id": "CA6-indicadores",
+            "summary": "Sem movimentações mostrar R$0,00 e orientação de primeiro cadastro; só futuras mostrar zeros reais e orientação de agendamentos no histórico; mês vazio zera só totais, preservando saldo e recentes globais."
+          },
+          {
+            "id": "CA6-recentes",
+            "summary": "Sem elegíveis recentes fica vazio; só futuras não preenche recentes com agendadas e informa consulta pelo histórico."
+          },
+          {
+            "id": "CA7-detalhes",
+            "summary": "Abrir detalhes reutiliza a consulta de Gestão de transações, sem construir leitura duplicada."
+          },
+          {
+            "id": "CA7-atalhos",
+            "summary": "Nova transação reutiliza cadastro; Ver todas abre histórico integral, sem transportar filtro mensal que contradiga recentes globais."
+          },
+          {
+            "id": "CA8",
+            "summary": "Cadastro/edição/exclusão concluídos a partir do dashboard atualizam números/recentes sem recarga manual; cancelar conserva valores; retornar de outras áreas consulta dados atuais."
+          },
+          {
+            "id": "CA9-indicadores",
+            "summary": "Indicadores mostram carregamento durante consulta; falha mostra indisponibilidade e tentar novamente, sem substituir por zeros aparentando dados reais; sucesso posterior mostra valores reais."
+          },
+          {
+            "id": "CA9-recentes",
+            "summary": "Lista mostra carregamento/indisponibilidade e nova tentativa quando sua leitura falha; não confundir falha com lista realmente vazia."
+          },
+          {
+            "id": "CA10-indicadores",
+            "summary": "Nenhum usuário acessa indicadores de outra conta, inclusive tentativa direta de trocar identificador."
+          },
+          {
+            "id": "CA10-recentes",
+            "summary": "Recentes/detalhes não revelam registros alheios; transação removida antes de abrir informa indisponibilidade e permite atualizar a lista."
+          },
+          {
+            "id": "F-persistencia",
+            "summary": "Fluxos alternativos: só refletir alterações efetivamente persistidas; cancelamento ou falha das operações não gera alteração financeira falsa."
+          }
+        ],
+        "slices": [
+          {
+            "number": 1,
+            "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Indicadores e consulta por mês",
+            "title_suffix": "Indicadores e consulta por mês",
+            "api_delivery": false,
+            "estimate_hours": 1.5,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [],
+            "description": {
+              "delivery": "Substituir os placeholders por saldo geral e totais mensais reais do titular, com seleção do mês, comparação simples e resultado mensal coerentes. Reutilizar os cálculos de Gestão de transações.",
+              "limits": "Não reimplementa cálculo de competência, não antecipa futuras nem cria projeções/relatórios avançados. Recentes é outra entrega; a preservação do seu conjunto na troca de mês é conferida na integração.",
+              "dependencies": "Para iniciar: layout e autenticação existentes e requisitos funcionais aprovados permitem preparar apresentação e casos de teste. Para concluir: consumir dados/cálculos reais de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’, alimentados por ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’; integração com ‘Dashboard financeiro - Movimentações recentes e detalhes’ verifica que trocar mês não muda recentes. Não concluir com dados simulados.",
+              "criteria": [
+                {
+                  "kind": "permission",
+                  "text": "Elegíveis são somente transações próprias não excluídas e com data até hoje em America/Sao_Paulo; dashboard exige autenticação e e-mail confirmado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Saldo geral soma receitas elegíveis menos despesas de todo histórico, aceita negativo e não muda por selecionar outro mês; sem saldo inicial separado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Totais mensais somam receitas/despesas elegíveis por data dentro do mês selecionado; atual só até hoje, passado seus registros, futuro sem antecipação."
+                },
+                {
+                  "kind": "success",
+                  "text": "Comparação simples de receitas/despesas e resultado mensal usam exatamente os totais dos indicadores; resultado=receitas−despesas. Sem projeções, tendências ou relatórios avançados."
+                },
+                {
+                  "kind": "success",
+                  "text": "Ao abrir o dashboard consultar valores atuais; mês inicial é o atual em Brasília, sem usar o calendário UTC incorretamente."
+                },
+                {
+                  "kind": "success",
+                  "text": "Exibir valores em reais com duas casas, identificando saldo geral e mês selecionado."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Abrir no mês atual de Brasília e mostrar só números/registros do titular autenticado e confirmado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Saldo, totais e resultado mensal correspondem a R2/R3/R6, inclusive negativo."
+                },
+                {
+                  "kind": "success",
+                  "text": "Trocar mês altera somente totais/comparativo do período, não saldo geral nem conjunto de recentes."
+                },
+                {
+                  "kind": "success",
+                  "text": "Sem movimentações mostrar R$0,00 e orientação de primeiro cadastro; só futuras mostrar zeros reais e orientação de agendamentos no histórico; mês vazio zera só totais, preservando saldo e recentes globais."
+                },
+                {
+                  "kind": "error",
+                  "text": "Indicadores mostram carregamento durante consulta; falha mostra indisponibilidade e tentar novamente, sem substituir por zeros aparentando dados reais; sucesso posterior mostra valores reais."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Nenhum usuário acessa indicadores de outra conta, inclusive tentativa direta de trocar identificador."
+                }
+              ],
+              "traceability": [
+                "R1",
+                "R2",
+                "R3",
+                "R6",
+                "R7-abertura",
+                "R8-valores",
+                "CA1",
+                "CA2",
+                "CA3",
+                "CA6-indicadores",
+                "CA9-indicadores",
+                "CA10-indicadores"
+              ]
+            }
+          },
+          {
+            "number": 2,
+            "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Movimentações recentes e detalhes",
+            "title_suffix": "Movimentações recentes e detalhes",
+            "api_delivery": false,
+            "estimate_hours": 1.5,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [],
+            "description": {
+              "delivery": "Apresentar as cinco movimentações elegíveis mais recentes do titular, independentemente do mês dos indicadores, com abertura da consulta individual existente.",
+              "limits": "Não cria outra tela de detalhes nem usa o mês selecionado para restringir a lista. Operações e retorno integrado pertencem à entrega específica.",
+              "dependencies": "Para iniciar: layout e contrato funcional aprovados permitem preparar lista e casos de teste. Para concluir: integrar registros/leitura individual de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’ e elegibilidade de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’; lista e detalhe devem usar dados reais, sem implementar essas capacidades novamente.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Recentes usa todo histórico elegível, independente do mês, data decrescente e cadastro mais recente em empate, limite5; com menos5 exibe todos e futuras só entram na data."
+                },
+                {
+                  "kind": "success",
+                  "text": "Identificar que recentes considera todo histórico até hoje; listar descrição, tipo, valor, categoria e data, com campos completos nos detalhes se layout compacto reduzir a lista."
+                },
+                {
+                  "kind": "success",
+                  "text": "Mostrar cinco elegíveis mais recentes por data/cadastro ou todos se menos5, incluindo outros meses."
+                },
+                {
+                  "kind": "success",
+                  "text": "Sem elegíveis recentes fica vazio; só futuras não preenche recentes com agendadas e informa consulta pelo histórico."
+                },
+                {
+                  "kind": "success",
+                  "text": "Abrir detalhes reutiliza a consulta de Gestão de transações, sem construir leitura duplicada."
+                },
+                {
+                  "kind": "error",
+                  "text": "Lista mostra carregamento/indisponibilidade e nova tentativa quando sua leitura falha; não confundir falha com lista realmente vazia."
+                },
+                {
+                  "kind": "permission",
+                  "text": "Recentes/detalhes não revelam registros alheios; transação removida antes de abrir informa indisponibilidade e permite atualizar a lista."
+                }
+              ],
+              "traceability": [
+                "R4",
+                "R8-recentes",
+                "CA5",
+                "CA6-recentes",
+                "CA7-detalhes",
+                "CA9-recentes",
+                "CA10-recentes"
+              ]
+            }
+          },
+          {
+            "number": 3,
+            "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Operações e atualização do dashboard",
+            "title_suffix": "Operações e atualização do dashboard",
+            "api_delivery": false,
+            "estimate_hours": 1.5,
+            "estimate_exception": null,
+            "blocked_by": [
+              1,
+              2
+            ],
+            "external_blockers": [],
+            "description": {
+              "delivery": "Conectar cadastro e histórico existentes ao dashboard e atualizar os indicadores e recentes após operações concluídas ou retorno, preservando valores ao cancelar ou falhar.",
+              "limits": "Não reimplementa cadastro, edição, exclusão ou histórico. Sem atualização contínua da tela ociosa nem sincronização instantânea entre dispositivos.",
+              "dependencies": "Para iniciar: ‘Dashboard financeiro - Indicadores e consulta por mês’ e ‘Dashboard financeiro - Movimentações recentes e detalhes’ fornecem os blocos a conectar. Para concluir: integrar ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’, ‘[DEV] [WEB] [USUARIO] Gestão de transações - Histórico por período (#1015931)’, ‘[DEV] [WEB] [USUARIO] Gestão de transações - Edição de transação com efeitos financeiros (#1015934)’ e ‘[DEV] [WEB] [USUARIO] Gestão de transações - Exclusão confirmada com efeito único (#1015935)’, com os cálculos de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’. Operações reais e seus efeitos devem estar verificados; navegação isolada não conclui.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Duplicados permitidos contam individualmente; edição/exclusão recalculam indicadores e podem mudar recentes."
+                },
+                {
+                  "kind": "success",
+                  "text": "Ao retornar de outras áreas e após alteração concluída no dashboard consultar valores atuais. Tela ociosa na virada só precisa atualizar ao ser consultada novamente; não exige polling nem sincronização instantânea entre dispositivos."
+                },
+                {
+                  "kind": "success",
+                  "text": "Futuras não entram em indicadores/recentes antes da data; próxima consulta após início da data em Brasília inclui automaticamente, sem confirmar pagamento/recebimento."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nova transação reutiliza cadastro; Ver todas abre histórico integral, sem transportar filtro mensal que contradiga recentes globais."
+                },
+                {
+                  "kind": "success",
+                  "text": "Cadastro/edição/exclusão concluídos a partir do dashboard atualizam números/recentes sem recarga manual; cancelar conserva valores; retornar de outras áreas consulta dados atuais."
+                },
+                {
+                  "kind": "error",
+                  "text": "Fluxos alternativos: só refletir alterações efetivamente persistidas; cancelamento ou falha das operações não gera alteração financeira falsa."
+                }
+              ],
+              "traceability": [
+                "R5",
+                "R7-retorno",
+                "CA4",
+                "CA7-atalhos",
+                "CA8",
+                "F-persistencia"
+              ]
+            }
+          }
+        ],
+        "coverage": [
+          {
+            "requirement_id": "R1",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R4",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R5",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R6",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R7-abertura",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R7-retorno",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R8-valores",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "R8-recentes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA1",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA4",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA5",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA6-indicadores",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA6-recentes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA7-detalhes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA7-atalhos",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA8",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA9-indicadores",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA9-recentes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA10-indicadores",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "CA10-recentes",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          },
+          {
+            "requirement_id": "F-persistencia",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+          }
+        ],
+        "decisions": [
+          "Prévia inicial pendente de revisão; aprovação de Gestão de transações não autoriza publicação deste item.",
+          "R6 conserva a expressão proposta visual no documento, mas integra requisito concluído e aprovado; comparar apenas os mesmos totais reais.",
+          "Dois avaliadores independentes: A propôs separar mês atual e seleção/comparação, quatroDEV3,25/2,5/2,75/2,75h QA4,5h; B agrupou indicadores/períodos, trêsDEV4/3/4h QA4h. Não foram usadas estimativas herdadas.",
+          "Adotados três cortes por jornadas: indicadores com seleção/comparação compartilham consulta e feedback; recentes é consulta global própria; operações conecta ambos. Estimativas4/3/4h; QA4,5h contempla três mutações, cancelamentos/falhas e virada. Total15,5h. Teto conferido posteriormente.",
+          "Esforço indicadores: integração0,75h; cartões/seletor/resumo1,25h; estados0,75h; regressões1h; revisão0,25h. Recentes: consulta0,75h; lista/detalhe0,75h; estados0,5h; regressões0,75h; revisão0,25h. Operações: atalhos/retorno0,75h; integração1h; atualização/cancelamento0,75h; regressões1h; revisão0,5h.",
+          "QA: preparação0,5h; indicadores/períodos1h; recentes0,75h; operações/cancelamentos1h; erros/permissões/data0,75h; evidências0,5h. Sem margem genérica; infraestrutura não incluída.",
+          "Dependências de conclusão específicas constam das descrições. Não criar external_blockers de início: apresentação, casos de teste e navegação podem começar com contratos funcionais aprovados. Nenhum aceite com mocks substitui integração real. Relação Feature1015911→1015912 preservada.",
+          "Bloqueios nativos propostos: indicadores e recentes bloqueiam operações; as três DEV bloqueiam QA. Não há relações externas novas, substituição de bloqueio de pai nem remoção de relações existentes.",
+          "Incertezas concretas: contratos internos das fornecedoras ainda não implementados; retorno das operações deve respeitar navegação entregue; cache não pode preservar dados obsoletos; falha não pode aparentar zero. Revalidar integração ao receber fornecedores, sem acrescentar margem genérica.",
+          "CTs distinguem conta vazia, somente futuras, mês vazio, erro, transição da data e retorno. DOCX obrigatório gerado após aprovação e anexado à QA. Nenhuma API, Study ou mudança de requisito.",
+          "Estimativas correntes por instrucao explicita do tech lead: tres DEV de1,5h cada e QA1,5h, total6h. Os calculos anteriores ficam no historico, sem determinar os valores desta revisao. Entregas, cobertura e condicoes permanecem iguais; publicacao aguarda aprovacao da previa completa."
+        ],
+        "test_conditions": {
+          "document_format": "docx",
+          "context": "Preparar duas contas confirmadas, uma não confirmada, dados persistidos de novembro/dezembro, futuras/excluídas, mais de5 elegíveis e empates por data. Relógio controlado em America/Sao_Paulo, falhas de leitura/persistência reproduzíveis. Verificar números na interface contra massa independente e capacidades reais das tarefas1015930/31/33/34/35; não concluir com dados simulados. Cada cenário começa com massa própria. Não foram executadas estas condições.",
+          "conditions": [
+            {
+              "id": "CT-001",
+              "title": "R1 — Indicadores e consulta por mês",
+              "verification": "Com duas contas, registros excluídos/futuros e sessão ausente/não confirmada, abrir dashboard.",
+              "expected_result": "Somente titular habilitado acessa seus dados elegíveis; não inclui excluídos, futuros ou dados alheios.",
+              "requirement_ids": [
+                "R1"
+              ]
+            },
+            {
+              "id": "CT-002",
+              "title": "R2 — Indicadores e consulta por mês",
+              "verification": "Usar receita100/despesa30 em novembro e receita20/despesa5 em dezembro, hoje01/12; trocar meses e testar conta apenas com despesa10.",
+              "expected_result": "Saldo85 em ambos os meses; conta só com despesa tem saldo-10; não há saldo inicial.",
+              "requirement_ids": [
+                "R2"
+              ]
+            },
+            {
+              "id": "CT-003",
+              "title": "R3 — Indicadores e consulta por mês",
+              "verification": "Na massa de referência selecionar novembro, dezembro e janeiro futuro, com uma receita futura999 em02/12.",
+              "expected_result": "Novembro100/30; dezembro20/5; janeiro0/0; futura999 não entra.",
+              "requirement_ids": [
+                "R3"
+              ]
+            },
+            {
+              "id": "CT-004",
+              "title": "R4 — Movimentações recentes e detalhes",
+              "verification": "Preparar seis elegíveis de meses diferentes, dois na mesma data com cadastros distintos, mais futura/excluída; repetir com três elegíveis e trocar mês.",
+              "expected_result": "Exibe cinco na ordem definida ou os três existentes; troca de mês não altera conjunto; futura/excluída ausentes.",
+              "requirement_ids": [
+                "R4"
+              ]
+            },
+            {
+              "id": "CT-005",
+              "title": "R5 — Operações e atualização do dashboard",
+              "verification": "Cadastrar dois registros iguais a partir do dashboard, editar um e excluir o outro, verificando indicadores e recentes a cada conclusão.",
+              "expected_result": "Ambos inicialmente contam; operações independentes atualizam números e seleção recentes sem contribuições obsoletas.",
+              "requirement_ids": [
+                "R5"
+              ]
+            },
+            {
+              "id": "CT-006",
+              "title": "R6 — Indicadores e consulta por mês",
+              "verification": "Comparar valores exibidos no resumo e indicadores para novembro100/30 e dezembro20/5, além de resultado negativo.",
+              "expected_result": "Resumo usa mesmos totais; resultados70 e15 respectivamente, e negativo quando despesas excedem receitas.",
+              "requirement_ids": [
+                "R6"
+              ]
+            },
+            {
+              "id": "CT-007",
+              "title": "R7-abertura — Indicadores e consulta por mês",
+              "verification": "Abrir durante intervalo em que UTC já é outro dia/mês mas Brasília ainda não; conferir mês e números.",
+              "expected_result": "Seleciona mês de Brasília e dados reais atuais do titular.",
+              "requirement_ids": [
+                "R7-abertura"
+              ]
+            },
+            {
+              "id": "CT-008",
+              "title": "R7-retorno — Operações e atualização do dashboard",
+              "verification": "Manter tela aberta na virada local, voltar a consultá-la; alterar transação em outra área e retornar.",
+              "expected_result": "Próxima consulta incorpora data/operações; não depende de recarga manual após operação concluída nele, nem exige atualização contínua ociosa.",
+              "requirement_ids": [
+                "R7-retorno"
+              ]
+            },
+            {
+              "id": "CT-009",
+              "title": "R8-valores — Indicadores e consulta por mês",
+              "verification": "Conferir zero, centavos, positivos e negativos e rótulos do período.",
+              "expected_result": "Valores em R$ com duas casas e escopo global/mensal claro.",
+              "requirement_ids": [
+                "R8-valores"
+              ]
+            },
+            {
+              "id": "CT-010",
+              "title": "R8-recentes — Movimentações recentes e detalhes",
+              "verification": "Conferir rótulo dos recentes e abrir detalhes de um registro com campos reduzidos na lista compacta.",
+              "expected_result": "Escopo global explícito e todos os campos disponíveis na leitura individual reutilizada.",
+              "requirement_ids": [
+                "R8-recentes"
+              ]
+            },
+            {
+              "id": "CT-011",
+              "title": "CA1 — Indicadores e consulta por mês",
+              "verification": "Testar titular A, titular B, visitante e conta não confirmada no calendário controlado.",
+              "expected_result": "Apenas acesso autorizado; nenhuma mistura entre contas e período inicial correto.",
+              "requirement_ids": [
+                "CA1"
+              ]
+            },
+            {
+              "id": "CT-012",
+              "title": "CA2 — Indicadores e consulta por mês",
+              "verification": "Comparar números visuais com massa persistida conhecida e resultado interno fornecido por transações.",
+              "expected_result": "Correspondência exata sem cálculo paralelo divergente no dashboard.",
+              "requirement_ids": [
+                "CA2"
+              ]
+            },
+            {
+              "id": "CT-013",
+              "title": "CA3 — Indicadores e consulta por mês",
+              "verification": "Com elegíveis em meses diferentes, alternar seletor e comparar todos os blocos.",
+              "expected_result": "Somente indicadores mensais/comparativo mudam pela seleção.",
+              "requirement_ids": [
+                "CA3"
+              ]
+            },
+            {
+              "id": "CT-014",
+              "title": "CA4 — Operações e atualização do dashboard",
+              "verification": "Massa: novembro100 receita/30 despesa; dezembro01 receita20/despesa5. Consultar30/11 23:59:59 e01/12 00:00:00 em Brasília.",
+              "expected_result": "Saldo70→85; antes dezembro0/0 e registros01/12 fora dos recentes; depois dezembro20/5 e tornam-se elegíveis sem confirmação.",
+              "requirement_ids": [
+                "CA4"
+              ]
+            },
+            {
+              "id": "CT-015",
+              "title": "CA5 — Movimentações recentes e detalhes",
+              "verification": "Criar mais5 elegíveis com empate, conferir IDs e ordem; repetir com menos5 e período selecionado distinto.",
+              "expected_result": "Lista correta e global, sem preencher com registros fictícios.",
+              "requirement_ids": [
+                "CA5"
+              ]
+            },
+            {
+              "id": "CT-016",
+              "title": "CA6-indicadores — Indicadores e consulta por mês",
+              "verification": "Comparar conta vazia, conta só futura e conta com dados em outro mês; selecionar também mês futuro.",
+              "expected_result": "Estados distinguem ausência geral, somente agendamentos e mês vazio; saldo/recentes de outros meses não desaparecem.",
+              "requirement_ids": [
+                "CA6-indicadores"
+              ]
+            },
+            {
+              "id": "CT-017",
+              "title": "CA6-recentes — Movimentações recentes e detalhes",
+              "verification": "Abrir conta sem registros e só futuras.",
+              "expected_result": "Lista vazia coerente e orientação adequada; nenhuma movimentação futura tratada como realizada.",
+              "requirement_ids": [
+                "CA6-recentes"
+              ]
+            },
+            {
+              "id": "CT-018",
+              "title": "CA7-detalhes — Movimentações recentes e detalhes",
+              "verification": "Abrir registro recente e conferir dados na consulta individual fornecida.",
+              "expected_result": "Mesmos dados e autorização; usa entrega Cadastro e conferência de uma transação própria #1015930.",
+              "requirement_ids": [
+                "CA7-detalhes"
+              ]
+            },
+            {
+              "id": "CT-019",
+              "title": "CA7-atalhos — Operações e atualização do dashboard",
+              "verification": "Selecionar mês distinto e usar Ver todas; usar Nova transação e acesso de primeiro cadastro/agendamentos.",
+              "expected_result": "Histórico integral de #1015931 e cadastro de #1015930 abrem corretamente, sem filtro mensal indevido.",
+              "requirement_ids": [
+                "CA7-atalhos"
+              ]
+            },
+            {
+              "id": "CT-020",
+              "title": "CA8 — Operações e atualização do dashboard",
+              "verification": "Exercer as três operações reais e seus cancelamentos, além de alterar em outra área e retornar.",
+              "expected_result": "Consulta atualizada após sucesso, preservada ao cancelar; nenhum dado simulado serve como aceite.",
+              "requirement_ids": [
+                "CA8"
+              ]
+            },
+            {
+              "id": "CT-021",
+              "title": "CA9-indicadores — Indicadores e consulta por mês",
+              "verification": "Controlar atraso e falha da leitura de indicadores, tentar novamente após restabelecer.",
+              "expected_result": "Carregamento visível, erro distinguível de zero real e recuperação correta.",
+              "requirement_ids": [
+                "CA9-indicadores"
+              ]
+            },
+            {
+              "id": "CT-022",
+              "title": "CA9-recentes — Movimentações recentes e detalhes",
+              "verification": "Provocar atraso/falha na consulta de recentes e repetir com leitura disponível.",
+              "expected_result": "Estado de leitura apropriado e lista real recuperada.",
+              "requirement_ids": [
+                "CA9-recentes"
+              ]
+            },
+            {
+              "id": "CT-023",
+              "title": "CA10-indicadores — Indicadores e consulta por mês",
+              "verification": "Como B, tentar solicitar números de A.",
+              "expected_result": "Acesso alheio negado ou resultado restrito a B, sem exposição.",
+              "requirement_ids": [
+                "CA10-indicadores"
+              ]
+            },
+            {
+              "id": "CT-024",
+              "title": "CA10-recentes — Movimentações recentes e detalhes",
+              "verification": "Como B tentar detalhe de A; remover registro apresentado antes de abri-lo e atualizar lista.",
+              "expected_result": "Sem dados alheios; indisponibilidade clara e lista pode ser atualizada.",
+              "requirement_ids": [
+                "CA10-recentes"
+              ]
+            },
+            {
+              "id": "CT-025",
+              "title": "F-persistencia — Operações e atualização do dashboard",
+              "verification": "Provocar cancelamento e falha controlada de persistência em cadastro, edição e exclusão iniciados pelo dashboard.",
+              "expected_result": "Valores anteriores preservados; não apresentar alteração que não foi persistida.",
+              "requirement_ids": [
+                "F-persistencia"
+              ]
+            }
+          ]
+        }
+      },
+      "semantic_baseline": {
+        "requirement_sha256": "334ca3a6cf7b5b5beb1cff955e705c1a43a289bd9f9b461f64df87493263a7a8",
+        "semantic_model_sha256": "7d69f93141109588a83a313746a35ccf65967a2ff2c20824c4aa1f1d2d40054b",
+        "semantic_model": {
+          "requirements": [
+            {
+              "id": "R1",
+              "summary": "Elegíveis são somente transações próprias não excluídas e com data até hoje em America/Sao_Paulo; dashboard exige autenticação e e-mail confirmado."
+            },
+            {
+              "id": "R2",
+              "summary": "Saldo geral soma receitas elegíveis menos despesas de todo histórico, aceita negativo e não muda por selecionar outro mês; sem saldo inicial separado."
+            },
+            {
+              "id": "R3",
+              "summary": "Totais mensais somam receitas/despesas elegíveis por data dentro do mês selecionado; atual só até hoje, passado seus registros, futuro sem antecipação."
+            },
+            {
+              "id": "R4",
+              "summary": "Recentes usa todo histórico elegível, independente do mês, data decrescente e cadastro mais recente em empate, limite5; com menos5 exibe todos e futuras só entram na data."
+            },
+            {
+              "id": "R5",
+              "summary": "Duplicados permitidos contam individualmente; edição/exclusão recalculam indicadores e podem mudar recentes."
+            },
+            {
+              "id": "R6",
+              "summary": "Comparação simples de receitas/despesas e resultado mensal usam exatamente os totais dos indicadores; resultado=receitas−despesas. Sem projeções, tendências ou relatórios avançados."
+            },
+            {
+              "id": "R7-abertura",
+              "summary": "Ao abrir o dashboard consultar valores atuais; mês inicial é o atual em Brasília, sem usar o calendário UTC incorretamente."
+            },
+            {
+              "id": "R7-retorno",
+              "summary": "Ao retornar de outras áreas e após alteração concluída no dashboard consultar valores atuais. Tela ociosa na virada só precisa atualizar ao ser consultada novamente; não exige polling nem sincronização instantânea entre dispositivos."
+            },
+            {
+              "id": "R8-valores",
+              "summary": "Exibir valores em reais com duas casas, identificando saldo geral e mês selecionado."
+            },
+            {
+              "id": "R8-recentes",
+              "summary": "Identificar que recentes considera todo histórico até hoje; listar descrição, tipo, valor, categoria e data, com campos completos nos detalhes se layout compacto reduzir a lista."
+            },
+            {
+              "id": "CA1",
+              "summary": "Abrir no mês atual de Brasília e mostrar só números/registros do titular autenticado e confirmado."
+            },
+            {
+              "id": "CA2",
+              "summary": "Saldo, totais e resultado mensal correspondem a R2/R3/R6, inclusive negativo."
+            },
+            {
+              "id": "CA3",
+              "summary": "Trocar mês altera somente totais/comparativo do período, não saldo geral nem conjunto de recentes."
+            },
+            {
+              "id": "CA4",
+              "summary": "Futuras não entram em indicadores/recentes antes da data; próxima consulta após início da data em Brasília inclui automaticamente, sem confirmar pagamento/recebimento."
+            },
+            {
+              "id": "CA5",
+              "summary": "Mostrar cinco elegíveis mais recentes por data/cadastro ou todos se menos5, incluindo outros meses."
+            },
+            {
+              "id": "CA6-indicadores",
+              "summary": "Sem movimentações mostrar R$0,00 e orientação de primeiro cadastro; só futuras mostrar zeros reais e orientação de agendamentos no histórico; mês vazio zera só totais, preservando saldo e recentes globais."
+            },
+            {
+              "id": "CA6-recentes",
+              "summary": "Sem elegíveis recentes fica vazio; só futuras não preenche recentes com agendadas e informa consulta pelo histórico."
+            },
+            {
+              "id": "CA7-detalhes",
+              "summary": "Abrir detalhes reutiliza a consulta de Gestão de transações, sem construir leitura duplicada."
+            },
+            {
+              "id": "CA7-atalhos",
+              "summary": "Nova transação reutiliza cadastro; Ver todas abre histórico integral, sem transportar filtro mensal que contradiga recentes globais."
+            },
+            {
+              "id": "CA8",
+              "summary": "Cadastro/edição/exclusão concluídos a partir do dashboard atualizam números/recentes sem recarga manual; cancelar conserva valores; retornar de outras áreas consulta dados atuais."
+            },
+            {
+              "id": "CA9-indicadores",
+              "summary": "Indicadores mostram carregamento durante consulta; falha mostra indisponibilidade e tentar novamente, sem substituir por zeros aparentando dados reais; sucesso posterior mostra valores reais."
+            },
+            {
+              "id": "CA9-recentes",
+              "summary": "Lista mostra carregamento/indisponibilidade e nova tentativa quando sua leitura falha; não confundir falha com lista realmente vazia."
+            },
+            {
+              "id": "CA10-indicadores",
+              "summary": "Nenhum usuário acessa indicadores de outra conta, inclusive tentativa direta de trocar identificador."
+            },
+            {
+              "id": "CA10-recentes",
+              "summary": "Recentes/detalhes não revelam registros alheios; transação removida antes de abrir informa indisponibilidade e permite atualizar a lista."
+            },
+            {
+              "id": "F-persistencia",
+              "summary": "Fluxos alternativos: só refletir alterações efetivamente persistidas; cancelamento ou falha das operações não gera alteração financeira falsa."
+            }
+          ],
+          "slices": [
+            {
+              "number": 1,
+              "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Indicadores e consulta por mês",
+              "title_suffix": "Indicadores e consulta por mês",
+              "api_delivery": false,
+              "estimate_hours": 1.5,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [],
+              "description": {
+                "delivery": "Substituir os placeholders por saldo geral e totais mensais reais do titular, com seleção do mês, comparação simples e resultado mensal coerentes. Reutilizar os cálculos de Gestão de transações.",
+                "limits": "Não reimplementa cálculo de competência, não antecipa futuras nem cria projeções/relatórios avançados. Recentes é outra entrega; a preservação do seu conjunto na troca de mês é conferida na integração.",
+                "dependencies": "Para iniciar: layout e autenticação existentes e requisitos funcionais aprovados permitem preparar apresentação e casos de teste. Para concluir: consumir dados/cálculos reais de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’, alimentados por ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’; integração com ‘Dashboard financeiro - Movimentações recentes e detalhes’ verifica que trocar mês não muda recentes. Não concluir com dados simulados.",
+                "criteria": [
+                  {
+                    "kind": "permission",
+                    "text": "Elegíveis são somente transações próprias não excluídas e com data até hoje em America/Sao_Paulo; dashboard exige autenticação e e-mail confirmado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Saldo geral soma receitas elegíveis menos despesas de todo histórico, aceita negativo e não muda por selecionar outro mês; sem saldo inicial separado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Totais mensais somam receitas/despesas elegíveis por data dentro do mês selecionado; atual só até hoje, passado seus registros, futuro sem antecipação."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Comparação simples de receitas/despesas e resultado mensal usam exatamente os totais dos indicadores; resultado=receitas−despesas. Sem projeções, tendências ou relatórios avançados."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Ao abrir o dashboard consultar valores atuais; mês inicial é o atual em Brasília, sem usar o calendário UTC incorretamente."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Exibir valores em reais com duas casas, identificando saldo geral e mês selecionado."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Abrir no mês atual de Brasília e mostrar só números/registros do titular autenticado e confirmado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Saldo, totais e resultado mensal correspondem a R2/R3/R6, inclusive negativo."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Trocar mês altera somente totais/comparativo do período, não saldo geral nem conjunto de recentes."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Sem movimentações mostrar R$0,00 e orientação de primeiro cadastro; só futuras mostrar zeros reais e orientação de agendamentos no histórico; mês vazio zera só totais, preservando saldo e recentes globais."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Indicadores mostram carregamento durante consulta; falha mostra indisponibilidade e tentar novamente, sem substituir por zeros aparentando dados reais; sucesso posterior mostra valores reais."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Nenhum usuário acessa indicadores de outra conta, inclusive tentativa direta de trocar identificador."
+                  }
+                ],
+                "traceability": [
+                  "R1",
+                  "R2",
+                  "R3",
+                  "R6",
+                  "R7-abertura",
+                  "R8-valores",
+                  "CA1",
+                  "CA2",
+                  "CA3",
+                  "CA6-indicadores",
+                  "CA9-indicadores",
+                  "CA10-indicadores"
+                ]
+              }
+            },
+            {
+              "number": 2,
+              "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Movimentações recentes e detalhes",
+              "title_suffix": "Movimentações recentes e detalhes",
+              "api_delivery": false,
+              "estimate_hours": 1.5,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [],
+              "description": {
+                "delivery": "Apresentar as cinco movimentações elegíveis mais recentes do titular, independentemente do mês dos indicadores, com abertura da consulta individual existente.",
+                "limits": "Não cria outra tela de detalhes nem usa o mês selecionado para restringir a lista. Operações e retorno integrado pertencem à entrega específica.",
+                "dependencies": "Para iniciar: layout e contrato funcional aprovados permitem preparar lista e casos de teste. Para concluir: integrar registros/leitura individual de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’ e elegibilidade de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’; lista e detalhe devem usar dados reais, sem implementar essas capacidades novamente.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Recentes usa todo histórico elegível, independente do mês, data decrescente e cadastro mais recente em empate, limite5; com menos5 exibe todos e futuras só entram na data."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Identificar que recentes considera todo histórico até hoje; listar descrição, tipo, valor, categoria e data, com campos completos nos detalhes se layout compacto reduzir a lista."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Mostrar cinco elegíveis mais recentes por data/cadastro ou todos se menos5, incluindo outros meses."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Sem elegíveis recentes fica vazio; só futuras não preenche recentes com agendadas e informa consulta pelo histórico."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Abrir detalhes reutiliza a consulta de Gestão de transações, sem construir leitura duplicada."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Lista mostra carregamento/indisponibilidade e nova tentativa quando sua leitura falha; não confundir falha com lista realmente vazia."
+                  },
+                  {
+                    "kind": "permission",
+                    "text": "Recentes/detalhes não revelam registros alheios; transação removida antes de abrir informa indisponibilidade e permite atualizar a lista."
+                  }
+                ],
+                "traceability": [
+                  "R4",
+                  "R8-recentes",
+                  "CA5",
+                  "CA6-recentes",
+                  "CA7-detalhes",
+                  "CA9-recentes",
+                  "CA10-recentes"
+                ]
+              }
+            },
+            {
+              "number": 3,
+              "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Operações e atualização do dashboard",
+              "title_suffix": "Operações e atualização do dashboard",
+              "api_delivery": false,
+              "estimate_hours": 1.5,
+              "estimate_exception": null,
+              "blocked_by": [
+                1,
+                2
+              ],
+              "external_blockers": [],
+              "description": {
+                "delivery": "Conectar cadastro e histórico existentes ao dashboard e atualizar os indicadores e recentes após operações concluídas ou retorno, preservando valores ao cancelar ou falhar.",
+                "limits": "Não reimplementa cadastro, edição, exclusão ou histórico. Sem atualização contínua da tela ociosa nem sincronização instantânea entre dispositivos.",
+                "dependencies": "Para iniciar: ‘Dashboard financeiro - Indicadores e consulta por mês’ e ‘Dashboard financeiro - Movimentações recentes e detalhes’ fornecem os blocos a conectar. Para concluir: integrar ‘[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro e conferência de uma transação própria (#1015930)’, ‘[DEV] [WEB] [USUARIO] Gestão de transações - Histórico por período (#1015931)’, ‘[DEV] [WEB] [USUARIO] Gestão de transações - Edição de transação com efeitos financeiros (#1015934)’ e ‘[DEV] [WEB] [USUARIO] Gestão de transações - Exclusão confirmada com efeito único (#1015935)’, com os cálculos de ‘[DEV] [WEB] [USUARIO] Gestão de transações - Agendamentos e competência financeira (#1015933)’. Operações reais e seus efeitos devem estar verificados; navegação isolada não conclui.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Duplicados permitidos contam individualmente; edição/exclusão recalculam indicadores e podem mudar recentes."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Ao retornar de outras áreas e após alteração concluída no dashboard consultar valores atuais. Tela ociosa na virada só precisa atualizar ao ser consultada novamente; não exige polling nem sincronização instantânea entre dispositivos."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Futuras não entram em indicadores/recentes antes da data; próxima consulta após início da data em Brasília inclui automaticamente, sem confirmar pagamento/recebimento."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nova transação reutiliza cadastro; Ver todas abre histórico integral, sem transportar filtro mensal que contradiga recentes globais."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Cadastro/edição/exclusão concluídos a partir do dashboard atualizam números/recentes sem recarga manual; cancelar conserva valores; retornar de outras áreas consulta dados atuais."
+                  },
+                  {
+                    "kind": "error",
+                    "text": "Fluxos alternativos: só refletir alterações efetivamente persistidas; cancelamento ou falha das operações não gera alteração financeira falsa."
+                  }
+                ],
+                "traceability": [
+                  "R5",
+                  "R7-retorno",
+                  "CA4",
+                  "CA7-atalhos",
+                  "CA8",
+                  "F-persistencia"
+                ]
+              }
+            }
+          ],
+          "coverage": [
+            {
+              "requirement_id": "R1",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R4",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R5",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R6",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R7-abertura",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R7-retorno",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R8-valores",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "R8-recentes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA1",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA4",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA5",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA6-indicadores",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA6-recentes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA7-detalhes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA7-atalhos",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA8",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA9-indicadores",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA9-recentes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA10-indicadores",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Indicadores e consulta por mês implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "CA10-recentes",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Movimentações recentes e detalhes implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            },
+            {
+              "requirement_id": "F-persistencia",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "Página dashboard.tsx somente placeholders; Operações e atualização do dashboard implementa este resultado. Cálculos e operações permanecem nas filhas fornecedoras de Gestão de transações, sem duplicação."
+            }
+          ],
+          "decisions": [
+            "Prévia inicial pendente de revisão; aprovação de Gestão de transações não autoriza publicação deste item.",
+            "R6 conserva a expressão proposta visual no documento, mas integra requisito concluído e aprovado; comparar apenas os mesmos totais reais.",
+            "Dois avaliadores independentes: A propôs separar mês atual e seleção/comparação, quatroDEV3,25/2,5/2,75/2,75h QA4,5h; B agrupou indicadores/períodos, trêsDEV4/3/4h QA4h. Não foram usadas estimativas herdadas.",
+            "Adotados três cortes por jornadas: indicadores com seleção/comparação compartilham consulta e feedback; recentes é consulta global própria; operações conecta ambos. Estimativas4/3/4h; QA4,5h contempla três mutações, cancelamentos/falhas e virada. Total15,5h. Teto conferido posteriormente.",
+            "Esforço indicadores: integração0,75h; cartões/seletor/resumo1,25h; estados0,75h; regressões1h; revisão0,25h. Recentes: consulta0,75h; lista/detalhe0,75h; estados0,5h; regressões0,75h; revisão0,25h. Operações: atalhos/retorno0,75h; integração1h; atualização/cancelamento0,75h; regressões1h; revisão0,5h.",
+            "QA: preparação0,5h; indicadores/períodos1h; recentes0,75h; operações/cancelamentos1h; erros/permissões/data0,75h; evidências0,5h. Sem margem genérica; infraestrutura não incluída.",
+            "Dependências de conclusão específicas constam das descrições. Não criar external_blockers de início: apresentação, casos de teste e navegação podem começar com contratos funcionais aprovados. Nenhum aceite com mocks substitui integração real. Relação Feature1015911→1015912 preservada.",
+            "Bloqueios nativos propostos: indicadores e recentes bloqueiam operações; as três DEV bloqueiam QA. Não há relações externas novas, substituição de bloqueio de pai nem remoção de relações existentes.",
+            "Incertezas concretas: contratos internos das fornecedoras ainda não implementados; retorno das operações deve respeitar navegação entregue; cache não pode preservar dados obsoletos; falha não pode aparentar zero. Revalidar integração ao receber fornecedores, sem acrescentar margem genérica.",
+            "CTs distinguem conta vazia, somente futuras, mês vazio, erro, transição da data e retorno. DOCX obrigatório gerado após aprovação e anexado à QA. Nenhuma API, Study ou mudança de requisito.",
+            "Estimativas correntes por instrucao explicita do tech lead: tres DEV de1,5h cada e QA1,5h, total6h. Os calculos anteriores ficam no historico, sem determinar os valores desta revisao. Entregas, cobertura e condicoes permanecem iguais; publicacao aguarda aprovacao da previa completa."
+          ],
+          "study_evidence": []
+        }
+      }
+    }
+  ],
+  "approvals": [
+    {
+      "revision": 2,
+      "proposal_sha256": "50a770e0fa2bbafe0229880fa25c8ae6e986bd93c711d4199231dfadd4099a60",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-04T23:26:05.9774527+00:00",
+      "status": "valid"
+    }
+  ]
+}

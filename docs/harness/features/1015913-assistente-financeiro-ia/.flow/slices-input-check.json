@@ -1,0 +1,9 @@
+{
+  "status": "ready",
+  "feature_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1015913-assistente-financeiro-ia\\feature.md",
+  "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1015913-assistente-financeiro-ia\\.flow\\feature-state.json",
+  "issue_id": 1015913,
+  "requirement_sha256": "78296d4a18f2cbd4d8f81f1e470ea1057439e79b597bfbd41f1a6d34f77a98f6",
+  "remote_snapshot_sha256": "c4acf4db54fa8347e236dd37969e19594f6b36e5539e332c117b29dfbefedcc3",
+  "checked_at": "2026-11-04T23:29:24.927Z"
+}

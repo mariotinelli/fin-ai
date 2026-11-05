@@ -1,0 +1,9 @@
+{
+  "status": "ready",
+  "feature_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1015909-acesso-a-conta\\feature.md",
+  "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1015909-acesso-a-conta\\.flow\\feature-state.json",
+  "issue_id": 1015909,
+  "requirement_sha256": "00628586f7b8f20fef1c5c9740afeef71c3f1f4c719059858236479b762340f7",
+  "remote_snapshot_sha256": "03aa89fbc0a3b172cbfc435490fa386b240da68b56cfe51ca7e5280bd5df0b9a",
+  "checked_at": "2026-11-04T20:34:14.4948693+00:00"
+}
