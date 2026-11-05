@@ -42,9 +42,27 @@ Primeiro, assumir a configuração padrão no provider da aplicação com a cade
 
 O agregado `composer test` descreve os verificadores, mas não preserva o PHP isolado nos processos filhos neste Windows. Além disso, o proxy `herd php` não propaga o código de saída do processo filho. O gate reproduzível abaixo pede ao Herd o binário PHP isolado, executa cada ferramenta PHP com esse binário para preservar falhas e mantém os comandos frontend no Bun:
 
-```sh
-HERD_PHP=$(/c/Users/maari/.config/herd/bin/herd.bat which-php | tr -d '\r\n')
-"$HERD_PHP" vendor/bin/pint --parallel --test && "$HERD_PHP" vendor/bin/rector --dry-run && bun run test:lint && "$HERD_PHP" vendor/bin/phpstan && bun run test:types && "$HERD_PHP" vendor/bin/pest --type-coverage --min=100 && "$HERD_PHP" vendor/bin/pest --parallel --coverage --exactly=100.0
+Executar o bloco no PowerShell, inclusive quando o executor padrão for `cmd.exe` (selecionar `powershell.exe -NoProfile` como shell). A atribuição Bash `HERD_PHP=...` não funciona no shell do Windows. Cada etapa abaixo interrompe o gate com o código de saída original; nenhuma ferramenta aplica correções.
+
+```powershell
+$phasePhp = (herd which-php | Select-Object -Last 1).Trim()
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+if (-not (Test-Path -LiteralPath $phasePhp -PathType Leaf)) { throw 'PHP do Herd não encontrado' }
+$env:XDEBUG_MODE = 'coverage'
+$phaseChecks = @(
+    { & $phasePhp vendor/bin/pint --parallel --test }
+    { & $phasePhp vendor/bin/rector --dry-run }
+    { bun run test:lint }
+    { & $phasePhp vendor/bin/phpstan }
+    { bun run test:types }
+    { & $phasePhp vendor/bin/pest --type-coverage --min=100 }
+    { & $phasePhp vendor/bin/pest --parallel --coverage --exactly=100.0 }
+)
+foreach ($phaseCheck in $phaseChecks) {
+    & $phaseCheck
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+}
+exit 0
 ```
 
 Pré-requisitos observados: PHP 8.5.12 selecionado pelo Herd, Xdebug 3.5.0 com modo `coverage`, PostgreSQL e os navegadores Playwright correspondentes ao `playwright 1.64.1` do projeto. Os binários Playwright foram alinhados com `bunx playwright install`, sem alterar dependências ou arquivos versionados.
