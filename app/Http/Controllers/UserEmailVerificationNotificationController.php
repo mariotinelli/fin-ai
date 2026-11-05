@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 final readonly class UserEmailVerificationNotificationController
 {
@@ -21,13 +22,23 @@ final readonly class UserEmailVerificationNotificationController
             : Inertia::render('user-email-verification-notification/create', ['status' => $request->session()->get('status')]);
     }
 
-    public function store(#[CurrentUser] User $user, CreateUserEmailVerificationNotification $action): RedirectResponse
+    public function store(Request $request, #[CurrentUser] User $user, CreateUserEmailVerificationNotification $action): RedirectResponse
     {
         if ($user->hasVerifiedEmail()) {
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        $action->handle($user);
+        try {
+            $action->handle($user);
+        } catch (TransportExceptionInterface $transportException) {
+            report($transportException);
+
+            $request->session()->forget('status');
+
+            return to_route('verification.notice')->withErrors([
+                'email' => 'Não foi possível enviar seu e-mail de confirmação. Tente novamente.',
+            ]);
+        }
 
         return back()->with('status', 'verification-link-sent');
     }

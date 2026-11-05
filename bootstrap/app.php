@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,6 +30,22 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (InvalidSignatureException|AccessDeniedHttpException $exception, Request $request): ?RedirectResponse {
+            if (! $request->routeIs('verification.verify')) {
+                return null;
+            }
+
+            if ($exception instanceof AccessDeniedHttpException && ! $exception->getPrevious() instanceof AuthorizationException) {
+                return null;
+            }
+
+            $request->session()->forget('status');
+
+            return to_route('verification.notice')->withErrors([
+                'email' => 'Não foi possível confirmar seu e-mail com este link. Solicite um novo link de confirmação.',
+            ]);
+        });
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request): bool => $request->is('api/*') || $request->expectsJson(),
         );

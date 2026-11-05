@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Contracts\Mail\Factory;
+use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rules\Password;
+use Symfony\Component\Mailer\Exception\TransportException;
 
 it('renders registration page', function (): void {
     $response = $this->fromRoute('home')
@@ -26,7 +32,7 @@ it('may register a new user', function (): void {
         ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
         ->andReturnTrue();
 
-    Event::fake([Registered::class]);
+    Notification::fake();
 
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
@@ -50,9 +56,50 @@ it('may register a new user', function (): void {
 
     $this->assertAuthenticatedAs($user);
 
-    Event::assertDispatched(Registered::class, fn (Registered $event): bool => $event->user->is($user));
-    Event::assertDispatchedTimes(Registered::class, 1);
+    Notification::assertSentToOnce($user, VerifyEmail::class);
 
+    $this->get(route('dashboard'))->assertRedirectToRoute('verification.notice');
+});
+
+it('rolls back registration when mail transport fails and allows retrying the same data', function (): void {
+    Exceptions::fake();
+    $exception = new TransportException('smtp://private-host: secret transport failure');
+    $mailer = Mockery::mock(Mailer::class);
+    $mailer->shouldReceive('send')->once()->andThrow($exception);
+    $this->mock(Factory::class)->shouldReceive('mailer')->once()->with(null)->andReturn($mailer);
+    $this->mock(UncompromisedVerifier::class)->shouldReceive('verify')->twice()->andReturnTrue();
+
+    $data = [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Valid-pass12!',
+        'password_confirmation' => 'Valid-pass12!',
+    ];
+
+    $this->fromRoute('register')->post(route('register.store'), $data)
+        ->assertRedirectToRoute('register')
+        ->assertSessionHasErrors([
+            'email' => 'Não foi possível enviar seu e-mail de confirmação. Tente realizar o cadastro novamente.',
+        ])
+        ->assertSessionMissing('status');
+
+    $this->assertDatabaseEmpty('users');
+    $this->assertGuest();
+    Exceptions::assertReported(fn (TransportException $reported): bool => $reported === $exception);
+    $this->withCookie(config('session.cookie'), session()->getId())
+        ->get(route('register'))->assertOk()->assertInertia(fn ($page) => $page
+        ->where('errors.email', 'Não foi possível enviar seu e-mail de confirmação. Tente realizar o cadastro novamente.'));
+
+    Notification::fake();
+
+    $this->fromRoute('register')->post(route('register.store'), $data)
+        ->assertRedirectToRoute('dashboard')->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('users', 1);
+    $user = User::query()->sole();
+    expect($user->email_verified_at)->toBeNull();
+    $this->assertAuthenticatedAs($user);
+    Notification::assertSentToOnce($user, VerifyEmail::class);
     $this->get(route('dashboard'))->assertRedirectToRoute('verification.notice');
 });
 
