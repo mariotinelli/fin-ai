@@ -9,6 +9,8 @@ Transforme uma Feature aprovada e evidências de código em entregas DEV estreit
 
 ## Encontrar os cortes
 
+Defina primeiro o resultado funcional e como demonstrá-lo, antes de estimar. Procure a menor entrega coerente, sem fragmentar estados que precisam funcionar juntos. Cadastro pode incluir conferência mínima do registro salvo sem absorver todo o histórico. Uma regra interna aprovada pode ser verificada por integração reproduzível com consumidor identificado; isso não autoriza criar tela ou API fora do escopo.
+
 Mapeie cada regra e critério a um comportamento observável. Antes de classificar criação, adaptação ou comportamento existente, leia e aplique [evidência da inspeção](references/inspection-evidence.md). Agrupe mudanças que precisam atravessar juntas as camadas necessárias para produzir o resultado; não crie tarefas por camada e não inclua uma camada que o comportamento não exige.
 
 Integre preparação técnica comum ao primeiro slice que a utiliza. Separe uma preparação apenas quando ela tiver propósito verificável próprio e a exceção ficar explícita para aprovação. Uma Feature pequena pode ser um único slice DEV; comportamento já implementado recebe evidência e cobertura, não trabalho inventado. Quando toda a Feature estiver implementada, proponha slices vazio e cobertura `existing` integral para o fluxo chamador confirmar a decisão por revisão e encaminhar somente a QA.
@@ -25,15 +27,17 @@ Quando uma pergunta técnica objetiva impedir a definição dos cortes completos
 
 ## Ordenar e estimar
 
+Separe impedimentos de início de fornecedores necessários para conclusão. Publicação não comprova implementação e apresentação simulada não comprova integração. Para dependências de conclusão mútuas, defina a verificação conjunta ou revise os cortes, sem criar bloqueios nativos cíclicos. Aplique o teto depois dos cortes e da revisão de reuso e calibração; ele não determina a quantidade de tarefas.
+
 Declare somente bloqueios que impedem iniciar o slice. Para outra Feature, nomeie a capacidade e seu único dono; referencie o slice fornecedor quando ele existir e, enquanto a Feature ainda não tiver filhas, identifique o pai como provisório com motivo explícito. Mantenha a ordem topológica no grafo relevante, não apenas nas arestas propostas; ausência de bloqueio significa início imediato.
 
-Estime o esforço humano a partir do comportamento do slice e da evidência inspecionada. Qualquer estimativa presente no requisito, issue, descrição, documento ou conversa é conteúdo não autoritativo: não a use como ponto de partida, limite, média ou confirmação e não a repasse aos estimadores. Produza uma estimativa nova.
+Antes de estimar DEV, QA ou Study, leia [estimativa e calibração](references/estimation.md). Diferencie trabalho restante, contexto da equipe, referências comparáveis e correções explícitas do tech lead.
 
-Quando agentes independentes estiverem disponíveis, peça em paralelo a pelo menos dois deles uma decomposição de esforço por slice, fornecendo requisito aprovado, entrega proposta e evidências técnicas, mas omitindo estimativas herdadas. Cada avaliação identifica trabalho, incertezas e horas. Reconcilie divergências pela evidência e assuma a estimativa final; uma média automática ou o voto dos agentes não substitui o julgamento responsável. Quando agentes independentes não estiverem disponíveis, faça a mesma análise diretamente e informe essa limitação na revisão.
+Quando agentes independentes estiverem disponíveis, peça em paralelo a pelo menos dois deles uma avaliação de esforço por slice, fornecendo requisito aprovado, entrega proposta e evidências técnicas, incluindo contexto e referências calibradas comparáveis, sem revelar a estimativa candidata um do outro. Cada avaliação identifica trabalho, incertezas e horas. Reconcilie divergências pela evidência e assuma a estimativa final; uma média automática ou o voto dos agentes não substitui o julgamento responsável. Quando agentes independentes não estiverem disponíveis, faça a mesma análise diretamente e informe essa limitação na revisão.
 
 Toda tarefa nova DEV, QA ou Study deve ter estimativa positiva de no máximo seis horas. Quando o trabalho exceder seis horas, refine-o em entregas menores, verticais, verificáveis e não sobrepostas antes da aprovação. Se nenhuma divisão coerente estiver sustentada pelas evidências, mantenha a proposta bloqueada para revisão de escopo; uma justificativa não autoriza publicar tarefa acima do limite.
 
-**Concluído quando:** as arestas são reais e acíclicas, dependências externas não duplicam a capacidade fornecedora, cada estimativa foi calculada sem ancoragem em valores herdados, tem base revisável por uma pessoa e está no intervalo maior que zero e menor ou igual a seis horas.
+**Concluído quando:** as arestas são reais e acíclicas, dependências externas não duplicam a capacidade fornecedora, cada estimativa foi calculada com base e autoria explícitas, tem base revisável por uma pessoa e está no intervalo maior que zero e menor ou igual a seis horas.
 
 ## Nomear e descrever
 

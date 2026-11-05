@@ -2,6 +2,8 @@
 
 ## Preparar com evidência
 
+Ao estimar QA, aplique [estimativa e calibração](estimation.md). Agrupe execução com dados e preparação compartilhados, preservando todas as condições e seus resultados. Distinga testes manuais necessários de evidências automatizadas disponíveis; quantidade de condições não determina horas. Mantenha explícitos preparação, reteste e verificações de integração que não estejam cobertas pela DEV.
+
 Depois da inspeção, derive do requisito aprovado o que o profissional de QA deve verificar e qual resultado observável deve encontrar. A condição pertence à Feature ou ao Bug inteiro: inclua capacidades existentes relevantes, interações entre fatias e preservações necessárias. Uma regressão fora da entrega precisa de uma relação de impacto justificável pela inspeção; explicite essa justificativa.
 
 Para Bugs, represente a situação de reprodução, o resultado corrigido e as regressões relacionadas. No caminho somente QA, use a mesma análise de cobertura, mesmo sem fatias DEV.

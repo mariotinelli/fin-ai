@@ -59,11 +59,13 @@ Se uma incerteza técnica impedir o fatiamento vertical completo, leia [estudo e
 
 ## Propor e revisar
 
+Na prévia, apresente resultado verificável, base das horas e dependências de início e conclusão. Registre em `decisions` contexto, fontes de calibração, premissas e correções com autoria. Preserve estimativas anteriores no histórico e identifique correções humanas como tais. Use referências locais indicadas pelo usuário ou pelo projeto, sem exigir nova configuração ou distribuir seus valores como padrão universal.
+
 Prepare as condições de teste depois da inspeção, junto da proposta: leia [condições de teste e DOCX obrigatório](references/test-conditions.md). Inclua Feature, Bug e caminho somente QA, preservando a descrição atual da QA. Toda nova publicação gera o DOCX, inclui `test_document` na prévia e só conclui após o anexo ser observado na QA. Revise condições, cobertura e fatias conjuntamente com o tech lead.
 
 Invoque `vertical-slicing` com o requisito aprovado e as evidências de código. Materialize a proposta conforme [entrada e persistência](references/input-and-persistence.md), valide-a com `record-proposal` e renderize `slices/slices.md`. Apresente a prévia numerada com título, entrega verificável, estimativa própria calculada com apoio de agentes independentes quando disponíveis, bloqueios e tabela de cobertura. Para capacidade de outra Feature, leia [dependências externas e refinamento](references/dependencies.md) antes de propor a aresta. Pergunte sobre granularidade, união, divisão, estimativas e arestas de bloqueio; registre cada nova versão sem reescrever as anteriores.
 
-Uma única filha DEV é válida quando cabe integralmente em até seis horas. Ignore estimativas encontradas nas fontes e calcule novamente DEV, QA e Study; nenhuma tarefa nova pode exceder seis horas. Trabalho maior precisa ser refinado em entregas coerentes antes da prévia, sem usar `estimate_exception` para contornar o limite. Uma preparação técnica excepcional precisa revelar a entrega que viabiliza. API só aparece no título quando ela própria é uma entrega consumível já aprovada na Feature.
+Uma única filha DEV é válida quando cabe integralmente em até seis horas. Aplique a calibração de `vertical-slicing` a DEV, QA e Study; nenhuma tarefa nova pode exceder seis horas. Trabalho maior precisa ser refinado em entregas coerentes antes da prévia, sem usar `estimate_exception` para contornar o limite. Uma preparação técnica excepcional precisa revelar a entrega que viabiliza. API só aparece no título quando ela própria é uma entrega consumível já aprovada na Feature.
 
 **Concluído quando:** granularidade, títulos, estimativas, bloqueios, cobertura e tratamento proposto para filhas existentes estão completos e prontos para a decisão única da prévia.
 
