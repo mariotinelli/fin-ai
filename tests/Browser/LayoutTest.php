@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 
@@ -80,6 +81,12 @@ it('may delete the account from the profile settings', function (): void {
 });
 
 it('may reset the password from the reset link', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'new-Password-123!', 'threshold' => 0])
+        ->andReturnTrue();
+
     $user = User::factory()->withoutTwoFactor()->create();
 
     $token = Password::createToken($user);

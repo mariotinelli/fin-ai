@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -19,80 +20,124 @@ it('renders registration page', function (): void {
 });
 
 it('may register a new user', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
+        ->andReturnTrue();
+
     Event::fake([Registered::class]);
 
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password1234',
-            'password_confirmation' => 'password1234',
+            'password' => 'Valid-pass12!',
+            'password_confirmation' => 'Valid-pass12!',
         ]);
 
     $response->assertRedirectToRoute('dashboard');
+
+    $this->assertDatabaseCount('users', 1);
 
     $user = User::query()->where('email', 'test@example.com')->first();
 
     expect($user)->not->toBeNull()
         ->and($user->name)->toBe('Test User')
         ->and($user->email)->toBe('test@example.com')
-        ->and(Hash::check('password1234', $user->password))->toBeTrue();
+        ->and($user->email_verified_at)->toBeNull()
+        ->and(Hash::check('Valid-pass12!', $user->password))->toBeTrue();
 
     $this->assertAuthenticatedAs($user);
 
-    Event::assertDispatched(Registered::class);
+    Event::assertDispatched(Registered::class, fn (Registered $event): bool => $event->user->is($user));
+    Event::assertDispatchedTimes(Registered::class, 1);
+
+    $this->get(route('dashboard'))->assertRedirectToRoute('verification.notice');
 });
 
 it('requires name', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
+        ->andReturnTrue();
+
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Valid-pass12!',
+            'password_confirmation' => 'Valid-pass12!',
         ]);
 
     $response->assertRedirectToRoute('register')
         ->assertSessionHasErrors('name');
+
+    $this->assertDatabaseEmpty('users');
 });
 
 it('requires email', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
+        ->andReturnTrue();
+
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
             'name' => 'Test User',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Valid-pass12!',
+            'password_confirmation' => 'Valid-pass12!',
         ]);
 
     $response->assertRedirectToRoute('register')
         ->assertSessionHasErrors('email');
+
+    $this->assertDatabaseEmpty('users');
 });
 
 it('requires valid email', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
+        ->andReturnTrue();
+
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
             'name' => 'Test User',
             'email' => 'not-an-email',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Valid-pass12!',
+            'password_confirmation' => 'Valid-pass12!',
         ]);
 
     $response->assertRedirectToRoute('register')
         ->assertSessionHasErrors('email');
+
+    $this->assertDatabaseEmpty('users');
 });
 
 it('requires unique email', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
+        ->andReturnTrue();
+
     User::factory()->create(['email' => 'test@example.com']);
 
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Valid-pass12!',
+            'password_confirmation' => 'Valid-pass12!',
         ]);
 
     $response->assertRedirectToRoute('register')
         ->assertSessionHasErrors('email');
+
+    $this->assertDatabaseCount('users', 1);
 });
 
 it('requires password', function (): void {
@@ -104,31 +149,49 @@ it('requires password', function (): void {
 
     $response->assertRedirectToRoute('register')
         ->assertSessionHasErrors('password');
+
+    $this->assertDatabaseEmpty('users');
 });
 
 it('requires password confirmation', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
+        ->andReturnTrue();
+
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
+            'password' => 'Valid-pass12!',
         ]);
 
     $response->assertRedirectToRoute('register')
         ->assertSessionHasErrors('password');
+
+    $this->assertDatabaseEmpty('users');
 });
 
 it('requires matching password confirmation', function (): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')
+        ->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])
+        ->andReturnTrue();
+
     $response = $this->fromRoute('register')
         ->post(route('register.store'), [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
+            'password' => 'Valid-pass12!',
             'password_confirmation' => 'different-password',
         ]);
 
     $response->assertRedirectToRoute('register')
         ->assertSessionHasErrors('password');
+
+    $this->assertDatabaseEmpty('users');
 });
 
 it('may delete user account', function (): void {
@@ -204,3 +267,88 @@ it('requires verified email to delete account', function (): void {
 
     expect($user->fresh())->not->toBeNull();
 });
+
+it('rejects passwords outside the registration policy', function (string $password): void {
+    Event::fake([Registered::class]);
+    $this->mock(UncompromisedVerifier::class)->shouldNotReceive('verify');
+
+    $this->fromRoute('register')->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => $password,
+        'password_confirmation' => $password,
+    ])->assertRedirectToRoute('register')->assertSessionHasErrors('password');
+
+    $this->assertDatabaseEmpty('users');
+    $this->assertGuest();
+    Event::assertNotDispatched(Registered::class);
+})->with([
+    'below 12 characters' => ['Abcdefgh1!x'],
+    'above 255 characters' => [str_repeat('a', 253).'A1!'],
+    'without uppercase' => ['abcdefghij1!'],
+    'without lowercase' => ['ABCDEFGHIJ1!'],
+    'without number' => ['Abcdefghijk!'],
+    'without symbol' => ['Abcdefghijk1'],
+]);
+
+it('accepts registration passwords at the policy boundaries', function (string $password): void {
+    Event::fake([Registered::class]);
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')->once()
+        ->with(['value' => $password, 'threshold' => 0])->andReturnTrue();
+
+    $this->fromRoute('register')->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => $password,
+        'password_confirmation' => $password,
+    ])->assertRedirectToRoute('dashboard')->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('users', 1);
+    $user = User::query()->sole();
+    expect(Hash::check($password, $user->password))->toBeTrue();
+    $this->assertAuthenticatedAs($user);
+    Event::assertDispatchedTimes(Registered::class, 1);
+})->with([
+    '12 characters' => ['Abcdefghij1!'],
+    '255 characters' => [str_repeat('a', 252).'A1!'],
+]);
+
+it('rejects compromised registration passwords', function (): void {
+    Event::fake([Registered::class]);
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])->andReturnFalse();
+
+    $this->fromRoute('register')->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Valid-pass12!',
+        'password_confirmation' => 'Valid-pass12!',
+    ])->assertRedirectToRoute('register')->assertSessionHasErrors('password');
+
+    $this->assertDatabaseEmpty('users');
+    $this->assertGuest();
+    Event::assertNotDispatched(Registered::class);
+});
+
+it('rejects registration fields longer than 255 characters', function (string $field, string $value): void {
+    $this->mock(UncompromisedVerifier::class)
+        ->shouldReceive('verify')->once()
+        ->with(['value' => 'Valid-pass12!', 'threshold' => 0])->andReturnTrue();
+
+    $this->fromRoute('register')->post(route('register.store'), [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'Valid-pass12!',
+        'password_confirmation' => 'Valid-pass12!',
+        $field => $value,
+    ])->assertRedirectToRoute('register')->assertSessionHasErrors([
+        $field => __('validation.max.string', ['attribute' => $field, 'max' => 255]),
+    ]);
+
+    $this->assertDatabaseEmpty('users');
+})->with([
+    'name' => ['name', str_repeat('a', 256)],
+    'email' => ['email', str_repeat('a', 64).'@'.str_repeat('b', 63).'.'.str_repeat('c', 63).'.'.str_repeat('d', 61).'.com'],
+]);
