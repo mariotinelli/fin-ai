@@ -40,7 +40,7 @@ final readonly class UserPasswordController
         );
 
         throw_if($status !== Password::PASSWORD_RESET, ValidationException::withMessages([
-            'email' => [__(is_string($status) ? $status : '')],
+            'email' => [__('passwords.token')],
         ]));
 
         return to_route('login')->with('status', __('passwords.reset'));

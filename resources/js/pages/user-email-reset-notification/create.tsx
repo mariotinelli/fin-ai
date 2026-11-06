@@ -10,10 +10,18 @@ import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
-export default function ForgotPassword({ status }: { status?: string }) {
+export default function ForgotPassword({
+    status,
+    retryMessage,
+}: {
+    status?: string;
+    retryMessage?: string;
+}) {
     return (
         <>
             <Head title="Forgot password" />
+
+            <InputError message={retryMessage} className="mb-4 text-center" />
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">

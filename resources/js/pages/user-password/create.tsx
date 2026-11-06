@@ -1,12 +1,13 @@
 import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
-import { store } from '@/routes/password';
+import { request, store } from '@/routes/password';
 
 type Props = {
     token: string;
@@ -41,6 +42,11 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
                                 message={errors.email}
                                 className="mt-2"
                             />
+                            {errors.email && (
+                                <TextLink href={request()}>
+                                    Request a new password reset link
+                                </TextLink>
+                            )}
                         </div>
 
                         <div className="grid gap-2">

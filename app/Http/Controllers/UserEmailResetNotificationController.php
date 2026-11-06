@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 final readonly class UserEmailResetNotificationController
 {
@@ -17,6 +18,7 @@ final readonly class UserEmailResetNotificationController
     {
         return Inertia::render('user-email-reset-notification/create', [
             'status' => $request->session()->get('status'),
+            'retryMessage' => $request->session()->get('retryMessage'),
         ]);
     }
 
@@ -24,7 +26,17 @@ final readonly class UserEmailResetNotificationController
         CreateUserEmailResetNotificationRequest $request,
         CreateUserEmailResetNotification $action
     ): RedirectResponse {
-        $action->handle(['email' => $request->string('email')->value()]);
+        try {
+            $action->handle(['email' => $request->string('email')->value()]);
+        } catch (Throwable $throwable) {
+            report($throwable);
+
+            $request->session()->forget('status');
+
+            return back()->with('retryMessage', __('Unable to process your request. Please try again.'));
+        }
+
+        $request->session()->forget('retryMessage');
 
         return back()->with('status', __('A reset link will be sent if the account exists.'));
     }
