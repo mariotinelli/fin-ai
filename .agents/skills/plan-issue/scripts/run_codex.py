@@ -28,6 +28,8 @@ def main() -> int:
         "exec",
         "--model",
         arguments.model,
+        "--config",
+        'model_reasoning_effort="medium"',
         "--sandbox",
         sandbox,
         "--output-schema",

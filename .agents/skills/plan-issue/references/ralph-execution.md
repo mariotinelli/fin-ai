@@ -19,7 +19,7 @@ O Gate 3 seleciona o interpretador pelo bloco do baseline conforme [o contrato](
 
 Uma reprovação da validação ou dos testes inicia outra sessão de desenvolvimento com o erro encontrado e repete os gates. O padrão é parar depois de três tentativas; altere com `--max-attempts N`. Falhas operacionais interrompem imediatamente e preservam as mudanças.
 
-O executor usa `gpt-6.1-sol` por padrão nos gates de desenvolvimento e validação. Para escolher outro modelo, execute `ralph.sh execute <planning.md> --model <modelo>`. O esforço continua vindo da configuração do Codex CLI. O executor não acessa Redmine ou YouTrack e não usa subagentes. Por padrão, suas fases dependem da Codex CLI; `RALPH_AGENT_COMMAND_JSON` pode fornecer outro runner compatível como um array JSON de argumentos, e o modelo escolhido fica disponível em `RALPH_MODEL`. Essa dependência do backend é distinta da skill `ralph`, que pode ser conduzida no Codex, Claude Code ou OpenCode.
+O executor usa `gpt-6.1-sol` por padrão nos gates de desenvolvimento e validação. Para escolher outro modelo, execute `ralph.sh execute <planning.md> --model <modelo>`. O runner padrão fixa o esforço de raciocínio em `medium` nos dois gates, sobrescrevendo a configuração do Codex CLI para essas execuções. O executor não acessa Redmine ou YouTrack e não usa subagentes. Por padrão, suas fases dependem da Codex CLI; `RALPH_AGENT_COMMAND_JSON` pode fornecer outro runner compatível como um array JSON de argumentos, e o modelo escolhido fica disponível em `RALPH_MODEL`. Essa dependência do backend é distinta da skill `ralph`, que pode ser conduzida no Codex, Claude Code ou OpenCode.
 
 ## Retomada e segurança mínima
 
