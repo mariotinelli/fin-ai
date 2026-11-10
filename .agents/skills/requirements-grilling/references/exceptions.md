@@ -29,7 +29,7 @@ Read and identify the new evidence before resuming the interview. Report which d
 
 When the caller has no prescribed artifact, use a table with these fields:
 
-| ID | State | Decision or question | Prerequisites | Answerer/source | Blocks | Resolution |
+| ID | Estado | Decisão ou pergunta | Pré-requisitos | Responsável/fonte | Bloqueios | Resolução |
 |---|---|---|---|---|---|---|
 
 Do not copy pure technical choices into this ledger.

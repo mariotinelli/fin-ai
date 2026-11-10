@@ -56,6 +56,11 @@ Inclua contexto específico e agrupamento somente quando ajudarem a leitura. Par
 
 Feature Redmine `<id>`; regras/critérios `<ids>`.
 
+Quando houver interface com design: `<ID e caminho normalizado da referência visual principal>`;
+`<telas/estados aplicáveis>`; `<adaptações aprovadas e origem da decisão>`.
+Os critérios visuais e a responsabilidade pela aparência compartilhada devem estar explícitos
+na entrega, no aceite e nas condições de teste correspondentes.
+
 Inclua `Contexto técnico` antes das referências somente quando uma decisão aprovada exigir esse contexto; omita a seção nos demais casos. Aplique a [disciplina de escrita](../../vertical-slicing/references/task-writing.md) antes de apresentar a descrição.
 
 ## Publicação proposta

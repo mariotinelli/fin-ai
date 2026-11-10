@@ -1,15 +1,17 @@
-# Gate 1 — desenvolvimento da fase {{PHASE_NUMBER}}
+# Gate 1 — phase {{PHASE_NUMBER}} development
 
-Implemente somente a fase aprovada abaixo no repositório `{{REPOSITORY}}`. Esta é uma sessão Codex nova: leia diretamente todos os arquivos listados antes de editar, incluindo instruções do repositório, arquitetura/contexto/ADRs, `task.md`, requisito pai e `planning.md`. Trabalhe sem subagentes e sem acessar ou alterar Redmine ou YouTrack.
+Implement only the approved phase below in repository `{{REPOSITORY}}`. This is a fresh Codex session: directly read every listed file before editing, including repository instructions, architecture/context/ADRs, `task.md`, parent requirement and `planning.md`. Work without subagents and without accessing or modifying Redmine or YouTrack. Write user-facing prose, summaries and JSON free-text fields in Brazilian Portuguese; preserve schema keys and enum values.
 
-Se iniciar servidores ou processos para testes, registre seus PIDs e encerre somente esses processos ao terminar. Não faça limpeza geral de processos ou de diretórios temporários; preserve o executor Ralph e seus artefatos.
+If you start servers or test processes, record their PIDs and stop only those processes when finished. Do not perform general process or temporary-directory cleanup; preserve the Ralph executor and its artifacts.
 
-## Leituras obrigatórias
+## Required reading
 
 {{CONTEXT_PATHS}}
 
-## Fase aprovada
+## Approved phase
 
 {{PHASE}}
 
-Respeite os limites e padrões encontrados, implemente os testes focados cabíveis e deixe as mudanças sem commit. Ao terminar, devolva somente o JSON exigido pelo schema, com `status` igual a `completed`; isso significa **finalizado**, não aprovado.
+Respect discovered boundaries and standards, implement appropriate focused tests and leave changes uncommitted. Finally return only the JSON required by the schema, with `status` equal to `completed`; this means **finalizado**, not approved.
+
+For UI in this phase, inspect the required visual sources and implement their appearance with the approved field/state adaptations. Reusing components does not authorize retaining a conflicting starter theme. Compare the rendered result with the applicable reference screens/states and viewports; report concrete observations and evidence locations in `checks`. If comparison cannot run, record what was not verified and why. A new material visual/functional conflict needs requirement alignment rather than an invented adaptation. Backend-only phases report why visual comparison does not apply to their changes.

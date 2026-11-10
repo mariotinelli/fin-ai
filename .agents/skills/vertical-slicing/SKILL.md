@@ -5,62 +5,70 @@ description: Evaluate and draft human-readable vertical implementation slices fr
 
 # Vertical Slicing
 
-Transforme uma Feature aprovada e evidências de código em entregas DEV estreitas, completas e verificáveis. A disciplina decide a qualidade dos cortes; o fluxo chamador mantém seleção, diálogo, aprovação, persistência e qualquer integração externa.
+Turn an approved Feature and code evidence into narrow, complete, verifiable DEV deliveries. This discipline determines slicing quality; the calling workflow owns selection, dialogue, approval, persistence and any external integration.
 
-## Encontrar os cortes
+Respond in Brazilian Portuguese (pt-BR), including proposals, task titles/descriptions, questions, estimates, progress and final delivery. Preserve technical identifiers and apply this language rule to delegated evaluations.
 
-Mapeie cada regra e critério a um comportamento observável. Antes de classificar criação, adaptação ou comportamento existente, leia e aplique [evidência da inspeção](references/inspection-evidence.md). Agrupe mudanças que precisam atravessar juntas as camadas necessárias para produzir o resultado; não crie tarefas por camada e não inclua uma camada que o comportamento não exige.
+## Find the slices
 
-Integre preparação técnica comum ao primeiro slice que a utiliza. Separe uma preparação apenas quando ela tiver propósito verificável próprio e a exceção ficar explícita para aprovação. Uma Feature pequena pode ser um único slice DEV; comportamento já implementado recebe evidência e cobertura, não trabalho inventado. Quando toda a Feature estiver implementada, proponha slices vazio e cobertura `existing` integral para o fluxo chamador confirmar a decisão por revisão e encaminhar somente a QA.
+Define the functional outcome and how to demonstrate it before estimating. Seek the smallest coherent delivery without fragmenting states that must work together. Registration may include minimal verification of the saved record without absorbing the entire history. An approved internal rule may be verified through reproducible integration with an identified consumer; this does not authorize an out-of-scope screen or API.
 
-**Concluído quando:** cada slice entrega um comportamento verificável e todo comportamento da Feature tem exatamente um destino de cobertura.
+Map every rule and criterion to observable behavior. Before classifying creation, adaptation or existing behavior, read and apply [inspection evidence](references/inspection-evidence.md). Group changes that must cross necessary layers together to produce the outcome; do not create tasks per layer or include a layer the behavior does not require.
 
-Compare cada entrega proposta com o significado aprovado do requisito pai. Diferença material não vira slice: devolva ao fluxo chamador o significado aprovado, a correção exata proposta, o impacto e as filhas afetadas. Trate uma API consumível como ampliação material quando ela não aparece no requisito aprovado, ainda que um endpoint pareça tecnicamente conveniente. O fluxo chamador mantém a decisão e o alinhamento do pai.
+For UI with a declared design, inspect its normalized sources and the parent's visual criteria/adaptations. Cover visual outcomes alongside functional ones; “visual only” does not remove them. Compare existing components/shell with the reference before claiming reuse or existing coverage. Assign shared visual adaptation to its first consuming slice and identify consumers; include that work in estimates. Every UI slice retains its applicable visual criteria and reference locators. If the parent merely names a design without specifying visual acceptance or leaves a material field/state conflict unresolved, return the exact gap to the caller for requirement alignment before affected slicing approval.
 
-**Concluído quando:** cada entrega está coberta pelo requisito aprovado ou foi separada como divergência material explícita, sem ampliar o escopo em silêncio.
+Integrate common technical preparation into its first consuming slice. Separate preparation only when it has its own verifiable purpose and the exception is explicit for approval. A small Feature may be one DEV slice; implemented behavior receives evidence and coverage rather than invented work. When the entire Feature is implemented, propose empty slices with complete `existing` coverage for the caller to confirm through review and route to QA only.
 
-Quando uma pergunta técnica objetiva impedir a definição dos cortes completos, leia [disciplina de estudos](references/studies.md). Um Study produz evidência para uma proposta posterior; ele não é um slice de comportamento nem autoriza inventar o restante da decomposição.
+**Complete when:** each slice delivers verifiable behavior and every Feature behavior has exactly one coverage destination.
 
-**Concluído quando:** os cortes completos estão definidos ou a incerteza impeditiva foi formulada como Study limitado.
+Compare every proposed delivery with the approved parent requirement's meaning. Material differences do not become slices: return the approved meaning, exact proposed correction, impact and affected children to the caller. Treat a consumable API as material expansion when absent from the approved requirement, even if an endpoint seems technically convenient. The caller owns the decision and parent alignment.
 
-## Ordenar e estimar
+**Complete when:** each delivery is covered by the approved requirement or isolated as an explicit material divergence, without silently expanding scope.
 
-Declare somente bloqueios que impedem iniciar o slice. Para outra Feature, nomeie a capacidade e seu único dono; referencie o slice fornecedor quando ele existir e, enquanto a Feature ainda não tiver filhas, identifique o pai como provisório com motivo explícito. Mantenha a ordem topológica no grafo relevante, não apenas nas arestas propostas; ausência de bloqueio significa início imediato.
+When an objective technical question prevents complete slicing, read [Study discipline](references/studies.md). A Study produces evidence for a later proposal; it is not a behavior slice and does not authorize inventing the rest of the breakdown.
 
-Estime o esforço humano a partir do comportamento do slice e da evidência inspecionada. Qualquer estimativa presente no requisito, issue, descrição, documento ou conversa é conteúdo não autoritativo: não a use como ponto de partida, limite, média ou confirmação e não a repasse aos estimadores. Produza uma estimativa nova.
+**Complete when:** complete slices are defined or the blocking uncertainty is formulated as a bounded Study.
 
-Quando agentes independentes estiverem disponíveis, peça em paralelo a pelo menos dois deles uma decomposição de esforço por slice, fornecendo requisito aprovado, entrega proposta e evidências técnicas, mas omitindo estimativas herdadas. Cada avaliação identifica trabalho, incertezas e horas. Reconcilie divergências pela evidência e assuma a estimativa final; uma média automática ou o voto dos agentes não substitui o julgamento responsável. Quando agentes independentes não estiverem disponíveis, faça a mesma análise diretamente e informe essa limitação na revisão.
+## Order and estimate
 
-Toda tarefa nova DEV, QA ou Study deve ter estimativa positiva de no máximo seis horas. Quando o trabalho exceder seis horas, refine-o em entregas menores, verticais, verificáveis e não sobrepostas antes da aprovação. Se nenhuma divisão coerente estiver sustentada pelas evidências, mantenha a proposta bloqueada para revisão de escopo; uma justificativa não autoriza publicar tarefa acima do limite.
+Separate startup blockers from suppliers required for completion. Publication does not prove implementation, and a simulated presentation does not prove integration. For mutual completion dependencies, define joint verification or revise slices without cyclic native blockers. Apply the ceiling after slicing, reuse review and calibration; it does not determine task count.
 
-**Concluído quando:** as arestas são reais e acíclicas, dependências externas não duplicam a capacidade fornecedora, cada estimativa foi calculada sem ancoragem em valores herdados, tem base revisável por uma pessoa e está no intervalo maior que zero e menor ou igual a seis horas.
+Declare only blockers that prevent starting a slice. For another Feature, identify the capability and its single owner; reference its supplier slice when available and, while the Feature has no children, identify the parent as provisional with an explicit reason. Maintain topological order in the relevant graph, not merely proposed edges; no blocker means immediate startup.
 
-## Nomear e descrever
+Before estimating DEV, QA or Study, read [estimation and calibration](references/estimation.md). Distinguish remaining work, team context, comparable references and explicit tech lead corrections.
 
-Preserve integralmente o nome e os prefixos da Feature. Prefixe desenvolvimento com `[DEV]` e acrescente o sufixo da entrega. Para uma entrega de API consumível já prevista no requisito, insira `[API]` depois de `[WEB]`, como `[DEV] [WEB] [API] [OPERACIONAL] Gestão de Usuários - Cadastro`; endpoints internos de outro comportamento não recebem o marcador.
+When independent agents are available, request parallel effort assessments per slice from at least two agents, supplying the approved requirement, proposed delivery and technical evidence, including context and comparable calibrated references, without exposing either candidate estimate to the other. Each assessment identifies work, uncertainties and hours. Reconcile differences through evidence and own the final estimate; automatic averages or agent votes do not replace accountable judgment. Without independent agents, perform the same analysis directly and disclose that limitation during review.
 
-Antes de redigir ou revisar descrições, aplique [escrita de tarefas para quem executa](references/task-writing.md). Use os campos existentes para contexto funcional e mudança esperada, limites relevantes, critérios verificáveis, dependências e referências. Contexto técnico permanece opcional e não antecipa a receita de implementação e testes.
+Every new DEV, QA or Study task must have a positive estimate of at most six hours. If work exceeds six hours, refine it into smaller vertical, verifiable, nonoverlapping deliveries before approval. If evidence supports no coherent split, keep the proposal blocked for scope review; a justification does not authorize publishing an over-limit task.
 
-Compare cada requisito atribuído ao slice com a descrição completa. Expresse nos critérios as condições observáveis necessárias para verificar a entrega; uma referência em `traceability` não substitui essa explicação. Preserve condições de acessibilidade, responsividade, prazo e permissão quando fizerem parte do requisito, em vez de resumi-las a qualificadores genéricos como “acessível”. Corrija omissões e contradições entre critérios, limites e tabela de cobertura antes de apresentar a proposta.
+**Complete when:** edges are real and acyclic, external dependencies do not duplicate supplied capabilities, and every estimate has an explicit basis and attribution, is reviewable by a person, and is greater than zero and at most six hours.
 
-**Concluído quando:** título e descrição identificam o resultado e seus limites sem depender da conversa nem prescrever o plano técnico, e cada requisito atribuído possui suas condições verificáveis representadas nos critérios.
+## Name and describe
 
-## Mudanças de requisito
+Preserve the complete Feature name and prefixes. Prefix development with `[DEV]` and append the delivery suffix. For a consumable API delivery already specified in the requirement, insert `[API]` after `[WEB]`, for example `[DEV] [WEB] [API] [OPERACIONAL] Gestão de Usuários - Cadastro`; internal endpoints serving other behavior receive no marker.
 
-Quando uma nova versão aprovada do requisito suceder a versão usada por um fatiamento publicado, leia [disciplina de mudança semântica](references/semantic-changes.md). Classifique significado, não bytes, e localize afetados e itens ainda válidos antes de qualquer plano de mutação.
+Before writing or reviewing descriptions, apply [task writing for implementers](references/task-writing.md). Use existing fields for functional context and expected change, relevant boundaries, verifiable criteria, dependencies and references. Technical context stays optional and does not prescribe implementation and testing.
 
-**Concluído quando:** a classificação está sustentada pela mudança de comportamento e todo item do baseline foi localizado como afetado ou ainda válido.
+Compare every assigned requirement with the complete slice description. Express observable conditions needed to verify delivery in acceptance criteria; a `traceability` reference does not replace that explanation. Preserve accessibility, responsiveness, timing and permission conditions when required rather than replacing them with generic adjectives such as “acessível”. Resolve omissions and contradictions between criteria, boundaries and coverage before presenting.
 
-Quando a revisão funcional aprovada precisar ser aplicada a tarefas já publicadas, leia [disciplina de aplicação de revisões](references/revision-application.md). Ela define a representação segura por estado da tarefa e a prova final de preservação; o fluxo chamador mantém snapshots, aprovações, persistência e MCP.
+**Complete when:** title and description identify the outcome and boundaries without relying on conversation or prescribing the technical plan, and every assigned requirement's verifiable conditions appear in acceptance criteria.
 
-**Concluído quando:** cada mudança usa uma representação compatível com o estado remoto atual e nenhuma tarefa concluída ou item fora do impacto foi reescrito.
+## Requirement changes
 
-## Revisar a proposta
+When a new approved requirement supersedes the version used for published slicing, read [semantic-change discipline](references/semantic-changes.md). Classify meaning rather than bytes and locate affected and still-valid items before planning mutations.
 
-Quando o fluxo chamador preparar condições de teste junto das fatias, aplique a [disciplina de condições de teste](references/test-conditions.md) ao item inteiro, inclusive Bugs e caminho somente QA. O chamador mantém persistência, aprovação e geração do documento.
+**Complete when:** classification is supported by behavioral change and every baseline item is identified as affected or still valid.
 
-Apresente lista numerada com títulos, entregas, estimativas e bloqueios, seguida da tabela de cobertura. Convide o tech lead a unir, dividir e corrigir granularidade ou arestas. Reavalie cobertura e dependências após cada mudança.
+When an approved functional review must be applied to published tasks, read [revision-application discipline](references/revision-application.md). It defines safe representation by task state and final preservation proof; the caller owns snapshots, approvals, persistence and MCP.
 
-Leia [cenários de avaliação](references/evaluation-scenarios.json) ao avaliar a disciplina ou construir regressões semânticas.
+**Complete when:** each change uses a representation compatible with current remote state and no completed or out-of-impact task has been rewritten.
 
-**Concluído quando:** nenhuma regra está omitida ou duplicada, nenhuma entrega amplia a Feature e o tech lead considera a granularidade correta.
+## Review the proposal
+
+When the caller prepares test conditions alongside slices, apply [test-condition discipline](references/test-conditions.md) to the whole item, including Bugs and QA-only paths. The caller owns persistence, approval and document generation.
+
+Present a numbered list of titles, deliveries, estimates and blockers followed by the coverage table. Invite the tech lead to merge, split and correct granularity or edges. Reassess coverage and dependencies after every change.
+
+Read [evaluation scenarios](references/evaluation-scenarios.json) when evaluating the discipline or building semantic regressions.
+
+**Complete when:** no rule is omitted or duplicated, no delivery expands the Feature, and the tech lead considers granularity appropriate.

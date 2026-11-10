@@ -7,13 +7,14 @@ import json
 import math
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
 import tempfile
 import time
 import uuid
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 sys.dont_write_bytecode = True
@@ -51,16 +52,25 @@ def repository_for(planning: Path) -> Path:
     return Path(result.stdout.strip()).resolve()
 
 
+def baseline_command(text: str) -> tuple[str, str]:
+    baseline = re.search(r"^## Baseline\s*$\n(.*?)(?=^## |\Z)", text, re.MULTILINE | re.DOTALL)
+    if not baseline:
+        fail("planning.md must contain a Baseline section")
+    commands = re.findall(r"^```([^\r\n]*)\r?\n(.*?)^```[ \t]*$", baseline.group(1), re.MULTILINE | re.DOTALL)
+    if len(commands) != 1 or not commands[0][1].strip():
+        fail("Baseline must contain exactly one fenced test command")
+    language, command = commands[0]
+    language = language.strip().lower()
+    if language not in ("", "sh", "bash", "shell", "powershell", "pwsh", "cmd", "bat"):
+        fail(f"unsupported baseline shell: {language}")
+    return command.strip(), language or "bash"
+
+
 def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
     if planning.name != "planning.md" or not planning.is_file() or planning.is_symlink():
         fail("expected an existing planning.md file")
     text = planning.read_text(encoding="utf-8")
-    baseline = re.search(r"^## Baseline\s*$\n(.*?)(?=^## |\Z)", text, re.MULTILINE | re.DOTALL)
-    if not baseline:
-        fail("planning.md must contain a Baseline section")
-    commands = re.findall(r"```(?:sh|bash|shell)?\s*\n(.*?)```", baseline.group(1), re.DOTALL | re.IGNORECASE)
-    if len(commands) != 1 or not commands[0].strip():
-        fail("Baseline must contain exactly one fenced test command")
+    command, _ = baseline_command(text)
     matches = list(re.finditer(r"^## Fase (\d+)\s+[—-]\s+(.+?)\s*$", text, re.MULTILINE))
     if not matches:
         fail("planning.md must contain at least one phase")
@@ -75,7 +85,40 @@ def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
     numbers = [phase[0] for phase in phases]
     if numbers != sorted(set(numbers)):
         fail("phase numbers must be unique and increasing")
-    return commands[0].strip(), phases
+    return command, phases
+
+
+def visual_sources(repo: Path, planning: Path) -> list[Path]:
+    text = planning.read_text(encoding="utf-8")
+    # Ignore examples inside fences; only the actual plan declares required sources.
+    text = re.sub(r"^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*$", "", text, flags=re.MULTILINE | re.DOTALL)
+    sections = list(re.finditer(r"^## Referências visuais[ \t]*\r?$", text, re.MULTILINE))
+    if len(sections) != 1:
+        fail("planning.md requires exactly one Referências visuais section; review the plan before execution")
+    body = re.split(r"^## ", text[sections[0].end():], maxsplit=1, flags=re.MULTILINE)[0].strip()
+    if re.fullmatch(r"Não se aplica: [^\r\n]+", body):
+        return []
+    paths = []
+    for line in body.splitlines():
+        if not line.strip():
+            continue
+        match = re.fullmatch(r"- `([^`]+)`", line.strip())
+        if match is None:
+            fail("Referências visuais must list repository-relative Markdown paths or explain Não se aplica")
+        name = match.group(1)
+        relative = PurePosixPath(name)
+        if relative.is_absolute() or re.match(r"^[A-Za-z]:", name) or "\\" in name or ".." in relative.parts or relative.as_posix() != name or relative.suffix.lower() != ".md":
+            fail("visual sources must be repository-relative Markdown paths without traversal")
+        candidate = repo / name
+        if any(path.is_symlink() for path in (candidate, *candidate.parents) if path != repo and repo in path.parents):
+            fail("visual sources must not use symlinks")
+        if not candidate.resolve().is_relative_to(repo.resolve()) or not candidate.is_file():
+            fail("a declared visual source is missing or outside the repository")
+        if candidate not in paths:
+            paths.append(candidate)
+    if not paths:
+        fail("Referências visuais must identify sources or explain Não se aplica")
+    return paths
 
 
 def task_context(repo: Path, planning: Path) -> str:
@@ -88,6 +131,9 @@ def task_context(repo: Path, planning: Path) -> str:
     for candidate in candidates:
         if candidate.is_file() and candidate not in paths:
             paths.append(candidate)
+    for source in visual_sources(repo, planning):
+        if source not in paths:
+            paths.append(source)
     return "\n".join(f"- `{path.relative_to(repo).as_posix()}`" for path in paths)
 
 
@@ -233,6 +279,15 @@ def validate_result(result: dict[str, Any], mode: str) -> None:
             fail("development agent did not finish the phase")
     elif result.get("verdict") not in {"approved", "rejected"} or not isinstance(result.get("findings"), list):
         fail("validation agent returned an invalid result")
+    if mode != "develop":
+        visual = result.get("visual_validation")
+        if not isinstance(visual, dict) or visual.get("status") not in {"verified", "not-applicable", "blocked"}:
+            fail("validation agent must report visual_validation")
+        evidence = visual.get("evidence")
+        if not isinstance(evidence, list) or not evidence or any(not isinstance(item, str) or not item.strip() for item in evidence):
+            fail("visual validation requires comparison evidence or an explicit reason")
+        if result["verdict"] == "approved" and visual["status"] == "blocked":
+            fail("validation cannot approve with required visual verification blocked")
 
 
 def validation_report(result: dict[str, Any]) -> str:
@@ -243,18 +298,34 @@ def validation_report(result: dict[str, Any]) -> str:
     return "\n".join(lines) or str(result.get("summary", "validation rejected without details"))
 
 
-def run_tests(repo: Path, command: str, phase: int, timeout: float) -> tuple[bool, str, Path]:
+def run_tests(repo: Path, command: str, phase: int, timeout: float, language: str = "bash") -> tuple[bool, str, Path]:
     if EVENTS is None:
         fail("runtime log is unavailable")
     output_path = EVENTS.private_file(f"phase-{phase}-tests.log")
+    executable = "bash" if language in ("bash", "sh", "shell", "") else ("cmd" if language == "bat" else language)
+    shell = shutil.which(executable)
+    if shell is None:
+        fail(f"Gate 3 requires {executable} in PATH; tests were not started")
+    if executable == "bash":
+        syntax = run([shell, "--noprofile", "--norc", "-n", "-c", command], repo)
+        if syntax.returncode:
+            output_path.write_text(sanitize_text(syntax.stderr or syntax.stdout), encoding="utf-8")
+            fail(f"Gate 3 baseline has invalid Bash syntax; tests were not started. Diagnóstico: {output_path}")
+        invocation = [shell, "--noprofile", "--norc", "-c", command]
+    elif executable in ("powershell", "pwsh"):
+        invocation = [shell, "-NoProfile", "-NonInteractive", "-Command", command]
+    else:
+        invocation = [shell, "/d", "/s", "/c", command]
     with output_path.open("w+", encoding="utf-8", newline="\n") as output:
-        process = popen_group(command, cwd=repo, shell=True, stdout=output, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
+        process = popen_group(invocation, cwd=repo, stdout=output, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
         _, _, returncode = communicate(process, timeout)
         output.seek(0)
         content = sanitize_text(output.read())
         output.seek(0)
         output.truncate()
         output.write(content)
+    if (executable == "bash" and returncode in (126, 127)) or (executable == "cmd" and returncode == 9009):
+        fail(f"Gate 3 operational failure: command unavailable or not executable (exit {returncode}); changes preserved. Diagnóstico: {output_path}")
     lines = [line for line in content.splitlines() if line.strip()]
     return returncode == 0, "\n".join(lines[-80:]) or f"test command exited with code {returncode}", output_path
 
@@ -294,7 +365,9 @@ def execute(arguments: argparse.Namespace) -> int:
     global EVENTS
     planning = Path(arguments.planning).resolve()
     suite, phases = parse_planning(planning)
+    _, suite_shell = baseline_command(planning.read_text(encoding="utf-8"))
     repo = repository_for(planning)
+    context = task_context(repo, planning)
     package = Path(__file__).resolve().parent.parent
     state_path = state_path_for(planning)
     state_relative = state_path.relative_to(repo).as_posix()
@@ -311,7 +384,6 @@ def execute(arguments: argparse.Namespace) -> int:
             signal.signal(signum, signal_handler)
         known = {number for number, _, _ in phases}
         state["completed_phases"] = [number for number in state["completed_phases"] if number in known]
-        context = task_context(repo, planning)
         for number, title, body in phases:
             if number in state["completed_phases"]:
                 continue
@@ -354,7 +426,7 @@ def execute(arguments: argparse.Namespace) -> int:
 
                 save_state(state_path, state, current_gate="tests")
                 started = gate_started(number, "tests", attempt)
-                passed, report, report_path = run_tests(repo, suite, number, arguments.tests_timeout_minutes * 60)
+                passed, report, report_path = run_tests(repo, suite, number, arguments.tests_timeout_minutes * 60, suite_shell)
                 if not passed:
                     correction = f"A suíte completa falhou. Corrija estas falhas:\n\n{report}"
                     save_state(state_path, state, current_gate="development", last_failure=correction)

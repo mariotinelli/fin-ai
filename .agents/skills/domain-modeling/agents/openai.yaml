@@ -1,6 +1,6 @@
 interface:
-  display_name: "Domain Modeling"
-  short_description: "Maintain vocabulary and triage ADR candidates"
-  default_prompt: "Use $domain-modeling to align domain terms and assess any architecture candidates."
+  display_name: "Modelagem de domínio"
+  short_description: "Alinha vocabulário e avalia candidatos a ADR"
+  default_prompt: "Use $domain-modeling para alinhar os termos do domínio e avaliar possíveis decisões de arquitetura."
 policy:
   allow_implicit_invocation: true

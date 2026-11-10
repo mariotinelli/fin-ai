@@ -1,22 +1,22 @@
-# Condições de teste e DOCX local
+# Test conditions and local DOCX
 
-Para alterar condições depois de uma publicação concluída, inclusive ajustes no Word sem mudança do requisito, siga [revisão localizada das condições](condition-revisions.md). O ramo abaixo prepara a decomposição e seu documento inicial.
+For condition changes after completed publication, including Word edits without requirement changes, follow [localized condition revision](condition-revisions.md). The branch below prepares decomposition and its initial document.
 
-## Usar DOCX nas novas publicações
+## Use DOCX for new publications
 
-Toda nova decomposição de Feature, Bug e caminho somente QA entrega as condições em DOCX e anexa esse arquivo à tarefa QA. O Markdown legível continua sendo gerado como prévia e artefato local complementar; ele não substitui o documento Word nem conclui a publicação.
+Every new Feature/Bug decomposition and QA-only path delivers conditions in DOCX and attaches that file to QA. Readable Markdown remains a preview/complementary local artifact; it neither replaces Word nor completes publication.
 
-Registre `test_conditions.document_format: docx`. Quando o campo estiver ausente em uma proposta nova, `record-proposal` o define como `docx`; uma proposta ou preferência nova que selecione Markdown é rejeitada antes da aprovação. O formato fica vinculado ao hash da proposta aprovada, e a publicação só pode ser concluída depois de gerar, enviar, associar e observar o DOCX na QA.
+Record `test_conditions.document_format: docx`. When absent in a new proposal, `record-proposal` sets `docx`; a new proposal or preference selecting Markdown is rejected before approval. Format is bound to approved proposal hash; publication completes only after generating, uploading, associating and observing DOCX in QA.
 
-Estados históricos sem o campo conservam seu contrato DOCX. Uma nova revisão pode mudar o formato com a aprovação da prévia, preservando todos os arquivos, anexos e decisões anteriores. Uma leitura ou retomada não migra históricos.
+Historical states lacking the field retain their DOCX contract. A new revision may change format through preview approval while preserving files, attachments and decisions. Reads/resume do not migrate history.
 
-**Concluído quando:** a proposta registra DOCX e nenhuma nova publicação pode interpretar o Markdown local como substituto do anexo QA.
+**Complete when:** proposal records DOCX and no new publication treats local Markdown as a substitute for the QA attachment.
 
-## Preparar e revisar
+## Prepare and review
 
-Depois da inspeção e junto da proposta, aplique a [disciplina de condições de teste](../../vertical-slicing/references/test-conditions.md). Registre as condições em `test_conditions` da proposta `.work/slices-proposal.json`; `record-proposal` preserva essa fonte estruturada integralmente em cada revisão de `.flow/slices-state.json`.
+After inspection and alongside proposal, apply [test-condition discipline](../../vertical-slicing/references/test-conditions.md). Record `test_conditions` in `.work/slices-proposal.json`; `record-proposal` fully preserves this structured source in each `.flow/slices-state.json` revision.
 
-Exemplo de campos, usando IDs reais de `requirements` da proposta:
+Field example using actual proposal `requirements` IDs; human-facing values stay Portuguese:
 
 ```json
 {
@@ -36,34 +36,32 @@ Exemplo de campos, usando IDs reais de `requirements` da proposta:
 }
 ```
 
-`context` do documento e a lista não vazia de condições são obrigatórios. Em cada condição, `id`, `title`, `verification`, `expected_result` e `requirement_ids` são obrigatórios; `context`, `group` e `impact_justification` são textos opcionais, presentes quando úteis. Use `impact_justification` para registrar o impacto que sustenta uma regressão externa. Omita campos opcionais sem conteúdo. O schema está em `schemas/slices-state.schema.json`.
+Document `context` and nonempty condition list are required. Each condition requires `id`, `title`, `verification`, `expected_result`, `requirement_ids`; `context`, `group`, `impact_justification` are optional text when useful. Use `impact_justification` for external regression impact. Omit empty optional fields. Schema is `schemas/slices-state.schema.json`.
 
-Cada condição referencia ao menos um ID de `requirements`; todas as regras/critérios da proposta precisam de referência nas condições. Os IDs de requisitos são o mapa local do requisito aprovado: confira semanticamente suas origens no documento canônico. O helper verifica campos, referências e IDs únicos, não o significado ou a suficiência dos cenários. IDs de condições removidas ficam reservados no histórico; reordenar ou editar uma condição mantida conserva sua identidade.
+Each condition references at least one requirement ID; every proposal rule/criterion needs condition references. Requirement IDs map approved local source: semantically check canonical origins. The helper checks fields, references and unique IDs, not meaning or scenario sufficiency. Removed condition IDs remain reserved; reordering/editing retained conditions preserves identity.
 
-Execute `record-proposal` e `render` pelo contrato de [entrada e persistência](input-and-persistence.md). A prévia `slices/slices.md` apresenta contexto, condições e resultados esperados junto das fatias. Resolva lacunas no requisito antes de aprovar as condições afetadas. Obtenha a aprovação conjunta do tech lead e execute `approve`, seguido de `validate --previous` com o estado anterior preservado.
+Run `record-proposal`/`render` under [input and persistence](input-and-persistence.md). `slices/slices.md` presents context, conditions and expected outcomes alongside slices. Resolve requirement gaps before affected-condition approval. Obtain joint tech lead approval, run `approve`, then `validate --previous` against preserved previous state.
 
-**Concluído quando:** a revisão corrente contém as condições revisadas semanticamente, e uma aprovação válida do tech lead referencia o hash exato da proposta completa. Alterações exigem novo `record-proposal` e nova aprovação, preservando as revisões anteriores.
+**Complete when:** current revision contains semantically reviewed conditions and valid tech lead approval references the exact complete proposal hash. Changes require new `record-proposal`/approval while preserving previous revisions.
 
-## Entregar Markdown e gerar o DOCX obrigatório
+## Deliver Markdown and generate mandatory DOCX
 
-Além do DOCX, a publicação gera `slices/condicoes-teste-rNNN.md` a partir da fonte aprovada e inclui as condições na prévia completa. Entregue o Markdown legível e o documento Word ao tech lead junto dos links das filhas. A descrição existente da QA permanece preservada.
+Alongside DOCX, publication generates `slices/condicoes-teste-rNNN.md` from approved source and includes conditions in the complete preview. Give readable Markdown and Word document to the tech lead with child links. Preserve existing QA description.
 
-Execute a geração com `document_format: docx`:
-
-Use Python 3.10+ com sua biblioteca padrão, sem instalar bibliotecas adicionais:
+Generate with `document_format: docx` using Python 3.10+ and its standard library, without additional libraries:
 
 ```sh
 python <project-slices>/scripts/manage_slices.py render-test-conditions .flow/slices-state.json slices/condicoes-teste-r001.docx
 ```
 
-Substitua `001` pela revisão corrente da decomposição, com ao menos três dígitos. O documento identifica Feature/Bug, ID Redmine, revisão da decomposição, hash da proposta, revisão do requisito por SHA-256, contexto e condições com suas origens. O título é **Condições de teste**. Trata-se de orientação para a verificação futura, sem resultados de execução ou evidências inventadas.
+Replace `001` with current decomposition revision padded to at least three digits. The document identifies Feature/Bug, Redmine ID, decomposition revision, proposal hash, requirement SHA-256, context and conditions with origins. Its Portuguese title is **Condições de teste**. This guides future verification rather than inventing execution results/evidence.
 
-O helper exige aprovação válida, reconfere o requisito e gera bytes determinísticos para a mesma fonte e aprovação. Ele informa caminho e SHA-256 do DOCX. Revisões anteriores permanecem em seus arquivos. Uma repetição idêntica é permitida; um arquivo existente com bytes diferentes é preservado. Se houve edição no Word, incorpore os ajustes à fonte estruturada, revise e aprove uma nova proposta antes da geração seguinte.
+The helper requires valid approval, rechecks requirement and generates deterministic bytes for the same source/approval. It reports DOCX path/SHA-256. Earlier revisions keep their files. Identical repetition is allowed; existing different bytes are preserved. For Word edits, incorporate adjustments into structured source and review/approve a new proposal before regenerating.
 
-**Concluído quando:** o tech lead revisou as condições na prévia completa, recebe o Markdown versionado e o documento determinístico da mesma fonte, e o arquivo Word foi incluído conforme [publicação e retomada do anexo](attachment-publication.md). O registro de publicação reaproveita a decisão da prévia completa, sem nova pergunta equivalente; divergência entre fonte, documento e conteúdo apresentado exige nova prévia.
+**Complete when:** tech lead reviewed conditions in complete preview, receives versioned Markdown and deterministic same-source document, and the Word file was included under [attachment publication/resume](attachment-publication.md). Publication records reuse the complete-preview decision without equivalent confirmation; source/document/presented-content divergence needs a new preview.
 
-## Compatibilidade
+## Compatibility
 
-Após mudança do requisito, siga [condições após mudança do requisito](requirement-condition-revisions.md). Novos documentos identificam o requisito aprovado que os fundamenta; uma mudança exclusivamente editorial pode conservar o documento original mediante revisão semântica aprovada. Os IDs de condições mantêm o mesmo histórico nos ramos localizado e funcional.
+After requirement changes, follow [conditions after requirement change](requirement-condition-revisions.md). New documents identify their approved source requirement; purely editorial change may preserve the original document through approved semantic review. Condition IDs share history across localized/functional branches.
 
-Propostas novas exigem condições em DOCX. Revisões e aprovações históricas sem esse campo ou com formato Markdown continuam válidas e não são migradas automaticamente; o gerador apenas informa o contrato histórico. Uma vez incluído o contrato DOCX, revisões seguintes não podem descartá-lo. A geração local não modifica a descrição QA, a publicação corrente, o estado do pai nem artefatos canônicos de filhas.
+New proposals require DOCX conditions. Historical revisions/approvals without the field or with Markdown remain valid and are not auto-migrated; the generator reports the historical contract. Once DOCX contract is included, later revisions cannot discard it. Local generation does not change QA description, current publication, parent state or canonical child artifacts.

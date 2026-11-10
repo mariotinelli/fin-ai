@@ -1,47 +1,47 @@
-# Interview history
+# Histórico da entrevista
 
-## Sources
+## Fontes
 
-## Questions and decisions
+## Perguntas e decisões
 
-### Q<N> — <decision>
+### Q<N> — <decisão>
 
-**Context and evidence:**
+**Contexto e evidências:**
 
-**Why this decision matters:**
+**Por que esta decisão importa:**
 
-**Question:**
+**Pergunta:**
 
-**Options and consequences:**
+**Opções e consequências:**
 
-**Recommendation and rationale:**
+**Recomendação e justificativa:**
 
-**Answer:**
+**Resposta:**
 
-**Provenance:**
+**Origem:**
 
-**Decision state:** resolved | blocking | deferred | reopened
+**Estado da decisão:** resolvida | bloqueante | adiada | reaberta
 
-## Evidence reconciliation
+## Reconciliação de evidências
 
-### <source ID> — <source name>
+### <ID da fonte> — <nome da fonte>
 
-**Confirmed decisions:**
+**Decisões confirmadas:**
 
-**Contradicted decisions:**
+**Decisões contraditas:**
 
-**Reopened decisions:**
+**Decisões reabertas:**
 
-**Impact and next questions:**
+**Impacto e próximas perguntas:**
 
-Deferred questions are also recorded in `pending-questions.md`; resolving one appends its answer, source, and date without deleting the original question.
+Perguntas adiadas também ficam em `pending-questions.md`; sua resolução acrescenta resposta, fonte e data sem apagar a pergunta original.
 
-## Reconciled understanding
+## Entendimento reconciliado
 
-## Explicit scope boundaries
+## Limites explícitos do escopo
 
-Record excluded behavior and the attributed decision or approved boundary. Keep pending decisions that affect this delivery visible in the question history.
+<!-- Record excluded behavior and its attributed decision or approved boundary. Keep pending decisions affecting this delivery visible in question history. -->
 
-## Final requirement review
+## Revisão final do requisito
 
-Record the final document reviewed, reviewer, result, and date. This approval may also confirm understanding; no separate intermediate confirmation is required.
+<!-- Record final reviewed document, reviewer, result and date. This approval may also confirm understanding; no separate intermediate confirmation is required. -->

@@ -1,31 +1,31 @@
-# Filhas existentes e caminho somente QA
+# Existing children and QA-only path
 
-## Descobrir e decidir
+## Discover and decide
 
-Leia o pai com `children`, percorra todas as páginas das filhas abertas e fechadas e obtenha cada issue integralmente com relações pelo MCP. Grave em `.work` somente o snapshot sanitizado com projeto, pai, paginação, IDs, tracker e campos, título, descrição, estimativa e relações. Apresente todas ao tech lead; a existência de filhas não prova que o item pai foi fatiado.
+Read the parent with `children`, traverse all pages of open/closed children and retrieve each complete issue with relations through MCP. Save only the sanitized snapshot in `.work`, including project, parent, pagination, IDs, tracker/fields, title, description, estimate and relations. Present all children to the tech lead; existing children do not prove the parent was sliced.
 
-Para cada filha, registre no `existing_children_review` do plano uma decisão `adopt` ligada a uma key proposta ou `keep-external`. Uma adoção nomeia toda divergência aceita entre a entrega proposta e o baseline remoto; projeto ou pai divergentes impedem a adoção. Uma decisão externa não seleciona key nem autoriza alteração. O snapshot completo, seu hash, o ator, o instante e o motivo entram na revisão de publicação aprovada.
+For each child, record an `existing_children_review` disposition of `adopt` linked to a proposed key or `keep-external`. Adoption identifies every accepted difference between proposed delivery and remote baseline; project/parent mismatch prevents adoption. External disposition selects no key and authorizes no change. Complete snapshot, hash, actor, timestamp and reason belong to the approved publication revision.
 
-Antes de pedir a decisão, apresente cada filha como `#<ID> — <título completo exatamente como no Redmine>`, preservando todos os prefixos e o sufixo. Mostre a ação proposta (adotar ou manter externa), tracker, status, estimativa, relações e divergências. Para adoção, identifique também o título completo do slice de destino quando diferir do título remoto; a key é apenas um detalhe secundário. Nos bloqueios, identifique cada tarefa relacionada pelo título completo e ID confirmado quando existir. A pergunta de aprovação deve remeter a essa lista identificada, sem substituir títulos por `dev-1`, `qa`, somente sufixos ou resumos como “QA da Autenticação”.
+Before asking, present each child as `#<ID> — <full title exactly as in Redmine>`, preserving every prefix and suffix. Show proposed action in Portuguese (“adotar” or “manter externa”), tracker, status, estimate, relations and differences. For adoption, also identify the destination slice's full title when different; the key is secondary. Identify related blockers by full task title and confirmed ID where available. The approval question must refer to this identified list, not replace titles with `dev-1`, `qa`, suffixes alone or summaries such as “QA da Autenticação”.
 
-Exemplo: `#1014746 — [DEV] [WEB] [PUBLICO] Autenticação - Entrada e navegação de contas ativas`; ação proposta: adotar como a entrega de mesmo título (chave interna `dev-1`). Exibir o título na revisão é necessário para identificar a tarefa; ele continua fora do corpo da descrição publicada.
+Portuguese example: `#1014746 — [DEV] [WEB] [PUBLICO] Autenticação - Entrada e navegação de contas ativas`; proposed action: adopt as the same-title delivery (internal key `dev-1`). Showing the title identifies the task; it still stays outside the published description body.
 
-**Concluído quando:** cada filha foi apresentada com ID, título completo e ação proposta na prévia agrupada, cada ID descoberto possui exatamente uma disposição proposta, toda adoção referencia uma key única e toda divergência está visível ou bloqueia a decisão única.
+**Complete when:** every child appears with ID, full title and proposed action in the grouped preview, every discovered ID has exactly one disposition, each adoption references a unique key, and all differences are visible or block the single decision.
 
-## Retomar sem duplicar
+## Resume without duplication
 
-Na publicação nova com documento, a prévia final identifica a QA adotada e autoriza explicitamente acrescentar somente o DOCX aprovado. Essa é a exceção à adoção somente leitura abaixo: preserve todos os demais campos, relações e anexos anteriores. Confira o `is_closed` nativo na preparação e releia a QA antes do vínculo; QA concluída exige discussão do impacto com o tech lead e interrompe a operação. Veja [publicação e retomada do anexo](attachment-publication.md). Publicação antiga já concluída não recebe documento por este ramo.
+For new publication with a document, the final preview identifies adopted QA and explicitly authorizes adding only the approved DOCX. This is the exception to read-only adoption below: preserve all other fields, relations and existing attachments. Check native `is_closed` during preparation and reread QA before association; completed QA requires tech lead impact discussion and stops the operation. See [attachment publication and resume](attachment-publication.md). Completed historical publication receives no document through this branch.
 
-Trate uma adotada como origem remota observada, não como criação concluída. Preserve seu ID na revisão e use-o nas relações já observadas. A adoção é somente leitura: não altera status, tracker, descrição, estimativa nem relações da filha. Quando um bloqueio aprovado tocar uma adotada, os dois extremos precisam ser filhas existentes adotadas e a relação precisa constar no snapshot completo; caso contrário, apresente a relação ausente como evidência de reconciliação e interrompa a adoção. Em retomada, valide os hashes e releia antes de repetir qualquer operação ambígua; `begin-create` é exclusivo das keys novas e `begin-relation` é exclusivo de relações entre keys novas. Filhas externas ficam fora de `children` e `operations` gerenciados e aparecem no readback apenas para provar preservação.
+Treat an adopted child as observed remote origin rather than completed creation. Preserve its ID in the revision and use it for already observed relations. Adoption is read-only: it does not change child status, tracker, description, estimate or relations. When an approved blocker touches an adopted child, both endpoints must be adopted existing children and the relation must appear in the complete snapshot; otherwise present the missing relation as reconciliation evidence and stop adoption. On resume, validate hashes and reread before repeating ambiguous operations; `begin-create` is exclusive to new keys and `begin-relation` to relations between new keys. External children remain outside managed `children`/`operations` and appear in readback only to prove preservation.
 
-**Concluído quando:** cada key adotada conserva o mesmo ID, somente keys novas possuem operações de criação ou relação e o readback mantém integralmente as filhas adotadas, suas relações e as filhas externas.
+**Complete when:** adopted keys retain IDs, only new keys have creation/relation operations, and readback fully preserves adopted children, their relations and external children.
 
-## Encaminhar somente QA
+## Route to QA only
 
-Use este ramo apenas quando a inspeção de código cobre integralmente cada requisito. Materialize uma proposta sem slices, classifique cada linha de cobertura como `existing`, cite evidência atual e mostre ao tech lead que nenhuma DEV é necessária. A aprovação da decomposição liga essa confirmação ao hash e à revisão; mudança posterior invalida a autoridade de publicação.
+Use only when code inspection fully covers every requirement. Materialize a proposal without slices, classify every coverage row as `existing`, cite current evidence and show the tech lead no DEV is needed. Decomposition approval binds this confirmation to hash/revision; later change invalidates publication authority.
 
-Prepare exatamente uma filha com título `[QA] ` seguido do título integral do item pai. Neste ramo, e somente nele, `blocked_by` é vazio e não existem relações DEV fictícias. A QA verifica a Feature ou Bug completo e não aprova a decisão.
+Prepare exactly one child titled `[QA] ` followed by the full parent title. Only in this branch is `blocked_by` empty, without fictitious DEV relations. QA verifies the whole Feature/Bug and does not approve the decision.
 
-Prepare, revise e aprove as [condições de teste](test-conditions.md) com a proposta sem DEV. Cubra todo o comportamento aprovado e as capacidades existentes relevantes; a ausência de fatias não dispensa condições; DOCX segue a preferência persistida de formato. Preserve o conteúdo e a estrutura atuais da descrição QA.
+Prepare, review and approve [test conditions](test-conditions.md) with the DEV-free proposal. Cover all approved behavior and relevant existing capabilities; no slices does not waive conditions; DOCX follows persisted format preference. Preserve current QA description content/structure.
 
-**Concluído quando:** a proposta aprovada possui slices vazio, cobertura `existing` exaustiva e evidências atuais; a publicação aprovada e conferida contém somente a QA.
+**Complete when:** approved proposal has empty slices, exhaustive `existing` coverage and current evidence; approved verified publication contains QA only.

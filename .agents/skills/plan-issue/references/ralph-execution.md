@@ -1,33 +1,41 @@
-# Execução pelo Ralph
+# Ralph execution
 
-Execute:
+Run:
 
 ```sh
-bash <plan-issue>/ralph.sh execute <pasta-dev>/planning.md
+bash <plan-issue>/ralph.sh execute <dev-directory>/planning.md
 ```
 
-O Ralph lê as fases e o comando da suíte diretamente de `planning.md`. Ele cria automaticamente `.flow/ralph-state.json` ao lado do plano, contendo somente a fase atual, o gate atual, fases concluídas e seus commits. Apague esse arquivo para esquecer o progresso local; isso não desfaz commits nem mudanças do Git.
+Ralph reads phases and the suite command directly from `planning.md`. It automatically creates `.flow/ralph-state.json` beside the plan, containing only the current phase, current gate, completed phases and their commits. Deleting this file forgets local progress; it does not undo commits or Git changes.
 
-## Gates de cada fase
+Before starting gates, the executor validates the plan's `Referências visuais` section under [the planning contract](planning-contract.md). Its declared normalized source files are included in required reading for development, correction and validation. Missing sections/sources and unsafe paths stop execution without changing progress. Historical plans need an explicitly reviewed amendment; the workflow never erases resume state to introduce visual criteria.
 
-1. **Desenvolvimento:** abre uma sessão nova do Codex para implementar somente a fase, sem commit.
-2. **Validação:** abre outra sessão nova e somente leitura para revisar requisito, diff, testes, segurança e padrões.
-3. **Testes:** o script executa diretamente a suíte completa declarada no baseline.
-4. **Commit:** o script executa `git commit --no-verify` e segue para a próxima fase.
+Gate 3 selects its interpreter from the baseline fence according to [the contract](planning-contract.md), including on Windows, without interactive profiles. A missing interpreter, invalid Bash syntax, Bash exit 126/127 and cmd exit 9009 stop execution as operational failures, preserving changes and state without returning to development in that run. Other nonzero exits stay in the correction loop; this classification does not identify every possible environment failure. Internal scripts of tools such as Composer may use another shell; check portability when preparing the baseline.
 
-Uma reprovação da validação ou dos testes inicia outra sessão de desenvolvimento com o erro encontrado e repete os gates. O padrão é parar depois de três tentativas; altere com `--max-attempts N`. Falhas operacionais interrompem imediatamente e preservam as mudanças.
+## Per-phase gates
 
-O executor usa `gpt-6.1-sol` por padrão nos gates de desenvolvimento e validação. Para escolher outro modelo, execute `ralph.sh execute <planning.md> --model <modelo>`. O esforço continua vindo da configuração do Codex CLI. O executor não acessa Redmine ou YouTrack e não usa subagentes. Por padrão, suas fases dependem da Codex CLI; `RALPH_AGENT_COMMAND_JSON` pode fornecer outro runner compatível como um array JSON de argumentos, e o modelo escolhido fica disponível em `RALPH_MODEL`. Essa dependência do backend é distinta da skill `ralph`, que pode ser conduzida no Codex, Claude Code ou OpenCode.
+Retain the Portuguese stage names in user-facing updates:
 
-## Retomada e segurança mínima
+1. **Desenvolvimento:** opens a fresh Codex session to implement only the phase, without committing.
+2. **Validação:** opens another fresh read-only session to review requirement, diff, tests, security, standards and applicable visual acceptance against the primary design and approved adaptations.
+3. **Testes:** the script directly runs the complete suite declared in the baseline.
+4. **Commit:** the script runs `git commit --no-verify` and moves to the next phase.
 
-Uma tarefa possui somente uma execução simultânea. Uma fase nova exige worktree limpo. Quando uma tentativa da fase já deixou mudanças, executar o mesmo comando novamente retoma essa fase pelo desenvolvimento. Se o processo terminou logo após o commit, um estado no gate de commit com worktree limpo reconhece o `HEAD` atual como commit da fase e continua.
+Validation or test rejection starts another development session with the reported error and repeats gates. The default stops after three attempts; override with `--max-attempts N`. Operational failures stop immediately and preserve changes.
 
-O diretório `.flow` deve estar ignorado pelo Git. Não existem hashes, fingerprints, manifests, aprovação de baseline, prova por trailer ou reconciliação de evidências. O desenvolvedor continua responsável por revisar o histórico e decidir quando apagar o estado ou desfazer trabalho.
+Validation results include `visual_validation` with status `verified`, `not-applicable` or `blocked` and evidence/reason. A blocked required visual comparison cannot accompany approval; the executor refuses that inconsistent result, including from a custom runner. Rejected visual findings follow the ordinary correction/attempt boundary, preserving work if the environment still prevents comparison. Gate 3 passing does not supersede missing Gate 2 visual evidence. The validator's evidence remains a review responsibility; structural checks do not prove that a claimed comparison occurred.
 
-## Saída
+The executor defaults to `gpt-6.1-sol` for development and validation gates. Choose another model with `ralph.sh execute <planning.md> --model <model>`. The default runner fixes reasoning effort at `medium` in both gates, overriding Codex CLI configuration for those runs. The executor does not access Redmine or YouTrack and uses no subagents. Its default backend requires Codex CLI; `RALPH_AGENT_COMMAND_JSON` may provide another compatible runner as a JSON argument array, and the chosen model is available as `RALPH_MODEL`. This backend dependency is separate from the `ralph` skill, which can be operated through Codex, Claude Code or OpenCode.
 
-Por padrão, o terminal mostra apenas mensagens humanas:
+## Resume and minimal safety
+
+A task allows only one simultaneous execution. A new phase requires a clean worktree. If a phase attempt already left changes, rerunning the same command resumes that phase from development. If execution ended immediately after commit, state at the commit gate with a clean worktree recognizes current `HEAD` as the phase commit and continues.
+
+The `.flow` directory must be Git-ignored. There are no hashes, fingerprints, manifests, baseline approval, trailer proof or evidence reconciliation. The developer remains responsible for reviewing history and deciding when to delete state or undo work.
+
+## Output
+
+By default, the terminal shows only human-readable Portuguese messages:
 
 ```text
 Fase 1 iniciada
@@ -39,6 +47,6 @@ Fase 1 iniciada
 Fase 1 finalizada
 ```
 
-Erros mostram a causa sanitizada e o caminho do diagnóstico. Prompts, stdout, stderr, testes e eventos estruturados permanecem em `.git/ralph-runtime`. Use `--verbose` para exibir os eventos técnicos no terminal.
+Errors show the sanitized cause and diagnostic path. Prompts, stdout, stderr, tests and structured events remain in `.git/ralph-runtime`. Use `--verbose` to display technical events in the terminal.
 
-Os timeouts padrões são 60 minutos para desenvolvimento, 30 para validação e 60 para testes. Ajuste com `--dev-timeout-minutes`, `--validation-timeout-minutes` e `--tests-timeout-minutes`.
+Default timeouts are 60 minutes for development, 30 for validation and 60 for tests. Adjust with `--dev-timeout-minutes`, `--validation-timeout-minutes` and `--tests-timeout-minutes`.

@@ -1,34 +1,34 @@
-# Entrada e persistência local
+# Input and local persistence
 
 ## Layout
 
-Preserve o layout canônico do `project-flow`: `feature.md` ou `bug.md` continua sendo o único documento de requisito na raiz do item pai. Use:
+Preserve canonical `project-flow` layout: `feature.md` or `bug.md` remains the parent's only root requirement document. Use:
 
-- `.work/slices-remote.json` para o snapshot sanitizado e descartável da leitura Redmine;
-- `.flow/slices-input-check.json` para a evidência durável da conferência funcional;
-- `.work/slices-proposal.json` para a proposta corrente antes de registrá-la;
-- `.work/slices-existing-children.json` para a paginação sanitizada e descartável das filhas preexistentes;
-- `.flow/slices-state.json` para revisões, hashes e aprovações duráveis;
-- `.flow/slices-divergence.json` para correções materiais, decisão do tech lead, alinhamentos local/remoto, tentativas e readback;
-- `.flow/slices-change-review.json` para a comparação semântica append-only entre o requisito atual e o baseline publicado;
-- `.flow/slices-revision-application.json` para o delta autorizado, aprovações por tarefa, tentativas, observações e readback;
-- `slices/slices.md` para a prévia humana corrente.
-- `slices/condicoes-teste-r<revisão>.docx` para o documento local gerado da fonte estruturada aprovada, preservando revisões anteriores;
-- `slices/divergence.md` para a correção exata e o impacto apresentados antes de alinhar o pai;
-- `slices/change-review.md` para classificação, impacto localizado e itens que permanecem válidos;
-- `slices/revision-application.md` para a prévia concreta das mutações e preservações;
-- `.flow/slices-publication.json` para revisão final, aprovação, IDs, tentativas, observações e conclusão da publicação;
-- `.flow/slices-condition-revisions.json`, `.flow/condition-evidence/` e `slices/conditions-revision-rNNN.md` para o histórico imutável e as prévias de [revisões localizadas das condições](condition-revisions.md), sem reescrever a publicação original;
-- `.flow/slices-reconciliation.json` e `slices/reconciliation.md` para a decisão e a prévia exata de uma materialização local de publicação histórica;
-- `.flow/slices-dependencies.json` para revisões, aprovações, operações e readbacks de dependências externas;
-- `slices/publication.md` para a prévia final aprovada;
-- `tasks/dev-<id>-<slug>/task.md`, `tasks/qa-<id>-<slug>/task.md` e `tasks/study-<id>-<slug>/task.md` para as representações canônicas criadas somente depois do readback integral do respectivo fluxo.
+- `.work/slices-remote.json` for disposable sanitized Redmine read snapshots;
+- `.flow/slices-input-check.json` for durable functional-verification evidence;
+- `.work/slices-proposal.json` for the current unrecorded proposal;
+- `.work/slices-existing-children.json` for disposable sanitized existing-child pagination;
+- `.flow/slices-state.json` for durable revisions, hashes and approvals;
+- `.flow/slices-divergence.json` for material corrections, tech lead decision, local/remote alignment, attempts and readback;
+- `.flow/slices-change-review.json` for append-only semantic comparison of current requirement and published baseline;
+- `.flow/slices-revision-application.json` for authorized delta, per-task approvals, attempts, observations and readback;
+- `slices/slices.md` for the current human-readable preview;
+- `slices/condicoes-teste-r<revision>.docx` for the local document generated from approved structured source, preserving previous revisions;
+- `slices/divergence.md` for exact correction/impact presented before parent alignment;
+- `slices/change-review.md` for classification, localized impact and still-valid items;
+- `slices/revision-application.md` for concrete mutation/preservation preview;
+- `.flow/slices-publication.json` for final review, approval, IDs, attempts, observations and completion;
+- `.flow/slices-condition-revisions.json`, `.flow/condition-evidence/` and `slices/conditions-revision-rNNN.md` for immutable history/previews of [localized condition revisions](condition-revisions.md), without rewriting original publication;
+- `.flow/slices-reconciliation.json` and `slices/reconciliation.md` for exact preview/decision on local materialization of historical publication;
+- `.flow/slices-dependencies.json` for external-dependency revisions, approvals, operations and readbacks;
+- `slices/publication.md` for the approved final preview;
+- `tasks/dev-<id>-<slug>/task.md`, `tasks/qa-<id>-<slug>/task.md` and `tasks/study-<id>-<slug>/task.md` for canonical representations created only after complete readback of their workflow.
 
-Rejeite links simbólicos em qualquer caminho gravado. Grave candidatos na mesma pasta e substitua atomicamente somente depois de validar. Preserve o estado anterior para executar a validação de transição; revisões e aprovações são append-only.
+Reject symlinks in every written path. Stage candidates in the same directory and replace atomically only after validation. Preserve previous state for transition validation; revisions/approvals are append-only. Human-facing artifacts and explanations remain in Portuguese.
 
-## Conferência do item pai
+## Parent verification
 
-O helper aceita estados v2–v5 do `project-flow`, mas a entrada deve ser Feature ou Bug, estar `completed`, conter `redmine.issue_id`, uma aprovação `requirement` válida e nenhuma divergência pendente. O snapshot sanitizado é a resposta estruturada da issue, limitada aos campos públicos necessários pelo verificador (`id`/`issue_id`, `subject`, `description` e, quando presentes, `status`, `status_id` e `relations`). Ele não contém cabeçalhos, credenciais ou configuração do MCP. Exemplo abreviado:
+The helper accepts `project-flow` states v2–v5, but input must be Feature/Bug, `completed`, with `redmine.issue_id`, valid `requirement` approval and no pending divergence. Sanitized snapshots are structured issue responses restricted to verifier-required public fields (`id`/`issue_id`, `subject`, `description` and, when present, `status`, `status_id`, `relations`). Include no headers, credentials or MCP configuration. Abbreviated example:
 
 ```json
 {
@@ -40,50 +40,52 @@ O helper aceita estados v2–v5 do `project-flow`, mas a entrada deve ser Featur
 }
 ```
 
-Quando o Redmine estiver indisponível, valide o documento e o estado locais, inspecione o código e prepare fontes, evidências, condições e candidato somente em `.work`. Não crie `slices-state.json`, aprovação ou artefato que alegue alinhamento remoto. A indisponibilidade é um bloqueio da conferência e da publicação, não da análise local. Preserve o candidato para retomada e identifique a conferência pendente; quando o acesso voltar, obtenha um snapshot novo, rode `check-input` e revise apenas o que a comparação efetivamente invalidar.
+Without Redmine, validate local document/state, inspect code and prepare sources, evidence, conditions and candidate in `.work` only. Do not create `slices-state.json`, approval or artifacts claiming remote alignment. Unavailability blocks verification/publication, not local analysis. Preserve the candidate for resume and identify pending verification; once access returns, retrieve a new snapshot, run `check-input` and revisit only what comparison invalidates.
 
-Execute:
+Run:
 
 ```sh
 python <project-slices>/scripts/manage_slices.py check-input <feature-dir> --remote .work/slices-remote.json --output .flow/slices-input-check.json --at "<ISO-8601>"
 ```
 
-O agente obtém a projeção remota; o script faz a comparação efetiva de identidade, título e seções funcionais gerenciadas e não chama a API. Conteúdo, atribuição ou delimitadores divergentes bloqueiam a proposta. O validador estrutural não prova legibilidade ou qualidade semântica dos cortes; aplique a disciplina e seus cenários de avaliação antes da aprovação.
+The agent retrieves remote projection; the script compares identity, title and managed functional sections without calling the API. Divergent content, attribution or delimiters block proposals. Structural validation does not prove readability or semantic slicing quality; apply discipline/evaluation scenarios before approval.
 
-Quando existir `.flow/slices-divergence.json`, `check-input`, aprovação e publicação das filhas permanecem bloqueados até o estado `completed`, com correção local atual e readback remoto verificado. Estados `pending`, `rejected`, `approved`, `local-aligned` e `aligning` são retomáveis, mas não autorizam filhas.
+When `.flow/slices-divergence.json` exists, `check-input`, approval and child publication stay blocked until `completed`, with current local correction and verified remote readback. `pending`, `rejected`, `approved`, `local-aligned` and `aligning` are resumable but authorize no children.
 
-## Proposta e aprovação
+## Proposal and approval
 
-Crie `.work/slices-proposal.json` conforme `schemas/slices-state.schema.json` e os exemplos de campo em `templates/slices.md`. O objeto da proposta possui `feature`, `inspection`, `requirements`, `slices`, `coverage`, `decisions` e, nas propostas novas, `test_conditions`. Prepare esse campo conforme [condições de teste e DOCX local](test-conditions.md); a revisão persistida é sua fonte estruturada durável. Registre e renderize:
+Create `.work/slices-proposal.json` under `schemas/slices-state.schema.json` and field examples in `templates/slices.md`. Proposal contains `feature`, `inspection`, `requirements`, `slices`, `coverage`, `decisions` and, for new proposals, `test_conditions`. Prepare the latter under [test conditions and local DOCX](test-conditions.md); persisted revision is durable structured source. Record/render:
+
+When a design applies, use these same fields for approved visual criteria and adaptations: `requirements` retains their canonical IDs, `coverage` assigns ownership, and `description.visual_references` is a nonempty string array naming source IDs, repository-relative normalized paths and screen/state locators. Both preview and DEV publication render that optional field under `Referências`; omit it for tasks without applicable design. Keep comparison conditions and source locators in `test_conditions` so rendered preview, QA, DOCX and materialized `task.md` retain them. Record approved adaptation provenance in existing `decisions`; no new operational manifest is needed. Semantically compare rendered descriptions and conditions with the visual sources before requesting approval; structural coverage alone cannot establish visual completeness. Historical descriptions without the optional field remain readable and are not rewritten on resume.
 
 ```sh
 python <project-slices>/scripts/manage_slices.py record-proposal .flow/slices-state.json .work/slices-proposal.json --input-check .flow/slices-input-check.json --actor "<tech lead>" --at "<ISO-8601>" --reason "<motivo da revisão>"
 python <project-slices>/scripts/manage_slices.py render .flow/slices-state.json slices/slices.md
 ```
 
-`record-proposal` é o primeiro passo que transforma o candidato em revisão durável e exige o `input-check` remoto corrente. Um candidato preparado offline não possui autoridade adicional e não contorna essa conferência.
+`record-proposal` is the first step making a candidate durable and requires current remote `input-check`. Offline candidates gain no authority and cannot bypass verification.
 
-Para propostas novas, `record-proposal` rejeita qualquer slice acima de seis horas e exige `estimate_exception: null`; o campo existe apenas para leitura de estados históricos. A publicação aplica o mesmo teto à QA, e o ramo de Study aplica o teto à filha excepcional. Estimativas encontradas nas fontes não entram no cálculo nem na evidência passada a agentes estimadores.
+For new proposals, `record-proposal` rejects any slice above six hours and requires `estimate_exception: null`; that field exists only for historical reading. Publication applies the same ceiling to QA, and Study applies it to the exceptional child. Source estimates do not enter calculations or evidence supplied to estimating agents.
 
-Cada execução de `record-proposal` acrescenta uma revisão imutável e invalida a aprovação corrente. Depois da confirmação explícita do tech lead, preserve uma cópia do estado anterior e execute:
+Each `record-proposal` appends an immutable revision and invalidates current approval. After explicit tech lead confirmation, preserve previous state and run:
 
 ```sh
 python <project-slices>/scripts/manage_slices.py approve .flow/slices-state.json --actor "<tech lead>" --at "<ISO-8601>"
 python <project-slices>/scripts/manage_slices.py validate .flow/slices-state.json --previous <estado-anterior.json>
 ```
 
-`approve` relê o requisito e o estado aprovados e confere título, identidade e caminhos contra o `input-check`; uma alteração desde a conferência exige novo `check-input` e nova proposta. `technical_context` pode ser omitido ou `null`; inclua texto e renderize a seção somente quando uma decisão aprovada tornar esse contexto necessário.
+`approve` rereads approved requirement/state and checks title, identity and paths against `input-check`; changes require fresh verification/proposal. `technical_context` may be omitted/null; include text and render the section only when an approved decision requires it.
 
-**Concluído quando:** a revisão aprovada, sua prévia Markdown, o hash e a atribuição sobrevivem em arquivos versionáveis fora de `.work/`, e nenhuma revisão anterior foi alterada.
+**Complete when:** approved revision, Markdown preview, hash and attribution survive in versionable files outside `.work/`, and no earlier revision changed.
 
-Gere o DOCX local da revisão aprovada conforme [condições de teste](test-conditions.md). Essa geração não altera a descrição QA nem autoriza publicação do arquivo.
+Generate local DOCX from approved revision under [test conditions](test-conditions.md). Generation neither changes QA description nor authorizes file publication.
 
-Depois desta aprovação local, siga [publicação DEV e QA](publication.md). O plano e snapshots remotos continuam descartáveis em `.work/`; estado, aprovações e progresso permanecem em `.flow/`, e a prévia fica em `slices/` até a materialização canônica por ID em `tasks/`.
+Then follow [DEV and QA publication](publication.md). Plan/remote snapshots stay disposable in `.work/`; state, approvals and progress remain in `.flow/`, and preview stays in `slices/` until canonical ID-based materialization in `tasks/`.
 
-Quando a publicação já foi concluída por um contrato histórico v1, siga [reconciliação local](legacy-reconciliation.md) em vez de preparar ou repetir operações remotas.
+For completed historical v1 publication, follow [local reconciliation](legacy-reconciliation.md) instead of preparing/repeating remote operations.
 
-## Estado operacional e retomada
+## Operational state and resume
 
-Os helpers persistem e validam o progresso local; mantenha essa manuten??o interna. Registre decis?es de produto e suas fontes uma vez, sem copiar toda a conversa. No escopo, novos estados omitem `awaiting_decision_for`, `continuation_decisions` e `resumes`; registros hist?ricos continuam leg?veis e preservados. `resume` reconcilia o progresso e seleciona o primeiro item eleg?vel sem nova confirma??o de continuidade. Pausas e impedimentos preservam a raz?o necess?ria para retomar. IDs, revis?es de conte?do, opera??es incertas e evid?ncias de publica??o continuam dur?veis; retomar n?o autoriza repetir muta??es remotas.
+Helpers persist/validate local progress; keep this maintenance internal. Record product decisions and sources once rather than copying the conversation. New scope states omit `awaiting_decision_for`, `continuation_decisions` and `resumes`; historical records remain readable/preserved. `resume` reconciles progress and selects the first eligible item without new continuation confirmation. Pauses/obstacles preserve reasons needed to resume. IDs, content revisions, uncertain operations and publication evidence remain durable; resume does not authorize repeating remote mutations.
 
-**Conclu?do quando:** o helper valida o estado persistido, preserva as publica??es verificadas e seleciona o pr?ximo item eleg?vel ou mant?m o impedimento real.
+**Complete when:** the helper validates persisted state, preserves verified publications and selects the next eligible item or retains the actual obstacle.

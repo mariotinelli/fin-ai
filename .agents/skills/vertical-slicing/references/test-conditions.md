@@ -1,21 +1,25 @@
-# Condições de teste do item completo
+# Test conditions for the complete item
 
-## Preparar com evidência
+## Prepare with evidence
 
-Depois da inspeção, derive do requisito aprovado o que o profissional de QA deve verificar e qual resultado observável deve encontrar. A condição pertence à Feature ou ao Bug inteiro: inclua capacidades existentes relevantes, interações entre fatias e preservações necessárias. Uma regressão fora da entrega precisa de uma relação de impacto justificável pela inspeção; explicite essa justificativa.
+When estimating QA, apply [estimation and calibration](estimation.md). Group execution sharing data and preparation while preserving every condition and expected result. Distinguish necessary manual testing from available automated evidence; condition count does not determine hours. Keep preparation, retesting and integration checks not covered by DEV explicit.
 
-Para Bugs, represente a situação de reprodução, o resultado corrigido e as regressões relacionadas. No caminho somente QA, use a mesma análise de cobertura, mesmo sem fatias DEV.
+After inspection, derive what QA should verify and its observable result from the approved requirement. Conditions belong to the whole Feature or Bug: include relevant existing capabilities, cross-slice interactions and required preservation. Out-of-delivery regressions need an impact relationship justified by inspection; explain it.
 
-Avalie sucesso, alternativas, erros, permissões, limites, integrações e preservação conforme a relevância. Essa avaliação não impõe grupos nem quantidade mínima por categoria. Dados, contexto e passos entram quando necessários para eliminar ambiguidade; agrupamentos servem à leitura. Prioridade e objetivo de risco separados não são obrigatórios.
+For Bugs, represent reproduction, corrected result and related regressions. Use the same coverage analysis on QA-only paths even without DEV slices.
 
-**Concluído quando:** cada comportamento aprovado tem condições verificáveis, as capacidades existentes e interações relevantes estão contempladas e toda regressão externa tem impacto justificável.
+Assess success, alternatives, errors, permissions, boundaries, integrations and preservation according to relevance. This imposes neither grouping nor a minimum count per category. Include data, context and steps when needed to remove ambiguity; grouping serves readability. Separate priority and risk-objective fields are not mandatory.
 
-## Resolver lacunas e revisar significado
+For approved visual criteria, include comparison conditions identifying source/screen, rendered state, applicable viewport and expected visual outcome, with approved adaptations explicit. Cover shared identity and relevant page/form/error/empty states across slices without duplicating ownership. Functional assertions, overflow checks and failure screenshots do not establish visual fidelity. Conditions may call for human visual comparison; they do not require a particular snapshot library or pixel-perfect threshold unless approved. Unresolved visual expectations return to requirement alignment.
 
-Uma condição contém ID estável, título, verificação, resultado esperado e origem no requisito; contexto é incluído quando necessário. Preserve o ID quando a condição continuar representando o mesmo comportamento, inclusive após ajustes editoriais. Uma condição nova recebe um novo ID; IDs removidos permanecem reservados no histórico.
+**Complete when:** every approved behavior has verifiable conditions, relevant existing capabilities and interactions are covered, and every external regression has justified impact.
 
-Compare condições, requisito, evidências da inspeção e proposta de fatias. Referenciar um ID de requisito comprova o vínculo estrutural, mas não comprova que o resultado esperado é correto nem que todos os cenários foram cobertos. Se a inspeção revelar comportamento ausente ou contraditório, devolva a lacuna ao fluxo chamador para resolver o requisito antes da aprovação das condições afetadas.
+## Resolve gaps and review meaning
 
-Use os [cenários de avaliação](test-condition-scenarios.json) ao revisar a disciplina. Eles avaliam decisões semânticas; não representam execução do produto.
+A condition has a stable ID, title, verification, expected outcome and requirement origin; include context when necessary. Preserve IDs while conditions retain the same behavior, including editorial changes. New conditions receive new IDs; removed IDs remain reserved in history. Write user-facing conditions in Portuguese.
 
-**Concluído quando:** nenhuma condição inventa comportamento, cada resultado é observável e sustentado, e a revisão conjunta com as fatias não deixa lacunas ou contradições abertas. O fluxo chamador coleta a aprovação, persiste a fonte e gera o documento.
+Compare conditions, requirement, inspection evidence and slices. A requirement-ID reference proves structural linkage, not correctness of expected outcome or complete scenario coverage. If inspection reveals missing or contradictory behavior, return the gap to the caller to resolve requirements before approving affected conditions.
+
+Use [evaluation scenarios](test-condition-scenarios.json) when reviewing this discipline. They assess semantic decisions rather than product execution.
+
+**Complete when:** no condition invents behavior, each outcome is observable and supported, and joint review with slices leaves no open gaps or contradictions. The caller collects approval, persists the source and generates the document.

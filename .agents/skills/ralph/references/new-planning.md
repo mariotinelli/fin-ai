@@ -1,56 +1,56 @@
-# Planejamento novo
+# New planning
 
-Use este caminho quando a filha DEV identificada não possui `planning.md`, originalmente ou após a [substituição autorizada](replace-planning.md). O planejamento pertence a `plan-issue`; a continuidade, a preparação do plano aprovado no Git e a chamada do executor pertencem a `ralph`.
+Use this path when the identified DEV child has no `planning.md`, either originally or after [authorized replacement](replace-planning.md). Planning belongs to `plan-issue`; continuation, preparing the approved plan in Git and invoking the executor belong to `ralph`. Deliver all user-facing content in Brazilian Portuguese.
 
-## 1. Delegar preservando o trabalho existente
+## 1. Delegate while preserving existing work
 
-Antes de delegar, observe o estado Git do projeto: mudanças preparadas, não preparadas e arquivos não rastreados. Leia o diff de um `.gitignore` já alterado na pasta da filha, se existir. Mantenha essa observação na conversa para distinguir mudanças preexistentes das produzidas pelo planejamento; não crie estado ou manifesto para isso.
+Before delegation, observe project Git status: staged, unstaged and untracked files. Read the diff of an already modified child-directory `.gitignore`, if any. Keep this observation in the conversation to distinguish preexisting changes from planning output; do not create state or manifests for it.
 
-Ao chegar pela substituição, mantenha também a observação feita antes da remoção: a exclusão autorizada do plano é parte desse fluxo, não uma alteração alheia. O plano substituto deve considerar o código atual, preservando a implementação existente.
+On replacement, retain the pre-removal observation too: authorized deletion of the plan belongs to this workflow rather than unrelated changes. The replacement plan must consider current code and preserve existing implementation.
 
-Leia e aplique [plan-issue](../../plan-issue/SKILL.md) para o ID da filha. Resolva a referência a partir deste pacote instalado. Se a dependência estiver ausente, informe o problema de instalação e pare.
+Read and apply [plan-issue](../../plan-issue/SKILL.md) for the child ID. Resolve the reference relative to this installed package. If missing, report the installation problem and stop.
 
-Deixe a skill delegada conduzir a inspeção do projeto e do pai, o baseline, a escrita e a revisão do plano. Não reproduza seu procedimento nem implemente código da tarefa. O uso independente de `plan-issue` permanece igual; quando chamado por `ralph`, a entrega do comando ao final devolve o controle a este fluxo, em vez de encerrar a conversa.
+Let the delegated skill conduct project/parent inspection, baseline, writing and plan review. Do not duplicate its procedure or implement task code. Independent `plan-issue` usage is unchanged; when invoked by `ralph`, final command delivery returns control here instead of ending the conversation.
 
-**Concluído quando:** o fluxo de planejamento produziu o plano completo da filha, com seus ajustes de ignore previstos, ou explicou um impedimento sem iniciar o executor.
+**Complete when:** planning produced the complete child plan and specified ignore adjustments, or explained an obstacle without starting the executor.
 
-## 2. Revisar e aprovar
+## 2. Review and approve
 
-Garanta que o desenvolvedor recebeu o plano completo e incorpore os ajustes solicitados pelo fluxo delegado. Aguarde aprovação explícita da versão final. Informe que a aprovação permite commitar os arquivos do planejamento com `--no-verify`, quando houver diferenças, e iniciar o Ralph na mesma conversa.
+Ensure the developer received the complete plan and incorporate requested adjustments through the delegated workflow. Wait for explicit approval of the final version. Explain that approval permits committing planning files with `--no-verify` when differences exist, then starting Ralph in the same conversation.
 
-Reutilize a aprovação já obtida durante `plan-issue` para esse conteúdo; não peça a mesma confirmação novamente. Se o conteúdo mudar depois da aprovação, apresente a mudança e aguarde aprovação do resultado antes de continuar. Não registre aprovação, hash ou readback em arquivos adicionais.
+Reuse approval already obtained during `plan-issue` for this content rather than requesting equivalent confirmation. If content changes after approval, present changes and wait for approval of the result before continuing. Do not record approval, hashes or readback in additional files.
 
-**Concluído quando:** o conteúdo final foi apresentado e aprovado pelo desenvolvedor. Sem aprovação, não faça commit nem execute.
+**Complete when:** final content was presented and approved by the developer. Without approval, neither commit nor execute.
 
-## 3. Commitar somente o planejamento
+## 3. Commit only planning
 
-Compare o estado Git atual com a observação anterior e inspecione os diffs. Os únicos candidatos a este commit são o `planning.md` da filha e o ajuste necessário de seu `.gitignore`, quando produzido pelo planejamento. A autorização cobre esse conteúdo, não todos os arquivos da pasta.
+Compare current Git status with the previous observation and inspect diffs. The only commit candidates are this child's `planning.md` and necessary `.gitignore` adjustment produced by planning. Authorization covers that content, not every file in the directory.
 
-Se houver alterações alheias, inclusive código, arquivos não rastreados ou conteúdo já preparado no índice, informe os caminhos e aguarde o desenvolvedor resolver o impedimento. Preserve arquivos e índice; não use stash, descarte mudanças ou faça um commit adicional para limpar o projeto. Se o mesmo `.gitignore` contiver mudanças preexistentes alheias, não inclua o arquivo inteiro nem tente separá-las automaticamente. Depois da resolução, confira novamente o plano aprovado e o estado Git.
+If unrelated changes exist, including code, untracked files or already staged content, identify paths and wait for the developer to resolve the obstacle. Preserve files and index; do not stash, discard changes or create another commit to clean the project. If the same `.gitignore` contains preexisting unrelated changes, neither include the whole file nor split them automatically. After resolution, recheck the approved plan and Git status.
 
-Com apenas o conteúdo autorizado pendente, prepare explicitamente os caminhos pertinentes e confira o diff do índice antes de commitar. Use caminhos relativos ao repositório, argumentos protegidos para o shell e pathspecs literais; não use seleção global ou da pasta inteira.
+With only authorized content pending, explicitly stage relevant paths and inspect the index diff before committing. Use repository-relative paths, shell-protected arguments and literal pathspecs; do not select all files or the whole directory.
 
-Se o plano aprovado e o `.gitignore` pertinente já estiverem versionados e idênticos ao `HEAD`, com índice e worktree sem alterações pendentes, informe que não há diferenças para commitar e siga para a execução. Não crie commit vazio. Confirme o conteúdo no Git: a ausência de diff sozinha não comprova que um arquivo ignorado ou não rastreado esteja versionado.
+If approved plan and relevant `.gitignore` are already tracked and identical to `HEAD`, with clean index and worktree, explain there are no differences to commit and continue to execution. Do not create an empty commit. Verify Git content: absence of a diff alone does not prove an ignored or untracked file is versioned.
 
-Sequência de referência, substituindo os marcadores pelos caminhos revisados e omitindo o `.gitignore` se não precisar entrar no commit:
+Reference sequence, substituting reviewed paths and omitting `.gitignore` when unnecessary:
 
 ```sh
-git --literal-pathspecs add -- <planning.md> <.gitignore-se-alterado>
+git --literal-pathspecs add -- <planning.md> <.gitignore-if-changed>
 git diff --cached --name-only
 git diff --cached
-git --literal-pathspecs commit --no-verify --only -m "docs: plan DEV <id>" -- <planning.md> <.gitignore-se-alterado>
+git --literal-pathspecs commit --no-verify --only -m "docs: plan DEV <id>" -- <planning.md> <.gitignore-if-changed>
 ```
 
-O diff preparado deve conter somente o planejamento aprovado e o ajuste pertinente de ignore. Se aparecer conteúdo alheio ou o plano tiver mudado, pare antes do commit. O commit limitado aos caminhos é uma proteção adicional; não autoriza ignorar alterações alheias encontradas.
+The staged diff must contain only approved planning and the relevant ignore adjustment. If unrelated content appears or the plan changed, stop before committing. Limiting commit paths adds protection; it does not authorize ignoring unrelated changes.
 
-Em falha do commit, explique o erro e aguarde orientação. Não altere configurações do Git, identidade ou hooks para contorná-lo e não chame o executor. Em sucesso, confira os arquivos e o diff do commit e o estado atual do projeto; se ainda houver alterações pendentes, informe o impedimento antes de iniciar. Não faça push.
+On commit failure, explain the error and wait for direction. Do not change Git configuration, identity or hooks to bypass it, and do not invoke the executor. On success, verify committed files/diff and current project status; if changes remain, report the obstacle before starting. Do not push.
 
-**Concluído quando:** o plano aprovado e seu ajuste de ignore estão versionados por um commit limitado bem-sucedido ou já eram idênticos ao `HEAD`, e o projeto não tem alterações pendentes que impeçam o início.
+**Complete when:** approved plan and ignore adjustment are tracked through a successful limited commit or were already identical to `HEAD`, and no pending project changes prevent startup.
 
-## 4. Continuar na mesma conversa
+## 4. Continue in the same conversation
 
-Retorne à etapa de execução da skill `ralph` e chame o executor existente para esse plano, sem outra chamada de skill ou confirmação. Reutilize o acompanhamento e o tratamento de interrupções existentes.
+Return to the `ralph` execution step and invoke the existing executor for this plan without another skill invocation or confirmation. Reuse existing monitoring and interruption handling.
 
-Este caminho não gera nem remove estado de retomada. Se houver um estado antigo ou outro impedimento, não o apague para forçar o início: preserve-o e informe a situação. A checagem de alterações deste planejamento novo não se aplica ao caminho separado de retomada de plano existente.
+This path neither creates nor removes resume state. If old state or another obstacle exists, preserve it and report the situation rather than deleting it to force startup. The change check for new planning does not apply to the separate existing-plan resume path.
 
-**Concluído quando:** o plano aprovado e preparado no Git foi encaminhado uma única vez à execução acompanhada, ou o impedimento foi informado sem iniciar o processo.
+**Complete when:** the approved Git-prepared plan was passed once to monitored execution, or the obstacle was reported without starting a process.

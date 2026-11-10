@@ -1,71 +1,71 @@
-# Fatiamento sequencial de escopo
+# Sequential scope slicing
 
-Use este ramo quando o tech lead pedir um escopo ou não indicar uma Feature ou Bug. Ele coordena várias execuções do fluxo principal; cada item conserva sua própria inspeção, aprovação da prévia completa, publicação e releitura.
+Use when the tech lead requests a scope or provides no Feature/Bug. Coordinate multiple main-workflow executions; each item keeps its own inspection, complete-preview approval, publication and readback.
 
-## Selecionar
+## Select
 
-Sem entrada, execute `manage_scope.py list <docs/harness>` e apresente somente escopos que tenham ao menos uma Feature ou Bug ativo, aprovado e ainda pendente ou em andamento. Mostre também `fatiadas/total` e as quantidades `pendente`, `em andamento`, `concluída` e `aguardando requisitos`, então pergunte qual escopo processar. O total inclui toda Feature e todo Bug ativo do catálogo; itens retirados não entram.
+Without input, run `manage_scope.py list <docs/harness>` and present only scopes with at least one active approved Feature/Bug still pending/in progress. In Portuguese, also show `fatiadas/total` and counts for `pendente`, `em andamento`, `concluída`, `aguardando requisitos`, then ask which scope to process. Total includes every active catalog Feature/Bug, excluding removed entries.
 
-O helper valida o estado real do `project-flow`, a aprovação da projeção completa do catálogo e sua ordem. Um item sem artefato ou requisito concluído fica `aguardando requisitos`; ele não desaparece do total e não impede trabalhar outro item elegível. Caminho inseguro, vínculo de catálogo obsoleto, tipo, entrega ou ID Redmine divergente é erro, não espera.
+The helper validates actual `project-flow` state, full catalog-projection approval and order. Missing artifact/completed requirement means `aguardando requisitos`; the item remains in total and does not block other eligible items. Unsafe paths, stale catalog binding, type, delivery or Redmine-ID mismatch are errors, not waiting.
 
-**Concluído quando:** o tech lead escolheu uma das opções derivadas do catálogo aprovado e viu a distribuição integral das Features e Bugs ativos.
+**Complete when:** tech lead chose an approved-catalog-derived option and saw the full active Feature/Bug distribution.
 
-## Iniciar ou retomar
+## Start or resume
 
-Para uma seleção nova, execute:
+For a new selection:
 
 ```sh
 python <project-slices>/scripts/manage_scope.py start <scope-dir> --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-O estado fica em `<scope-dir>/.flow/slices-scope-state.json`, separado do progresso de requisitos e execução do `project-flow`. Ele se vincula ao `internal_identity`, projeto e hash da projeção aprovada do catálogo, não aos bytes mutáveis de `scope-state.json`.
+State is `<scope-dir>/.flow/slices-scope-state.json`, separate from `project-flow` requirement/execution progress. It binds `internal_identity`, project and approved catalog-projection hash rather than mutable `scope-state.json` bytes.
 
-Se o estado estiver pausado, execute `resume`. Se estiver ativo, execute `refresh`. Retome `current_item_id`; jamais escolha por um flag informado em conversa. A conclusão prévia só vale quando `slices-publication.json` passa pelo validador RST13, possui a aprovação final corrente, todas as criações e relações concluídas e evidência de readback. Assim, uma retomada pula o item já publicado sem repetir seus gates ou operações.
+For paused state run `resume`; active state uses `refresh`. Resume `current_item_id`, never a conversational flag. Prior completion counts only when `slices-publication.json` passes RST13 validation, has current final approval, completed creates/relations and readback evidence. Resume then skips published items without repeated gates/operations.
 
-**Concluído quando:** o estado durável aponta para o primeiro item elegível ainda não processado na ordem aprovada, ou explicita que só restam requisitos em espera.
+**Complete when:** durable state points to the first unprocessed eligible item in approved order or explicitly shows only waiting requirements remain.
 
-## Processar uma Feature ou Bug
+## Process a Feature or Bug
 
-Execute integralmente o ramo de item pai deste skill para `current_item_id`. Dependências do catálogo explicam a ordem, mas não bloqueiam o fatiamento. Um bloqueio de implementação pertence às filhas e também não interrompe o processamento dos próximos itens.
+Run this skill's complete parent-item branch for `current_item_id`. Catalog dependencies explain order but do not block slicing. Implementation blockers belong to children and likewise do not stop subsequent-item processing.
 
-Cada item mantém separadamente:
+Each item independently retains:
 
-1. conferência do requisito aprovado e publicado;
-2. uma decisão sobre a prévia completa da decomposição e publicação pelo tech lead;
-3. reutilização dessa decisão enquanto o conteúdo autorizado permanecer válido;
-4. criação e relações reconciliadas;
-5. readback integral das filhas e bloqueios.
+1. approved/published requirement verification;
+2. one tech lead decision on complete decomposition/publication preview;
+3. reuse of that decision while authorized content stays valid;
+4. reconciled creation/relations;
+5. full child/blocker readback.
 
-Não agregue aprovações ou publicações entre itens.
+Do not aggregate approvals/publications across items.
 
-**Concluído quando:** a publicação individual está `completed` com seu readback validado, ou o item permanece explicitamente pendente/em andamento sem alegação de conclusão.
+**Complete when:** individual publication is completed with validated readback, or the item remains explicitly pending/in progress without claiming completion.
 
-## Mostrar progresso e continuar
+## Show progress and continue
 
-Reaproveite a [preferência de formato das condições](test-conditions.md#escolher-e-reaproveitar-o-formato) em todos os itens. Passe o mesmo arquivo de preferências a `record-proposal`; uma retomada conserva o formato já aprovado sem perguntar por Word novamente.
+Reuse [condition-format preference](test-conditions.md) across items. Pass the same preference file to `record-proposal`; resume preserves already approved format without asking about Word again.
 
-O pedido de processamento do escopo autoriza avançar entre itens elegíveis. Após cada conclusão, execute `refresh`, mostre concluídos, pendentes, impedimentos e próximo passo, e processe `current_item_id` sem nova pergunta de continuar/parar. `refresh` também libera uma espera legada em `awaiting_decision_for`; conserva `continuation_decisions` como histórico, sem exigir novos registros. Decisões de produto e aprovação da prévia de publicação continuam necessárias; autorizações válidas não são renovadas na retomada.
+Scope processing authorizes advancing between eligible items. After completion run `refresh`, show completed/pending items, obstacles and next step, then process `current_item_id` without another continue/stop question. `refresh` also clears legacy `awaiting_decision_for` waits while preserving `continuation_decisions` history without requiring new records. Product decisions and publication-preview approval remain necessary; valid authorizations are not renewed on resume.
 
-Quando faltar uma decisão ou capacidade necessária ao item, registre o impedimento e a condição concreta para resolvê-lo:
+When a necessary decision/capability is missing, record the obstacle and concrete resolution condition:
 
 ```sh
 python <project-slices>/scripts/manage_scope.py block <scope-dir> --item <catalog-item-id> --reason "<decisão/capacidade ausente e condição de retomada>" --actor "<responsável>" --at "<ISO-8601>"
 ```
 
-O helper seleciona o próximo item independente na ordem preferencial. Registre também os itens cujo fatiamento realmente depende da decisão ausente; uma dependência de implementação entre filhas, por si só, não impede preparar ou publicar seu fatiamento. Mostre os eventos de bloqueio ainda não resolvidos junto ao progresso. Após verificar a resolução, use `unblock` com os mesmos argumentos e evidência em `--reason`, depois execute `refresh` para revalidar os artefatos antes de agir.
+The helper selects the next independent item in preferred order. Also record items whose slicing genuinely depends on the missing decision; child implementation dependencies alone do not prevent slicing preparation/publication. Show unresolved blocking events with progress. After verifying resolution, use `unblock` with equivalent arguments and evidence in `--reason`, then `refresh` to revalidate artifacts before acting.
 
-Atenda imediatamente um pedido de pausa, inclusive durante um item. Finalize somente uma escrita local atômica em curso e execute, sem novas operações remotas:
+Honor pause requests immediately, including mid-item. Finish only an ongoing atomic local write, then run without new remote operations:
 
 ```sh
 python <project-slices>/scripts/manage_scope.py pause <scope-dir> --reason "<pedido do usuário>" --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-`pause` salva o progresso sem depender de acesso remoto. `refresh` preserva a pausa; `resume <scope-dir> --actor "<tech lead>" --at "<ISO-8601>"` registra a retomada e recalcula o próximo elegível. Antes de repetir qualquer operação incerta, reconcilie seu resultado no fluxo individual; mantenha operações concluídas, conteúdo humano e aprovações válidas.
+`pause` saves progress without remote access. `refresh` preserves pause; `resume <scope-dir> --actor "<tech lead>" --at "<ISO-8601>"` records resume/recalculates next eligible item. Reconcile uncertain outcomes through the individual workflow before retry; retain completed operations, human-readable content and valid approvals.
 
-**Concluído quando:** o progresso está persistido e o próximo passo coincide com o estado validado, ou a pausa está registrada e nenhuma nova operação é iniciada.
+**Complete when:** progress is persisted and next step matches validated state, or pause is recorded with no new operation started.
 
-## Concluir
+## Complete
 
-O helper conclui automaticamente apenas quando `fatiadas == total`. Uma Feature ou Bug ativo aguardando requisitos mantém o escopo incompleto, mesmo que não exista outro item elegível agora. Reporte essa espera sem transformar requisitos ausentes em item retirado. Mostre também `dependency_status`: ele acompanha se relações externas estão `pending`, `refining` ou `ready` sem desfazer a publicação concluída nem afirmar que a capacidade bloqueadora já foi implementada.
+Automatic completion occurs only when `fatiadas == total`. An active Feature/Bug awaiting requirements keeps scope incomplete even without another eligible item. Report waiting without marking missing requirements as removed. Also show `dependency_status`: external relations may be pending, refining or ready without undoing completed publication or claiming implemented blocker capabilities.
 
-**Concluído quando:** todas as Features e Bugs ativos possuem roteamento DEV/QA individual completo e verificado; caso contrário, informe escopo incompleto, itens concluídos e pendentes, decisão/capacidade que falta e próximos passos. Preserve exatamente o progresso e a razão observável da espera.
+**Complete when:** all active Features/Bugs have complete verified individual DEV/QA routing; otherwise report incomplete scope, completed/pending items, missing decision/capability and next steps. Preserve exact progress and observable waiting reason.

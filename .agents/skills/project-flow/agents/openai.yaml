@@ -1,7 +1,7 @@
 interface:
-  display_name: "Project Flow"
-  short_description: "Define a sourced scope, Feature, or Bug"
-  default_prompt: "Use $project-flow to define or safely resume this sourced scope, Feature, or Bug, complete its approved items, and reconcile Redmine issues and relations without duplicate mutations."
+  display_name: "Fluxo de projeto"
+  short_description: "Define escopo, Feature ou Bug com fontes"
+  default_prompt: "Use $project-flow para definir ou retomar este escopo, Feature ou Bug com base nas fontes, concluir os itens aprovados e reconciliar issues e relações no Redmine sem duplicar operações."
 dependencies:
   tools:
     - type: "mcp"

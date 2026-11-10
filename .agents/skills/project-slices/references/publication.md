@@ -1,16 +1,16 @@
-# Publicação DEV e QA
+# DEV and QA publication
 
-Depois de uma publicação concluída com condições em Markdown ou DOCX, alterações restritas às condições seguem [revisão localizada](condition-revisions.md), preservando este estado e os artefatos canônicos da publicação original.
+After completed publication with Markdown/DOCX conditions, condition-only changes follow [localized revision](condition-revisions.md), preserving original publication state/canonical artifacts.
 
-Monte o plano desta fase enquanto a decomposição corrente está em revisão, para que todos os efeitos apareçam na mesma prévia. Depois da decisão única, persista a aprovação da decomposição, gere o documento e execute `prepare`; a renderização persistida precisa ser materialmente idêntica ao conjunto apresentado. O helper local guarda intenção e evidência; o agente executa leituras e mutações exclusivamente pelos tools do MCP Redmine.
+Build this phase's plan while current decomposition is under review so all effects appear in one preview. After the single decision, persist decomposition approval, generate the document and run `prepare`; persisted rendering must be materially identical to the presented set. The local helper stores intent/evidence; the agent reads/mutates exclusively through Redmine MCP tools.
 
-## Confirmar campos
+## Confirm fields
 
-Se o item pai possuir filhas, conclua primeiro a revisão de [filhas existentes e caminho somente QA](existing-children.md). `prepare` recusa uma lista não vazia sem decisões completas.
+With existing children, first complete [existing-child and QA-only review](existing-children.md). `prepare` rejects nonempty child lists without complete dispositions.
 
-Leia novamente o item pai com filhos e relações e consulte projeto, trackers, status e prioridades. Derive esses campos sem perguntar ao tech lead: QA usa sempre o tracker nativo `Deliverable`; DEV usa `Task` quando a mãe usa `Feature` e `Bug` quando a mãe usa `Bug`; o status inicial é sempre `New`; a prioridade inicial é sempre `Normal`. Resolva os IDs pelos nomes no catálogo nativo e interrompa se algum estiver ausente ou ambíguo. Use o mesmo `project_id` e `parent_issue_id` nativo da mãe; herde `category_id` e `fixed_version_id` quando existirem no pai. Deixe responsável, início e vencimento vazios. Envie explicitamente o `priority_id` de `Normal` e não aceite override. Grave a estimativa em `estimated_hours`.
+Reread parent with children/relations and consult project, trackers, statuses and priorities. Derive without asking: QA always uses native `Deliverable`; DEV uses `Task` for `Feature` parents and `Bug` for `Bug` parents; initial status is `New`; initial priority is `Normal`. Resolve native catalog IDs by name and stop if absent/ambiguous. Use parent's native `project_id`/`parent_issue_id`; inherit `category_id`/`fixed_version_id` when present. Leave assignee/start/due dates empty. Explicitly send Normal's `priority_id` without override. Write estimate to `estimated_hours`.
 
-Salve a resposta sanitizada do item pai em `.work/slices-publication-parent.json` e monte `.work/slices-publication-plan.json` com:
+Save sanitized parent response to `.work/slices-publication-parent.json` and build `.work/slices-publication-plan.json`:
 
 ```json
 {
@@ -42,76 +42,76 @@ Salve a resposta sanitizada do item pai em `.work/slices-publication-parent.json
 }
 ```
 
-Há exatamente uma QA por item pai. O título é `[QA]` seguido do título completo da Feature ou Bug, sem sufixo. Sua estimativa é própria e não usa a referência de seis horas das DEV. A descrição cobre objetivo, jornadas integradas, regras e permissões, impactos relacionados e critérios de conclusão; referencia os requisitos sem copiar as DEV integralmente. `blocked_by` contém todas e somente as DEV necessárias para liberar a verificação integrada. Ele fica vazio somente quando a decomposição aprovada possui slices vazio e cobertura `existing` integral.
+There is exactly one QA per parent, titled `[QA]` plus full Feature/Bug title without suffix. Its estimate is independent rather than using DEV's six-hour reference. Description covers objective, integrated journeys, rules/permissions, related impacts and completion criteria, referencing requirements without copying all DEV descriptions. `blocked_by` contains all and only DEV tasks needed for integrated verification; it is empty only for approved empty slices and exhaustive `existing` coverage.
 
-A QA verifica o item pai completo, incluindo os comportamentos classificados como `existing`. Traduza esses cenários em jornadas e critérios verificáveis, preservando as condições do requisito aprovado; a classificação dispensa trabalho DEV, mas não a verificação integrada.
+QA verifies the complete parent, including `existing` behavior. Translate those scenarios into verifiable journeys/criteria preserving approved conditions; this classification waives DEV work, not integrated verification.
 
-Escreva `objective` como um objetivo curto. Em `integrated_journeys`, separe cenários por comportamento e informe junto de cada cenário a preparação necessária: perfis, dados, dispositivos e condições de sessão ou tempo. Use `rules_permissions` para restrições relevantes e `related_impacts` para comportamentos relacionados que precisam ser preservados, sem repetir as jornadas. Em `completion_criteria`, explique os resultados e evidências necessários para concluir e como registrar impedimentos. Mantenha estimativas em seu campo próprio e decisões administrativas no estado do fluxo.
+Write a short `objective`. Separate `integrated_journeys` by behavior with each scenario's preparation: profiles, data, devices and session/time conditions. Use `rules_permissions` for relevant restrictions and `related_impacts` for related behavior to preserve without repeating journeys. In `completion_criteria`, explain required outcomes/evidence and obstacle recording. Keep estimates in their own field and administrative decisions in workflow state. All user-facing prose stays Portuguese.
 
-Exemplo de separação: em vez de reunir todo o ciclo de Lembrar-me em um item, descreva o retorno pelo mesmo navegador dentro de 30 dias e, em outro item, o retorno após o prazo sem sessão válida, incluindo que acessos intermediários não prorrogam a lembrança. Preserve também os demais cenários aprovados, inclusive saída e desativação; o exemplo não substitui a cobertura completa.
+For example, rather than one item for the whole Lembrar-me cycle, describe return in the same browser within 30 days separately from return after expiry without a valid session, including that intermediate visits do not extend remembered access. Preserve other approved scenarios, including logout/deactivation; this example does not replace full coverage.
 
-**Concluído quando:** identidade do pai, trackers derivados, status inicial, prioridade, heranças, estimativas e bloqueios QA estão explícitos no plano sanitizado, a QA cobre também o comportamento existente e nenhuma credencial foi persistida.
+**Complete when:** parent identity, derived trackers, initial status/priority, inheritance, estimates and QA blockers are explicit in sanitized plan, QA also covers existing behavior and no credentials were persisted.
 
-## Prévia completa e autorização única
+## Complete preview and single authorization
 
-Para publicações novas, `prepare` preserva as condições legíveis em `slices/condicoes-teste-rNNN.md`, inclui seu conteúdo e formato na prévia e no `publication_sha256`. Entregue esse caminho ao tech lead junto das filhas, inclusive no caminho somente QA. Se a proposta seleciona DOCX, gere-o primeiro: `prepare` confere seus bytes e inclui também arquivo, hash e destino QA na prévia. Nesse caso siga [publicação e retomada do anexo](attachment-publication.md). Com Markdown, não há upload nem vínculo a executar; a conclusão exige as condições preservadas e os readbacks ordinários.
+For new publications, `prepare` preserves readable conditions in `slices/condicoes-teste-rNNN.md` and includes content/format in preview and `publication_sha256`. Give this path to the tech lead with children, including QA-only paths. If DOCX is selected, generate it first: `prepare` verifies bytes and includes file/hash/QA destination in preview. Follow [attachment publication/resume](attachment-publication.md). Markdown involves no upload/association; completion requires preserved conditions and ordinary readbacks.
 
-O título da filha pertence ao campo `subject` do Redmine. A descrição começa diretamente em `Entrega` para DEV, `Objetivo` para QA ou `Pergunta técnica` para Study, sem repetir o título. Na prévia agrupada, identifique cada filha fora do corpo da descrição.
+Child titles belong in Redmine `subject`. Description starts directly at Portuguese `Entrega` for DEV, `Objetivo` for QA or `Pergunta técnica` for Study without repeating title. Identify each child outside its body in grouped previews.
 
-Aplique a [revisão editorial](../../vertical-slicing/references/task-writing.md) também à QA, preservando suas jornadas e condições de conclusão. DEV usa “Critérios de aceite”; QA usa “Critérios de conclusão”. A geração apresenta os critérios DEV sem os rótulos internos de classificação. Referências identificam o pai e os requisitos cobertos. Novas renderizações não reescrevem descrições armazenadas em publicações anteriores nem seus hashes; alterações de conteúdo aprovado seguem uma nova revisão e aprovação.
+Apply [editorial review](../../vertical-slicing/references/task-writing.md) to QA too, preserving journeys/completion conditions. DEV uses “Critérios de aceite”; QA uses “Critérios de conclusão”. Render DEV criteria without internal classification labels. References identify parent/covered requirements. New rendering does not rewrite stored descriptions/hashes from earlier publications; approved-content changes need a new revision/approval.
 
-Execute:
+Run:
 
 ```sh
 python <project-slices>/scripts/manage_publication.py prepare .flow/slices-publication.json .work/slices-publication-plan.json --slices-state .flow/slices-state.json --preview slices/publication.md --actor "<tech lead>" --at "<ISO-8601>" --reason "<motivo>"
 ```
 
-O helper deriva cada DEV da revisão aprovada. O título DEV é `[DEV]` seguido do título completo do item pai e do sufixo aprovado; uma entrega de API externa pode conter `[API]` depois de `[WEB]`. A prévia conjunta em `slices/publication.md` mostra o conteúdo integral, campos e hashes; as chaves `dev-N` e `qa` permanecem restritas ao estado interno de preparação e retomada.
+The helper derives DEV children from approved revision. DEV title is `[DEV]` plus full parent title and approved suffix; external API delivery may contain `[API]` after `[WEB]`. The combined `slices/publication.md` preview shows full content, fields and hashes; `dev-N`/`qa` keys remain internal to preparation/resume state.
 
-Antes da decisão, apresente em conjunto a proposta renderizada, o plano de publicação completo e as condições. Depois da decisão explícita, registre a aprovação da decomposição, gere o DOCX se selecionado, execute `prepare` e confira que `slices/publication.md` não introduziu mudança material em relação ao conjunto aprovado. Então registre a mesma autoridade no estado de publicação com o mesmo ator e instante; o segundo registro é persistência da decisão já dada, não uma nova pergunta. Qualquer diferença material interrompe a sequência e exige nova prévia completa. Preserve cópias anteriores para `validate --previous`:
+Before the decision, present rendered proposal, complete publication plan and conditions together. After explicit decision, record decomposition approval, generate selected DOCX, run `prepare` and check `slices/publication.md` introduces no material difference from the approved set. Record the same authority in publication state with identical actor/time; the second record persists an existing decision rather than asking again. Material differences stop the sequence and require a new complete preview. Preserve previous copies for `validate --previous`:
 
 ```sh
 python <project-slices>/scripts/manage_publication.py approve .flow/slices-publication.json --actor "<tech lead>" --at "<ISO-8601>"
 python <project-slices>/scripts/manage_publication.py validate .flow/slices-publication.json --previous <estado-anterior.json>
 ```
 
-**Concluído quando:** uma única decisão válida referencia a revisão da decomposição e o `publication_sha256` corrente, e nenhuma mutação remota começou antes dela.
+**Complete when:** one valid decision references decomposition revision/current `publication_sha256` and no remote mutation began beforehand.
 
-## Publicar e retomar
+## Publish and resume
 
-Uma filha adotada conserva o ID e o baseline aprovados e nunca passa por `begin-create`; somente filhas com origem `create` chegam ao MCP de criação.
+Adopted children retain approved ID/baseline and never enter `begin-create`; only `create` origins reach creation MCP.
 
-Para cada filha nova ainda sem operação `create:*` concluída, rode `begin-create` antes do MCP. Ele persiste a intenção `in-flight` e retorna exatamente `attributes`; envie esse objeto a `redmine_create_issue`. Em seguida, rode `finish-create` para registrar `completed`, `failed` ou `unknown`. Se o processo cair entre o início e o resultado, trate `in-flight` como incerto. Mensagens de erro persistidas são sanitizadas.
+For every new child without completed `create:*`, run `begin-create` before MCP. It persists `in-flight` intent and returns exact `attributes`; send to `redmine_create_issue`. Then `finish-create` records `completed`, `failed` or `unknown`. Interruption between start/result makes `in-flight` uncertain. Persist sanitized errors.
 
 ```sh
 python <project-slices>/scripts/manage_publication.py begin-create .flow/slices-publication.json --key dev-1 --at "<ISO-8601>"
 python <project-slices>/scripts/manage_publication.py finish-create .flow/slices-publication.json --key dev-1 --attempt 1 --outcome completed --issue-id 501 --at "<ISO-8601>"
 ```
 
-Um resultado `unknown` ou `in-flight` exige busca pela identidade estável `project-slices-child` no projeto e pai confirmados, abrangendo issues abertas e fechadas. Percorra todas as páginas e grave projeto, pai, identidade, escopo `all`, cada página (`offset`, `limit`, `count`), total e candidatos no snapshot sanitizado. Use `observe-create --outcome matched` somente para um candidato integralmente idêntico; use `absent` somente quando a busca completa não trouxer a identidade. Ambiguidade ou divergência para e volta ao tech lead. Uma operação `completed` nunca volta ao MCP de criação.
+`unknown`/`in-flight` requires searching stable `project-slices-child` identity under confirmed project/parent across open/closed issues. Traverse every page and save project, parent, identity, `all` scope, each page's `offset`/`limit`/`count`, total/candidates in sanitized snapshot. Use `observe-create --outcome matched` only for one fully identical candidate; `absent` only after complete identity search finds none. Ambiguity/divergence stops for tech lead resolution. Completed operations never return to creation MCP.
 
-Depois que os IDs necessários existem, preserve também os bloqueios DEV da decomposição: em toda relação, a dependência é `issue_id`, a dependente é `issue_to_id` e `relation_type` é `blocks`. Para relações entre filhas novas, rode `begin-relation` antes do MCP e `finish-relation` depois da resposta; um resultado incerto exige leitura de relações e `observe-relation` antes de qualquer repetição. Uma relação que toca filha adotada nunca gera payload: os dois extremos devem ter sido adotados e a relação equivalente deve estar no snapshot aprovado e no readback final.
+Once necessary IDs exist, preserve decomposition DEV blockers: dependency is `issue_id`, dependent is `issue_to_id`, `relation_type` is `blocks`. For relations between new children, run `begin-relation` before MCP and `finish-relation` afterward; uncertainty requires reading relations and `observe-relation` before retry. A relation touching an adopted child never generates payload: both endpoints must be adopted and equivalent relation present in approved snapshot/final readback.
 
-Falha parcial preserva todos os IDs e relações confirmados. Em retomada, valide o estado, reconcilie primeiro cada `unknown` e continue somente operações pendentes.
+Partial failures preserve confirmed IDs/relations. On resume validate state, reconcile each unknown first, then continue pending operations only.
 
-**Concluído quando:** cada `create:*` e `relation:*` de filhas novas está reconciliada como concluída uma única vez, relações adotadas possuem evidência completa sem operação de mutação e tentativas e observações permanecem append-only.
+**Complete when:** each new-child `create:*`/`relation:*` is completed once through reconciliation, adopted relations have full evidence without mutation, and attempts/observations remain append-only.
 
-## Conferir e concluir
+## Verify and complete
 
-Antes de `complete`, conclua as operações de upload, vínculo e conferência do [documento aprovado](attachment-publication.md). Inclua `attachments` na leitura da QA. A aceitação do vínculo pelo MCP ainda não confirma sua associação; publicação com contrato de documento exige observação positiva e presença no readback final. Nenhuma condição ou referência adicional é inserida na descrição QA ou nos `task.md`.
+Before `complete`, finish upload, association and verification of [the approved document](attachment-publication.md). Include QA `attachments` in reads. MCP acceptance does not confirm association; document-contract publication needs positive observation/final readback presence. No extra condition/reference is inserted into QA description or `task.md`.
 
-Inclua no readback todas as filhas gerenciadas e todas as descobertas que o tech lead manteve fora. O helper confere o baseline das adotadas, o plano das novas e o fingerprint contratual das externas sem hashear campos voláteis como journals ou attachments.
+Include all managed children and discovered children kept external in readback. The helper compares adopted baselines, new-child plan and external contractual fingerprints without hashing volatile fields such as journals/attachments.
 
-Leia o item pai e todas as filhas com relações. Salve `.work/slices-publication-readback.json` como `{"parent": {...}, "children": [...]}` e execute `complete`. O helper compara projeto, parentesco, tracker, status inicial, prioridade efetiva, categoria, versão, responsável, datas, estimativa, título, descrição e todos os bloqueios `blocks`. Ele também exige que ID e nome do status do item pai sejam iguais ao baseline.
+Read parent/all children with relations. Save `.work/slices-publication-readback.json` as `{"parent": {...}, "children": [...]}` and run `complete`. It compares project, parent, tracker, initial status, effective priority, category, version, assignee, dates, estimate, title, description and every `blocks` relation. Parent status ID/name must match baseline.
 
 ```sh
 python <project-slices>/scripts/manage_publication.py complete .flow/slices-publication.json --readback .work/slices-publication-readback.json --at "<ISO-8601>"
 ```
 
-Depois de conferir integralmente IDs, conteúdo, tracker, estimativa, pai e relações, o helper grava na mesma transação o estado concluído e uma representação humana estável por filha: `tasks/dev-<id>-<slug>/task.md` ou `tasks/qa-<id>-<slug>/task.md`. O `task.md` contém somente identidade, tipo, tracker, pai, estimativa, descrição e relações; status, responsável e datas operacionais permanecem no Redmine. A primeira materialização fixa o slug: uma releitura posterior reutiliza a pasta encontrada pelo tipo e ID. Estados históricos com `slices/descriptions/` continuam válidos, mas publicações novas não criam nem persistem esses artefatos posicionais.
+After fully verifying IDs, content, tracker, estimate, parent/relations, the helper atomically writes completed state and a stable human-readable representation per child: `tasks/dev-<id>-<slug>/task.md` or `tasks/qa-<id>-<slug>/task.md`. It contains only identity, type, tracker, parent, estimate, description and relations; operational status, assignee and dates stay in Redmine. First materialization fixes the slug; later reads reuse type/ID directory. Historical `slices/descriptions/` remains valid, but new publications neither create nor persist positional artifacts.
 
-O fluxo preserva a Feature ou Bug pai. QA é uma filha de verificação e não aprova decomposição, conteúdo ou conclusão.
+Preserve the parent Feature/Bug. QA is a verification child, not an approver of decomposition, content or completion.
 
-**Concluído quando:** `slices-publication.json` está `completed`, contém o hash do readback e os hashes de todos os `task.md`, e preserva o histórico completo de revisão, aprovação, IDs, tentativas, observações e progresso. Qualquer falha ou incerteza anterior mantém somente o estado retomável, sem uma árvore canônica definitiva.
+**Complete when:** `slices-publication.json` is `completed`, includes readback/all `task.md` hashes and full revision, approval, ID, attempt, observation and progress history. Earlier failure/uncertainty retains resumable state only, without a definitive canonical tree.
 
-Se a decomposição aprovada contém `external_blockers`, continue em [dependências externas e refinamento](dependencies.md). Essa fase acrescenta ou refina relações sem alterar esta publicação concluída nem recriar suas filhas.
+If approved decomposition has `external_blockers`, continue with [external dependencies/refinement](dependencies.md). This adds/refines relations without modifying completed publication or recreating children.

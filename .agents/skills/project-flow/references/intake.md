@@ -36,6 +36,8 @@ Create one `sources/<source-id>-<slug>.md` per retained source. Conversation tex
 
 Preserve headings, tables, labels, actions, states, rules, navigation, audience differences, order, and uncertainty needed to interpret the evidence. Describe non-text visuals factually and distinguish visible text from interpretation. Do not silently complete truncated content or merge sources. Calculate and record a separate SHA-256 for the normalized Markdown in state so later edits are detectable.
 
+For visual sources, preserve a usable comparison reference: identify original screen/state locators and access requirements, describe visible appearance, and retain supplied CSS/tokens and asset references in the normalized Markdown. A label-only transcription cannot represent visual extraction. Keep originals in place under the policy above. If later roles cannot inspect the visual from retained evidence or access the original, expose that limitation for resolution rather than claiming complete visual verification.
+
 **Complete when:** every retained source has one readable Markdown file whose metadata matches state and whose normalized hash validates.
 
 ## Inspect repository context

@@ -10,6 +10,8 @@ Preserve actions, states, rules, navigation and audience differences during norm
 
 Compare each behavior with repository evidence. Record absent, partial, existing or unknown implementation and the proposed change. Partial existence does not mean completion; a discrepancy does not establish a Bug without confirmed expected behavior. Existing coverage requires user confirmation and repository evidence; exclusions require a decision. Every behavioral source must have behaviors, but allocating all files alone never proves complete coverage. Re-read the normalized material against the inventory to find missed actions and states.
 
+For declared designs, apply `design-inputs.md` alongside behavioral coverage. Include the visible identity, shared shell/navigation and screen composition in the applicable delivery boundaries; identify an owner for shared visual work rather than assuming the existing shell already matches. A visual-only source still needs a delivery destination. Resolve catalog-shaping visual conflicts here and screen-specific adaptations in the owning item's interview.
+
 Ask catalog questions before approval when the answer changes coverage, boundaries, audience, dependencies or order. For example, if a dashboard displays hours but the origin of those hours is unspecified, resolve whether time entry/timing already exists or belongs in this catalog. Keep internal details of an already bounded capability for its later interview.
 
 **Complete when:** all relevant evidence and references are reconciled; every behavior has a verifiable destination; no catalog-shaping question is pending.

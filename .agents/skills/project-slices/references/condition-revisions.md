@@ -1,79 +1,79 @@
-# Revisão localizada das condições
+# Localized condition revision
 
-Use este ramo para corrigir, acrescentar ou remover condições de uma QA de publicação concluída com condições em Markdown ou DOCX, mesmo sem mudança do requisito. Ele preserva a publicação original e não recria filhas. Para uma QA histórica sem condições, use o fluxo específico de adoção; para requisito alterado, siga [revisão de mudança do requisito](change-review.md).
+Use to correct/add/remove conditions of QA from completed publication with Markdown/DOCX conditions, even without requirement change. Preserve original publication and do not recreate children. Historical QA without conditions uses its specific adoption workflow; changed requirements use [requirement-change review](change-review.md).
 
-## Conferir e propor
+## Check and propose
 
-Leia o requisito aprovado e as condições vigentes. Inspecione o código relacionado e apresente ao tech lead o motivo e as diferenças propostas. Correções editoriais e condições adicionais de comportamentos já aprovados cabem neste ramo. Comportamento novo, contraditório ou ambíguo exige resolução no requisito antes da aprovação; o helper verifica estrutura e hashes, não equivalência semântica.
+Read approved requirement/current conditions. Inspect related code and present reason/proposed differences to the tech lead in Portuguese. Editorial corrections and additional conditions for already approved behavior fit here. New, contradictory or ambiguous behavior needs requirement resolution before approval; the helper verifies structure/hashes rather than semantic equivalence.
 
-Releia a mesma QA pelo MCP, incluindo `attachments`, `relations` e `journals`, e consulte os status nativos. Salve um snapshot sanitizado em `.work`, com `issue`, `statuses` e `parent` (ID e status de execução atual do pai). QA concluída interrompe a operação para discussão do impacto e encaminhamento com o tech lead; este ramo não a reabre.
+Reread the same QA through MCP with `attachments`, `relations`, `journals` and native statuses. Save a sanitized `.work` snapshot containing `issue`, `statuses`, `parent` (parent ID/current execution status). Completed QA stops for impact/next-action discussion; this branch does not reopen it.
 
-Copie a proposta da decomposição para `.work/conditions-proposal.json` e altere somente `test_conditions`. Depois da primeira revisão publicada, parta de `current_proposal` retornada por `validate` e preserve seus demais campos. Isso mantém o requisito vigente após uma revisão funcional concluída. Mantenha o ID de cada condição que continua representando a mesma verificação, mesmo quando editada ou reordenada. Atribua IDs inéditos às novas condições. IDs são reservados desde o registro da proposta, inclusive se rejeitada; depois de removidos não podem ser reutilizados.
+Copy decomposition proposal to `.work/conditions-proposal.json` and change only `test_conditions`. After the first published revision, start from `current_proposal` returned by `validate` and preserve other fields, retaining current requirement after completed functional revision. Preserve IDs for the same verification despite edits/reordering. New conditions use fresh IDs. IDs are reserved from proposal recording, even if rejected; removed IDs cannot be reused.
 
-Para uma mudança editorial de requisito já aprovada ou uma revisão funcional, siga [condições após mudança do requisito](requirement-condition-revisions.md). Esse vínculo autoriza somente o contexto explicitamente revisado; a igualdade de comportamento não pode ser inferida de hashes.
+For approved editorial requirement change or functional revision, follow [conditions after requirement change](requirement-condition-revisions.md). This binding authorizes only explicitly reviewed context; hashes do not imply behavioral equality.
 
-Os exemplos usam `<helper>` para `<project-slices>/scripts/manage_condition_revision.py` e `<estado>` para `.flow/slices-condition-revisions.json`. Substitua ator e instante pelos dados da operação.
+Examples use `<helper>` for `<project-slices>/scripts/manage_condition_revision.py` and `<estado>` for `.flow/slices-condition-revisions.json`. Substitute actual actor/time.
 
 ```sh
 python <helper> propose <estado> .work/conditions-proposal.json --snapshot .work/qa-current.json --unchanged-behavior --reason "<motivo>" --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-`--unchanged-behavior` registra a conclusão da revisão semântica; só o informe depois de conferir que os ajustes se limitam ao comportamento aprovado. A saída informa revisão e hash da proposta. Uma nova proposta preserva a anterior e invalida sua autorização para novas operações; após progresso remoto, reconcilie e conclua o ciclo antes de abrir outro.
+`--unchanged-behavior` records semantic-review conclusion; pass it only after verifying approved-behavior boundaries. Output gives revision/proposal hash. New proposals preserve prior revisions and invalidate authority for new operations; after remote progress, reconcile/complete that cycle before another.
 
-O estado guarda eventos encadeados por hash e referências a evidências imutáveis sob `.flow/condition-evidence/`. Preserve esses arquivos junto com o estado. `slices-state.json`, `slices-publication.json` e os `task.md` existentes permanecem intactos. A numeração dos documentos continua depois da revisão original e avança também para propostas rejeitadas; lacunas na sequência são esperadas.
+State stores hash-chained events and immutable evidence under `.flow/condition-evidence/`. Preserve files with state. Existing `slices-state.json`, `slices-publication.json` and `task.md` stay intact. Document numbering continues after original revision and advances for rejected proposals; gaps are expected.
 
-**Concluído quando:** o tech lead recebeu o delta completo, as condições mantêm rastreabilidade e identidade, o requisito permanece aprovado e nenhuma dúvida semântica está aberta.
+**Complete when:** tech lead received the full delta, conditions retain traceability/identity, requirement stays approved and no semantic question remains open.
 
-## Incorporar ajustes do Word
+## Incorporate Word edits
 
-Se houve edição no Word, obtenha uma cópia íntegra do DOCX vigente e o arquivo editado. O helper lê os parágrafos, inclusive em tabelas, e apresenta o texto anterior, o texto editado e suas diferenças:
+Obtain an intact copy of current DOCX and the edited file. The helper reads paragraphs, including tables, and presents original/edited text and differences:
 
 ```sh
 python <helper> compare-word <estado> --original slices/condicoes-teste-r001.docx --edited .work/edited.docx --output .work/word-review.json
 ```
 
-Use a revisão efetivamente vigente. Uma cópia do arquivo original precisa corresponder ao hash publicado; o arquivo editado nunca substitui essa evidência. O relatório e as cópias imutáveis permitem revisar as mudanças sem depender de arquivos temporários posteriores.
+Use the actual current revision. Original copy must match published hash; edited file never replaces that evidence. Report/immutable copies support review independently of later temporary files.
 
-O agente lê todas as diferenças e propõe sua incorporação na fonte estruturada. Mostre inclusões, remoções e alterações ao tech lead. Esclareça associações ambíguas a IDs e alterações controladas, comentários ou elementos do Word que não sejam representados pelo texto extraído; a extração não decide seu significado nem aceita mudanças automaticamente. Registre como cada ajuste foi incorporado ou rejeitado e as ambiguidades resolvidas.
+Read every difference and propose incorporation into structured source. Show additions/removals/changes to the tech lead. Clarify ambiguous IDs and tracked changes, comments or Word elements absent from extracted text; extraction neither interprets meaning nor automatically accepts edits. Record accepted/rejected adjustments and resolved ambiguities.
 
-Acrescente ao comando `propose`:
+Append to `propose`:
 
 ```sh
 --word-review .work/word-review.json --resolution "<incorporação revisada e decisões do tech lead>"
 ```
 
-**Concluído quando:** as diferenças do Word foram revisadas, as decisões estão registradas e a proposta estruturada contém somente os ajustes aceitos.
+**Complete when:** Word differences were reviewed, decisions recorded and structured proposal contains accepted adjustments only.
 
-## Aprovar a fonte e a entrega exata
+## Approve source and exact delivery
 
-Depois da revisão das condições e dos ajustes do Word, obtenha a aprovação explícita do tech lead sobre a fonte:
+After conditions/Word review, obtain explicit tech lead source approval:
 
 ```sh
 python <helper> approve-source <estado> --sha256 "<proposal_sha256>" --actor "<tech lead>" --at "<ISO-8601>"
 python <helper> prepare-preview <estado> --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-O helper produz `slices/conditions-revision-rNNN.md`. Com `test_conditions.document_format: markdown`, a prévia contém a nota integral com as condições e não gera arquivo Word. Com `docx`, produz também `slices/condicoes-teste-rNNN.docx`. A prévia identifica QA, fonte, arquivo, hash, descrição do anexo e texto exato da nota de vigência. O documento distingue a revisão documental da decomposição original. Documentos anteriores permanecem preservados.
+The helper produces `slices/conditions-revision-rNNN.md`. With `test_conditions.document_format: markdown`, preview contains the complete condition note without Word. With `docx`, also produce `slices/condicoes-teste-rNNN.docx`. Preview identifies QA, source, file, hash, attachment description and exact current-version note. The document distinguishes document revision from original decomposition. Preserve earlier documents.
 
-Apresente as condições na nota ou o DOCX selecionado junto da prévia. A aprovação final autoriza somente a entrega mostrada:
+Present conditions in the note or selected DOCX alongside preview. Final approval authorizes shown delivery only:
 
 ```sh
 python <helper> approve-publication <estado> --sha256 "<preview_sha256>" --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-Alteração da fonte, do arquivo ou da prévia exige nova proposta e aprovação. Antes de progresso remoto, é possível registrar outra proposta; com progresso, preserve e reconcilie o que já aconteceu antes de encaminhar a divergência. Para rejeitar sem mutação remota:
+Source/file/preview changes need new proposal/approval. Before remote progress, another proposal is possible; afterward preserve/reconcile prior effects before escalating divergence. Reject without remote mutation through:
 
 ```sh
 python <helper> reject <estado> --reason "<motivo>" --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-**Concluído quando:** a fonte revisada e a entrega exata possuem decisões explícitas do tech lead, ligadas aos hashes correspondentes. Rejeição conserva as condições e os artefatos vigentes.
+**Complete when:** reviewed source/exact delivery have explicit tech lead decisions bound to corresponding hashes. Rejection preserves current conditions/artifacts.
 
-## Publicar e conferir o anexo quando selecionado
+## Publish and verify selected attachment
 
-Com Markdown, avance diretamente para a nota. Com DOCX, conclua esta fase antes da nota.
+For Markdown, proceed directly to the note. For DOCX, finish this phase first.
 
-Use o mesmo contrato MCP de [publicação do documento](attachment-publication.md). O helper só manipula arquivos locais; execute remotamente apenas o `tool` com os `arguments` retornados.
+Use the MCP contract in [document publication](attachment-publication.md). The helper handles local files only; remotely execute only returned `tool`/`arguments`.
 
 ```sh
 python <helper> begin-upload <estado> --actor "<tech lead>" --at "<ISO-8601>"
@@ -83,35 +83,35 @@ python <helper> finish-attachment <estado> --attempt <id> --result .work/link-re
 python <helper> observe-attachment <estado> --snapshot .work/qa-after-link.json --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-Salve os objetos `structuredContent` do MCP nos arquivos de resultado. Antes do vínculo, releia QA e status nativos. Uma resposta de aceite não confirma associação. O readback confere identidade, metadados, anexos anteriores e campos preservados; sem ID no upload, exige candidato único. A conferência não baixa os bytes remotos.
+Save MCP `structuredContent` objects to result files. Before association, reread QA/native statuses. Acceptance does not confirm association. Readback checks identity, metadata, earlier attachments and preserved fields; uploads without ID require a unique candidate. Verification does not download remote bytes.
 
-Um upload confirmado não é repetido. Resposta perdida sem token permite nova tentativa somente antes da intenção de vínculo; pode restar um upload remoto sem associação. Para repetir vínculo, registre antes uma observação positiva de ausência. Falha de consulta não prova ausência. Resultados recebidos e observações continuam registráveis depois de uma divergência local, sem autorizar novas mutações.
+Do not repeat confirmed uploads. Lost responses without token allow retry only before association intent; an unassociated remote upload may remain. Before association retry, record positive absence observation. Read failure does not prove absence. Results/observations remain recordable after local divergence without authorizing new mutations.
 
-**Concluído quando:** o novo anexo está confirmado na mesma QA e os anteriores permanecem preservados.
+**Complete when:** new attachment is confirmed on the same QA and previous attachments are preserved.
 
-## Indicar o vigente e concluir
+## Identify current version and complete
 
-Releia a QA com todos os journals e anexos. O helper retorna `redmine_add_comment` com a nota exata da prévia:
+Reread QA with all journals/attachments. The helper returns `redmine_add_comment` with the exact preview note:
 
 ```sh
 python <helper> begin-note <estado> --snapshot .work/qa-before-note.json --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-Execute a chamada e releia os journals, mesmo que o MCP tenha retornado sucesso. A confirmação textual não contém o ID da nota e não basta para concluir:
+Call it and reread journals even after MCP success. Textual confirmation lacks note ID and is insufficient:
 
 ```sh
 python <helper> observe-note <estado> --snapshot .work/qa-after-note.json --actor "<tech lead>" --at "<ISO-8601>"
 python <helper> complete <estado> --snapshot .work/final-readback.json --actor "<tech lead>" --at "<ISO-8601>"
 ```
 
-O snapshot final contém a QA integral em `issue` e o pai relido em `parent`. A nota tem um marcador estável por QA, revisão e hash. Se a resposta se perder, observe antes de repetir; ausência exige lista completa de journals. Nota confirmada não é reenviada. Múltiplas notas correspondentes interrompem para reconciliação com o tech lead.
+Final snapshot contains complete QA in `issue` and reread parent in `parent`. The note has a stable QA/revision/hash marker. Lost responses require observation before retry; absence requires complete journals. Do not resend confirmed notes. Multiple matching notes stop for tech lead reconciliation.
 
-Somente `completed` passa a indicar a nova entrega como vigente no resultado de `validate`. Até lá, preserve a referência anterior e informe o progresso parcial; se a nota já existe, conclua sua conferência, sem republicá-la. O readback exige nota, anexo quando selecionado e preservação do status original de execução do pai. A descrição da QA e os `task.md` não recebem referências adicionais.
+Only `completed` makes new delivery current in `validate`. Until then preserve previous reference and explain partial progress; if note exists, finish verification without republishing. Readback requires note, selected attachment and preserved original parent execution status. QA description/`task.md` receive no additional references.
 
-Para conferir histórico e retomada, preserve uma cópia do estado anterior e execute:
+Preserve previous state and validate history/resume:
 
 ```sh
 python <helper> validate <estado> --previous .work/conditions-before.json
 ```
 
-**Concluído quando:** o estado valida como `completed`, a nota e o novo anexo quando selecionado estão conferidos, a revisão vigente é inequívoca e o histórico de propostas, decisões e operações permanece íntegro.
+**Complete when:** state validates as completed, note/selected attachment are verified, current revision is unambiguous and proposal/decision/operation history stays intact.

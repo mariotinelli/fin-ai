@@ -24,6 +24,8 @@ Do not ask the user to diagnose a cause or choose a fix. Keep technical hypothes
 
 Draft `bug.md` from `templates/bug.md`. User stories are not required. State the current and expected behavior under comparable conditions, preserve known evidence and uncertainty, and distinguish reach from frequency. Criteria of correction must be implementation-independent and observable; each states the condition or population, the action or event, and the externally visible corrected result. Add a criterion for a non-deterministic Bug that makes the agreed evidence window or sampling boundary explicit.
 
+For visual deviations or a design governing affected UI, apply `design-inputs.md`. Record visual sources, comparable screens/states and approved adaptations in `Designs e evidências`, with numbered visual correction/preservation criteria in the existing correction section.
+
 When late evidence exists, the shared workflow must reconcile its confirmed, contradicted, and reopened decisions before this contract can pass.
 
 **Complete when:** every required Bug section is substantive or explicitly records a justified unknown, no user-story section was added merely for conformity, each correction criterion can be checked against the documented deviation, and no deferred question or source reconciliation remains.
