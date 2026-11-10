@@ -10,9 +10,11 @@ An **explicit exclusion** describes behavior outside this delivery according to 
 
 A **technical choice** selects a mechanism without changing visible behavior or scope. Repository structure, persistence, caching, retry algorithms, files, infrastructure, and similar mechanisms belong to later implementation roles. Inspect the environment for facts that constrain the product discussion, but keep the mechanism out of the requirement and interview.
 
-If an uncertainty mixes the two, remove the proposed mechanism and expose the product effect. For example, replace “Should this use a queue?” with “May the user wait for completion, or must the result arrive later?”
+If an uncertainty mixes the two, remove the proposed mechanism and expose the product effect. Portuguese question example: replace “Isso deve usar uma fila?” with “O usuário pode aguardar a conclusão ou o resultado precisa chegar depois?”.
 
 Preserve a non-functional requirement only when the evidence states it extremely explicitly. Do not proactively elicit performance, security, accessibility, or availability targets, and do not turn a vague mention into a gap.
+
+A supplied design explicitly establishes visual intent for the identified delivery. Reconcile material differences in fields, states, actions and navigation with stakeholder answers, preserving the reference's appearance except for approved adaptations. “Visual only” separates visual intent from prototype business logic; it does not exclude visual acceptance. Ask about conflicting user-visible outcomes, leaving CSS, component selection and other implementation choices to the implementation role.
 
 ## States
 

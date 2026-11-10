@@ -1,78 +1,78 @@
-# Publicação e retomada do DOCX
+# DOCX publication and resume
 
-Use este ramo na prévia final, no upload, no vínculo e na conferência de toda nova publicação, que exige `test_conditions.document_format: docx`. O agente chama o MCP; `manage_publication.py` apenas prepara argumentos e registra evidências locais. Não chame HTTP nem leia credenciais em scripts.
+Use for final preview, upload, association and verification of every new publication, which requires `test_conditions.document_format: docx`. The agent calls MCP; `manage_publication.py` only prepares arguments and records local evidence. Scripts must neither call HTTP nor read credentials.
 
-Para documentos posteriores a uma mudança de requisito, use [condições após mudança do requisito](requirement-condition-revisions.md): a autorização vem da prévia integrada da aplicação, e as operações documentais ficam em `slices-condition-revisions.json`. O contrato MCP de envio e vínculo continua o mesmo.
+For post-requirement-change documents, use [conditions after requirement change](requirement-condition-revisions.md): authorization comes from integrated application preview and document operations live in `slices-condition-revisions.json`. Upload/association MCP contract is unchanged.
 
-## Apresentar e autorizar
+## Present and authorize
 
-Depois da decisão sobre a prévia completa, gere o arquivo conforme [condições de teste](test-conditions.md). `prepare` exige `slices/condicoes-teste-rNNN.docx` correspondente à revisão da decomposição; confere seus bytes determinísticos e inclui `test_document` no hash da publicação. Confira caminho, revisão, tamanho, SHA-256, QA de destino e descrição contra a fonte e o destino já apresentados. O registro de publicação reaproveita a decisão existente; qualquer diferença material exige nova prévia completa.
+After the complete-preview decision, generate the file under [test conditions](test-conditions.md). `prepare` requires `slices/condicoes-teste-rNNN.docx` matching decomposition revision, checks deterministic bytes and includes `test_document` in publication hash. Verify path, revision, size, SHA-256, destination QA and description against already presented source/destination. Publication recording reuses the existing decision; material differences need a new complete preview.
 
-Para QA adotada, a prévia autoriza acrescentar o anexo e preserva seus outros campos, relações e anexos. O snapshot de metadados usado na preparação deve conter `is_closed` para seu status nativo. QA concluída interrompe a preparação para discussão do impacto. Não interprete a adoção por si só como autorização de upload.
+For adopted QA, preview authorizes adding the attachment while preserving other fields, relations and attachments. Preparation metadata snapshot must contain native status `is_closed`. Completed QA stops preparation for impact discussion. Adoption alone does not authorize uploading.
 
-Alterações no documento ou na fonte depois da prévia bloqueiam novas mutações. Antes de haver progresso remoto, prepare e aprove uma nova prévia. Com progresso, preserve IDs e evidências e resolva a divergência antes de continuar; não reescreva o histórico nem regenere silenciosamente sobre edições feitas no Word.
+Document/source changes after preview block new mutations. Without remote progress, prepare/approve a new preview. With progress, preserve IDs/evidence and resolve divergence before continuing; do not rewrite history or silently regenerate over Word edits.
 
-**Concluído quando:** a autorização válida da prévia completa abrange a fonte, o documento determinístico e sua inclusão na QA identificada, sem mudar a descrição da QA.
+**Complete when:** valid complete-preview authorization covers source, deterministic document and its addition to identified QA without changing QA description.
 
-## Enviar os bytes aprovados
+## Upload approved bytes
 
-Use o estado `.flow/slices-publication.json`. Todos os exemplos usam `<estado>` como abreviação desse caminho e `<instante>` como timestamp ISO-8601.
+Use `.flow/slices-publication.json`. Examples abbreviate it as `<estado>` and ISO-8601 timestamp as `<instante>`.
 
 ```sh
 python <project-slices>/scripts/manage_publication.py begin-upload <estado> --at "<instante>"
 ```
 
-Persista a intenção antes da chamada. Envie exatamente `arguments` à ferramenta `redmine_upload_file` indicada na saída. O objeto contém `path` absoluto e `expected_sha256`; o MCP compara o hash dos mesmos bytes que enviará antes de qualquer requisição remota. Salve somente o objeto `structuredContent` em um arquivo novo sob `.work`, inclusive quando houver erro MCP.
+Persist intent before calling. Send exact returned `arguments` to the indicated `redmine_upload_file` tool. They include absolute `path` and `expected_sha256`; MCP compares the same bytes' hash before remote requests. Save only `structuredContent` to a new `.work` file, including MCP errors.
 
 ```sh
 python <project-slices>/scripts/manage_publication.py finish-upload <estado> --attempt <tentativa> --result .work/upload-result-1.json --at "<instante>"
 ```
 
-O helper confere tamanho, nome e hash retornados. O token é uma referência operacional para o vínculo, não uma API key; fica no estado de retomada, fora de logs e prévias humanas. Um upload confirmado não é repetido. Se a resposta se perder e não houver token, uma nova tentativa é permitida apenas antes de qualquer intenção de vínculo; a anterior permanece incerta no histórico e pode ter deixado um upload remoto não associado.
+The helper checks returned size/name/hash. The token is an operational association reference, not an API key; keep it in resume state, outside logs/human previews. Confirmed uploads are not repeated. Lost responses without token allow retry only before any association intent; the previous attempt remains uncertain and may have left an unassociated remote upload.
 
-**Concluído quando:** há upload confirmado com token e metadados iguais aos do documento aprovado. Envio isolado não conclui a publicação.
+**Complete when:** confirmed upload has token/metadata matching approved document. Upload alone does not complete publication.
 
-## Vincular à QA
+## Associate with QA
 
-Resolva o ID definitivo da QA, criada ou adotada. Releia a issue com `attachments` e seus campos completos; consulte os status nativos. Grave um snapshot novo e sanitizado como `{"issue": {...}, "statuses": [{"id": 1, "is_closed": false}, ...]}`. A lista `attachments` deve estar presente mesmo quando vazia. Evidências referenciadas por tentativas não podem ser sobrescritas.
+Resolve final created/adopted QA ID. Reread issue with `attachments` and complete fields; consult native statuses. Save a fresh sanitized snapshot `{"issue": {...}, "statuses": [{"id": 1, "is_closed": false}, ...]}`. `attachments` must exist even when empty. Do not overwrite attempt-referenced evidence.
 
 ```sh
 python <project-slices>/scripts/manage_publication.py begin-attachment <estado> --snapshot .work/qa-before-1.json --at "<instante>"
 ```
 
-O helper reconfere aprovação, arquivo, QA aberta, identidade e campos e persiste a intenção e os anexos anteriores. Envie exatamente `arguments` a `redmine_attach_file`. O payload acrescenta somente o upload; a descrição do anexo informa a revisão.
+The helper rechecks approval, file, open QA, identity/fields and persists intent/prior attachments. Send exact `arguments` to `redmine_attach_file`. Payload adds only this upload; attachment description states revision in Portuguese.
 
 ```sh
 python <project-slices>/scripts/manage_publication.py finish-attachment <estado> --attempt <tentativa> --result .work/attachment-result-1.json --at "<instante>"
 ```
 
-Uma resposta `accepted` permanece `unknown` no progresso local até a leitura posterior. Resultados `not_sent` ou `rejected` são falhas registradas; `unconfirmed` permanece incerto. Registre resultados já recebidos mesmo se a fonte local tiver mudado; isso preserva a evidência sem autorizar uma próxima mutação.
+An `accepted` response stays locally `unknown` until subsequent reading. `not_sent`/`rejected` are recorded failures; `unconfirmed` remains uncertain. Record received results even if local source changed: this preserves evidence without authorizing another mutation.
 
-**Concluído quando:** o vínculo possui intenção e resultado registrados ou está explicitamente incerto, pronto para reconciliação.
+**Complete when:** association intent/result are recorded or explicitly uncertain and ready for reconciliation.
 
-## Conferir e retomar
+## Verify and resume
 
-Leia novamente a QA com `attachments`, salve uma nova evidência e execute:
+Reread QA with attachments, save new evidence and run:
 
 ```sh
 python <project-slices>/scripts/manage_publication.py observe-attachment <estado> --snapshot .work/qa-after-1.json --at "<instante>"
 ```
 
-O helper verifica QA, campos preservados, anexos anteriores e a associação do documento. Quando o upload fornece ID, ele precisa corresponder ao anexo observado. Sem ID, exige um único anexo novo com nome, tamanho e descrição aprovados. Nome isolado não comprova identidade. Ausência de `attachments`, evidência divergente ou múltiplos candidatos impede confirmação; apresente a ambiguidade ao tech lead. Essa conferência não baixa nem compara bytes remotos.
+The helper checks QA, preserved fields/prior attachments and document association. A returned upload ID must match observed attachment. Without ID, require one unique new attachment with approved name/size/description. Filename alone does not prove identity. Missing `attachments`, divergent evidence or multiple candidates prevent confirmation; explain ambiguity to the tech lead. This does not download/compare remote bytes.
 
-Um vínculo `in-flight` ou `unknown` exige observação posterior de ausência antes de repetir. Falha de consulta não prova ausência. Operação confirmada não é repetida, e uploads confirmados continuam reutilizados. Preserve todas as tentativas, observações e IDs; use `validate --previous` contra a cópia anterior.
+An `in-flight`/`unknown` association needs later observed absence before retry. Failed reads do not prove absence. Confirmed operations are not repeated; confirmed uploads remain reused. Preserve attempts, observations and IDs; use `validate --previous` against a prior copy.
 
-Inclua o anexo também no readback integral passado a `complete`. Somente após conferir documento, filhas, relações e status do pai o helper materializa os `task.md` e o estado concluído na mesma transação. O ramo de escopo aplica a mesma exigência.
+Include attachment in full `complete` readback. Only after document, children, relations and parent status verification does the helper atomically materialize `task.md` files/completed state. Scope branch has the same requirement.
 
-**Concluído quando:** o anexo aprovado está associado à QA, todas as operações estão reconciliadas e o readback final permite concluir a publicação e materializar os artefatos canônicos.
+**Complete when:** approved attachment is associated with QA, operations are reconciled and final readback permits publication completion/canonical materialization.
 
-## Estados históricos
+## Historical states
 
-- Publicações históricas concluídas continuam válidas, sem migração, geração ou upload automático.
-- Publicação incompleta sem tentativa remota iniciada exige condições aprovadas e nova preparação no formato selecionado; reaproveite a autorização ainda válida somente quando o conteúdo material permanecer idêntico. Preserve revisões e aprovações anteriores.
-- Publicação incompleta com tentativa remota iniciada, inclusive incerta, pode terminar pelo contrato histórico. A inclusão posterior do primeiro documento pertence ao fluxo específico de adoção de publicações antigas.
-- Com progresso remoto, uma publicação que inclui `test_document` conserva esse contrato até a conferência. Sem progresso, uma nova proposta e prévia aprovadas podem selecionar Markdown, preservando a revisão e os arquivos anteriores.
+- Completed historical publications remain valid without automatic migration, generation or upload.
+- Incomplete publication without remote attempts needs approved conditions and new preparation in selected format; reuse still-valid authorization only when material content stays identical. Preserve previous revisions/approvals.
+- Incomplete publication with a started remote attempt, including uncertain attempts, may finish under its historical contract. Later first-document inclusion belongs to the specific historical-publication adoption workflow.
+- With remote progress, publication containing `test_document` retains that contract through verification. Without progress, a new approved proposal/preview may select Markdown, preserving previous revision/files.
 
-Considere o histórico das tentativas, não apenas o nome do status, para identificar progresso remoto. Para revisões posteriores de condições, siga [revisão localizada](condition-revisions.md). Publicação retroativa em QA histórica permanece no fluxo específico de adoção.
+Use attempt history, not status name alone, to identify remote progress. Subsequent condition revisions follow [localized revision](condition-revisions.md). Retroactive publication to historical QA remains in its specific adoption workflow.
 
-**Concluído quando:** a retomada usa o contrato adequado ao histórico, sem perder progresso nem ampliar uma autorização antiga.
+**Complete when:** resume follows the history-appropriate contract without losing progress or broadening old authorization.

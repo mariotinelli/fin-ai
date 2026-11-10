@@ -1,31 +1,31 @@
-# Substituição de planejamento
+# Plan replacement
 
-Use somente após o desenvolvedor escolher substituir o plano identificado, sabendo que o plano e seu estado de retomada serão removidos. Essa escolha autoriza a remoção específica; a aprovação do conteúdo novo acontece depois.
+Use only after the developer chooses to replace the identified plan knowing that the plan and its resume state will be removed. This choice authorizes that specific removal; approval of new content happens later. All explanations and questions remain in Brazilian Portuguese.
 
-## 1. Conferir antes de remover
+## 1. Check before removal
 
-Confira o estado Git completo, incluindo alterações preparadas, não preparadas e arquivos não rastreados. Qualquer alteração pendente, inclusive no plano antigo ou em seu `.gitignore`, impede a substituição. Informe os caminhos e aguarde o desenvolvedor resolver, preservando arquivos e índice. Não faça stash, descarte ou commit de limpeza. Depois da resolução, confira novamente antes de remover.
+Check complete Git status, including staged, unstaged and untracked files. Any pending change, including to the old plan or its `.gitignore`, prevents replacement. Report paths and wait for developer resolution, preserving files and index. Do not stash, discard or create cleanup commits. After resolution, recheck before removing anything.
 
-Confirme a disponibilidade de [plan-issue](../../plan-issue/SKILL.md) e do executor instalado. Resolva os caminhos exatos de `planning.md` e de `.flow/ralph-state.json` dentro da pasta da filha escolhida. Preserve destinos ambíguos, diretórios no lugar dos arquivos e links ou componentes de caminho que redirecionem para fora da tarefa; informe o impedimento.
+Confirm [plan-issue](../../plan-issue/SKILL.md) and the installed executor are available. Resolve exact `planning.md` and `.flow/ralph-state.json` paths inside the selected child directory. Preserve ambiguous destinations, directories replacing files, and links or path components redirecting outside the task; report the obstacle.
 
-Confira se há execução ativa para essa tarefa, usando o processo acompanhado e, quando necessário, os registros existentes de `ralph-locks` no diretório administrativo obtido pelo Git. O `owner.json` identifica `state_path` e o processo proprietário; consulte o contrato instalado do executor quando precisar interpretar esses registros. Se uma execução estiver ativa ou não for possível determinar se terminou, pare antes da remoção. Preserve processos e locks; não use uma nova chamada ao executor para sondar a atividade.
+Check for active execution of this task using the monitored process and, if necessary, existing `ralph-locks` records in the Git-reported administrative directory. `owner.json` identifies `state_path` and the owning process; consult the installed executor contract to interpret these records. If execution is active or completion cannot be determined, stop before removal. Preserve processes and locks; do not invoke another executor to probe activity.
 
-**Concluído quando:** a escolha está autorizada, o Git está sem alterações pendentes, dependências e destinos foram conferidos e não há execução ativa ou situação indeterminada para a tarefa.
+**Complete when:** the choice is authorized, Git has no pending changes, dependencies and destinations were verified, and there is no active or indeterminate task execution.
 
-## 2. Remover apenas os dois arquivos escolhidos
+## 2. Remove only the two selected files
 
-Mantenha na conversa a observação do Git anterior à remoção e os caminhos autorizados. Remova somente `planning.md` e, quando existir, `.flow/ralph-state.json` dessa filha. Use caminhos literais protegidos para o shell; no PowerShell, operações com `-LiteralPath`. Não faça remoção recursiva de diretórios.
+Keep the pre-removal Git observation and authorized paths in the conversation. Remove only this child's `planning.md` and, when present, `.flow/ralph-state.json`. Use shell-protected literal paths; in PowerShell use `-LiteralPath`. Do not recursively delete directories.
 
-Preserve a pasta `.flow`, seus demais arquivos, tarefas vizinhas, logs em `ralph-runtime`, locks, código e histórico Git. A ausência do estado é válida. Verifique que os dois arquivos escolhidos ficaram ausentes. Se qualquer operação falhar, informe quais remoções ocorreram e pare; não amplie a limpeza, restaure progresso antigo automaticamente ou inicie o executor.
+Preserve `.flow`, its other files, neighboring tasks, `ralph-runtime` logs, locks, code and Git history. Missing state is valid. Verify both selected files are absent. If any operation fails, report which removals occurred and stop; do not broaden cleanup, restore old progress automatically or start the executor.
 
-**Concluído quando:** apenas o plano e seu estado correspondente foram removidos, com o restante preservado, ou uma falha foi informada sem continuar.
+**Complete when:** only the plan and its matching state were removed with everything else preserved, or a failure was reported without continuing.
 
-## 3. Planejar a partir do projeto atual
+## 3. Plan from the current project
 
-Siga [planejamento novo](new-planning.md), levando a observação anterior à remoção e identificando a exclusão do plano como parte autorizada da substituição. Deixe `plan-issue` inspecionar o código, o requisito e os testes atuais; não reaproveite a lista de fases concluídas do plano descartado.
+Follow [new planning](new-planning.md), carrying the pre-removal observation and identifying plan deletion as authorized replacement work. Let `plan-issue` inspect current code, requirement and tests; do not reuse the discarded plan's completed-phase list.
 
-Reutilize desse fluxo a apresentação completa, os ajustes, a aprovação explícita, o commit limitado com `--no-verify` quando houver diferenças e a execução acompanhada. Quando o conteúdo aprovado já estiver versionado sem diferenças, prossiga sem commit vazio. A escolha inicial de substituir não aprova antecipadamente o novo plano.
+Reuse that workflow's complete presentation, adjustments, explicit approval, limited `--no-verify` commit when differences exist, and monitored execution. If approved content is already tracked without differences, continue without an empty commit. The initial replacement choice does not approve the new plan in advance.
 
-Se o planejamento falhar ou o estado antigo reaparecer, informe a situação e pare. Não restaure nem reutilize o progresso descartado. O executor criará seu estado mínimo ao iniciar o plano aprovado.
+If planning fails or old state reappears, explain and stop. Do not restore or reuse discarded progress. The executor creates its minimal state when the approved plan starts.
 
-**Concluído quando:** o novo plano passou pela revisão e preparação do fluxo compartilhado e foi encaminhado uma única vez à execução, ou o impedimento foi informado sem executá-lo.
+**Complete when:** the new plan passed review and preparation through the shared workflow and was passed once to execution, or the obstacle was reported without execution.

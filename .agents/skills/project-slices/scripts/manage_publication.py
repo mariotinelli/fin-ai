@@ -34,6 +34,7 @@ from manage_slices import (
     require_timestamp,
     validate_input_linkage,
     validate_state as validate_slices_state,
+    visual_reference_lines,
 )
 
 
@@ -126,6 +127,7 @@ def description_markdown(description: dict[str, Any], kind: str, parent_issue_id
         if description.get("technical_context"):
             lines.extend(["", "## Contexto técnico", "", description["technical_context"]])
         lines.extend(["", "## Referências", "", f"Item pai Redmine #{parent_issue_id}; regras/critérios {', '.join(description['traceability'])}.", ""])
+        lines.extend(visual_reference_lines(description))
         return "\n".join(lines)
     lines = [
         "## Objetivo", "", description["objective"], "",

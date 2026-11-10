@@ -1,23 +1,23 @@
-# Disciplina de aplicação de revisões
+# Revision-application discipline
 
-Use esta disciplina somente para a revisão semântica funcional corrente, especificamente aprovada e vinculada ao hash do impacto localizado. Uma nova revisão, rejeição, mudança de baseline ou ampliação do impacto encerra a autoridade anterior.
+Use only for the current specifically approved functional semantic review linked to the localized-impact hash. A new revision, rejection, baseline change or expanded impact ends previous authority.
 
-## Escolher a representação
+## Choose the representation
 
-Classifique cada tarefa remota pelo status nativo observado no instante do plano: não iniciada, em andamento, concluída ou cancelada. Trabalho novo vira nova filha com os contratos vigentes de título, descrição, cobertura, QA, adoção e dependências. Tarefa em andamento pode receber somente a alteração localizada, depois de prévia concreta e aprovação adicional do tech lead ligada à tarefa, ao snapshot corrente e à mutação. Tarefa concluída permanece fora do delta; correção ou acréscimo vira nova filha ligada à revisão. União ou substituição cancela somente tarefa comprovadamente não iniciada e registra motivo e substitutos no journal da transição nativa.
+Classify every remote task by native status observed at planning time: not started, in progress, completed or canceled. New work becomes a new child under current title, description, coverage, QA, adoption and dependency contracts. In-progress tasks may receive only localized changes after a concrete preview and additional tech lead approval tied to task, current snapshot and mutation. Completed tasks stay outside the delta; corrections or additions become new children linked to the revision. Merging or replacement cancels only tasks proven not started and records reason and replacements in the native transition journal.
 
-**Concluído quando:** cada impacto aprovado possui uma representação, toda tarefa concluída está fora das mutações e cada cancelamento tem prova de não início, motivo e substitutos.
+**Complete when:** every approved impact has a representation, completed tasks are outside mutations, and each cancellation has proof of non-start, reason and replacements.
 
-## Reconciliar antes de agir
+## Reconcile before acting
 
-Compare novamente payload e status da tarefa imediatamente antes de cada mutação. Mudança desde a prévia invalida a intenção ou sua aprovação: localize o novo estado, refaça o delta e apresente nova prévia. Use o ID e o nome exatos do catálogo nativo para classificar e transicionar status; ausência, ambiguidade ou divergência interrompe a aplicação.
+Compare task payload and status again immediately before each mutation. Changes since preview invalidate intent or approval: locate the new state, rebuild the delta and present a new preview. Classify/transition statuses using exact native catalog IDs and names; missing, ambiguous or divergent metadata stops application.
 
-Modele criação, atualização, cancelamento, adição e remoção de relação com intenção persistida antes da chamada, resultado depois dela e observação por readback para qualquer resultado incerto. Uma operação reconciliada não volta à ferramenta remota.
+Model creation, update, cancellation, relation addition and removal with intent persisted before the call, result afterward and readback for uncertain outcomes. A reconciled operation is not sent to the remote tool again.
 
-**Concluído quando:** cada operação começou com snapshot corrente comprovado e toda tentativa incerta foi observada como presente ou ausente antes de repetir.
+**Complete when:** every operation began with a proven current snapshot and every uncertain attempt was observed as present or absent before retry.
 
-## Provar preservação
+## Prove preservation
 
-No readback final, confira payloads e status esperados, razão e substitutos dos cancelamentos, bloqueios DEV→QA afetados, ausência somente das arestas aprovadas para remoção e presença exata de relações não afetadas. Confira também filhas concluídas, não afetadas, adotadas e externas, evidências de Study, divergência e revisão semântica, além do status de execução do pai.
+In final readback, verify expected payloads/statuses, cancellation reasons/replacements, affected DEV→QA blockers, absence only of approved removed edges and exact presence of unaffected relations. Also verify completed, unaffected, adopted and external children, Study/divergence/semantic-review evidence, and parent execution status.
 
-**Concluído quando:** o delta inteiro está comprovado, todo item fora dele permanece idêntico e o pai conserva o status observado antes da aplicação.
+**Complete when:** the whole delta is proven, everything outside it remains identical and the parent retains its pre-application status.

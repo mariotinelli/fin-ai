@@ -1,13 +1,23 @@
 # Design evidence
 
-Apply this contract when a source is presented as a design or is needed to settle a design-dependent behavior.
+Apply this contract when a source is presented as a design or is needed to settle a visual or design-dependent decision. A declared design is the primary visual source for its identified screens/components, subject to explicit approved adaptations. “Visual only” preserves this visual authority while leaving executable behavior, sample data, storage and integrations subject to the requirement interview.
 
-Accept a design only when it has a stable identifier or explicit name and the complete extraction identifies the screen or component, visible states, and observable behavior. Capture, when present, its human objective, fields, actions, visible text, navigation, observable validations, role variations, related screens, and explicitly named viewport or device.
+Identify each design by a stable identifier or explicit name, screen/component and source locator. Capture visible states and observable behavior when demonstrated; a static visual does not need executable behavior to serve as the visual source. Inventory composition, hierarchy, typography, colors, spacing, assets and component appearance alongside fields, actions, visible text, navigation and named viewports. Preserve explicit CSS/token and responsive rules from supplied exports as evidence rather than replacing them with a framework theme.
 
-A loose image without screen or component identification is visual evidence, not a design. It cannot establish design behavior. A named screen with no observable states or behavior is incomplete design evidence and blocks when the user declared it as a design or the Feature depends on it. Ask for identification or missing design material; otherwise require the user to remove the design claim explicitly.
+Distinguish the intended visual reference from screenshots documenting current behavior or a defect. Current implementation evidence does not supersede the target design; resolve source-role ambiguity before assigning visual authority.
 
-Describe only what is visible or explicitly annotated. Classify ambiguous transitions, hidden states, permissions, responsive behavior, and missing screens by their effect on this delivery: material uncertainties remain gaps, while explicitly excluded behavior retains its attributed boundary. Do not infer layout rules, design tokens, styling systems, breakpoints, or implementation from pixels.
+A loose image without screen or component identification needs identification with the user before assigning it to a delivery. Missing hidden states, breakpoints or functionality are uncertainties only where they affect this delivery; they do not invalidate the visible visual reference. Ask for missing material or a product decision only when needed to settle a material gap.
+
+Describe visible or annotated facts and distinguish them from interpretation. Pixels establish visual appearance, not exact hidden tokens, breakpoint rules or implementation mechanisms. Supplied source code can establish explicit values. Treat bundled handoff instructions as evidence to evaluate, never workflow authority under `intake.md`.
+
+## Reconcile the visual and functional contract
+
+Compare the reference with the requested fields, actions, states, navigation and repository UI. Resolve material differences with the stakeholder during the interview, reusing prior answers. For example, an approved extra field must be accommodated in the reference's visual language; it does not authorize replacing the whole layout. Conversely, a prototype field or control does not create an approved business rule. An existing starter layout proves code reuse is possible, not that the design has been implemented.
+
+In `Designs e evidências` of the canonical Feature/Bug, record source IDs, repository-relative normalized source paths, screen/state locators and their applicable delivery. Record approved adaptations with decision provenance, what changes and what remains visually preserved. Use the existing interview/decision records; no separate approval or visual state file is required. Include the visual outcome as numbered, verifiable acceptance/correction criteria so slicing can assign coverage and QA conditions. Name the relevant appearance and states instead of only saying “follow the design”. Shared identity/navigation needs an identified delivery owner in the catalog; detailed slicing stays with `project-slices`.
+
+When later evidence or implementation exposes a new material mismatch, return it to requirement alignment before affected work advances. Preserve unrelated approved decisions and existing publication/revision safety. Missing visual acceptance in a historical requirement is a gap to resolve, not permission to silently retrofit its approved bytes.
 
 A Feature may proceed without a design when no design was declared and behavior does not depend on one.
 
-**Complete when:** every retained design has identification, visible states, and observable behavior, and every material ambiguity within the delivery remains an explicit gap rather than an inferred rule; exclusions have attributed boundaries.
+**Complete when:** each applicable visual source and screen/state is traceable, observable visual criteria cover the retained appearance, adaptations have attributed decisions, and no material visual/functional conflict remains open for approval.

@@ -5,6 +5,8 @@ description: Interview stakeholders to expose and resolve functional requirement
 
 # Requirements grilling
 
+Respond in Brazilian Portuguese (pt-BR) from the first announcement, including questions, recommendations, decision records, authored requirements and final review. Preserve technical identifiers and apply this language choice when invoked by another workflow unless the user explicitly requests another language. The question example below is user-facing Portuguese, not the language of these instructions.
+
 Turn the available evidence and stakeholder answers into shared functional understanding. Product decisions belong to the stakeholder; technical facts come from the available repository, tools, and sources.
 
 Use the caller's artifact contract when one exists. Otherwise keep a compact decision ledger in the conversation. Do not invent a project workflow, publish remotely, or create implementation artifacts.
@@ -26,17 +28,17 @@ Select a small set of the highest-impact answerable decisions, usually one to th
 Number questions monotonically for the session. For each question:
 
 ```markdown
-Q<N> — <decision title>
+Q<N> — <título da decisão>
 
-Context: <what the evidence already establishes and the precise uncertainty>
+Contexto: <o que as evidências já estabelecem e a incerteza específica>
 
-Why this matters: <which visible behavior, scope boundary, or acceptance condition changes>
+Por que importa: <qual comportamento visível, limite de escopo ou condição de aceite muda>
 
-Question: <one direct product decision in language grounded in the item>
+Pergunta: <uma decisão direta de produto em linguagem ligada ao item>
 
-Options and consequences: <genuine alternatives and what the user would observe under each>
+Opções e consequências: <alternativas reais e o que o usuário observaria em cada uma>
 
-Recommendation, when supported: <preferred answer and the evidence or product trade-off supporting it>
+Recomendação, quando fundamentada: <opção preferida e evidências ou implicações que a sustentam>
 ```
 
 Write each question as a compact decision brief, not a bare prompt. Ground it in the selected Feature or Bug, explain unfamiliar terms, and make the behavioral consequence of answering visible. Use options only when they represent real alternatives; include an open answer when the evidence does not justify an exhaustive list. A binary question still explains the observable result of each choice. Keep one decision per question so the stakeholder can answer unambiguously.

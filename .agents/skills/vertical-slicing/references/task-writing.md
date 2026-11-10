@@ -1,48 +1,52 @@
-# Descrições para quem executa
+# Task descriptions for implementers
 
-## Escrever a entrega
+Write user-facing descriptions and examples in Brazilian Portuguese.
 
-Use `delivery` para explicar o contexto funcional relevante e a mudança esperada. Quando a inspeção comprovar comportamento existente, diferencie o que será adaptado do que será preservado. Para uma capacidade nova, explique o resultado a criar sem inventar um cenário anterior. Mantenha arquivos, símbolos e conclusões técnicas detalhadas na evidência de inspeção.
+## Write the delivery
 
-Em `limits`, registre somente fronteiras que evitem dúvidas reais sobre a responsabilidade da tarefa. Evite repetir a entrega ou enumerar todas as Features excluídas. Use linguagem do produto: “manter o acesso por 30 dias” e “sair somente deste navegador” são mais diretos que “comportamento temporal da lembrança” e “isolamento da saída”.
+Use `delivery` to explain relevant functional context and expected change. When inspection proves existing behavior, distinguish adaptations from preservation. For new capabilities, explain the outcome to create without inventing a previous scenario. Keep files, symbols and detailed technical conclusions in inspection evidence.
 
-**Concluído quando:** o executor identifica o que mudar e o que preservar sem consultar a conversa, sem receber uma receita técnica.
+In `limits`, record only boundaries preventing real uncertainty about responsibility. Avoid repeating delivery or enumerating every excluded Feature. Use product language: “manter o acesso por 30 dias” and “sair somente deste navegador” are more direct than “comportamento temporal da lembrança” and “isolamento da saída”.
 
-## Escrever critérios e relações
+**Complete when:** implementers can identify what to change and preserve without consulting the conversation or receiving a technical recipe.
 
-Escreva uma condição verificável por item, separando cenários com resultados independentes. Condições relacionadas podem ficar juntas quando isso facilitar a leitura. Preserve todos os detalhes aprovados de prazo, dispositivo, permissão e acessibilidade; não imponha limite de tamanho ou quantidade que elimine cobertura. Use uma única seção de critérios de aceite. `kind` permanece no contrato interno; o texto do critério não deve repetir os rótulos Sucesso, Erro ou Permissão.
+## Write criteria and relations
 
-Em `dependencies`, nomeie a capacidade necessária e a tarefa responsável. Distinga impedimento para iniciar de integração necessária para concluir, sem transformar esta última automaticamente em `blocked_by`. Quando não houver relações relevantes, basta informar que não há dependências. Justificativas sobre como o fluxo calcula bloqueios pertencem ao planejamento, não à descrição.
+Write one verifiable condition per item, separating scenarios with independent outcomes. Related conditions may stay together when clearer. Preserve all approved timing, device, permission and accessibility details; do not impose size or count limits that remove coverage. Use one acceptance section. `kind` remains internal; criterion text must not repeat the user-facing labels Sucesso, Erro or Permissão.
 
-Referencie outras tarefas pelo nome, e pelo link quando o destino já existir e estiver confirmado. Números como “entrega 1” só identificam itens dentro da prévia; não bastam na descrição independente. Não invente IDs nem acrescente links ao conteúdo aprovado durante a publicação sem a revisão correspondente.
+In `dependencies`, name the necessary capability and responsible task. Distinguish startup blockers from integration needed for completion without automatically turning the latter into `blocked_by`. Without relevant relations, simply state there are no dependencies. Explanations of blocker calculation belong to planning, not descriptions.
 
-Mantenha a rastreabilidade em referências compactas ao requisito pai e aos IDs cobertos. Referências complementam os critérios; não substituem sua explicação.
+Reference tasks by name and, when the destination exists and is confirmed, by link. Numbers such as “entrega 1” identify preview entries only and do not suffice independently. Do not invent IDs or add links to approved content during publication without corresponding review.
 
-**Concluído quando:** cada condição atribuída está representada, os critérios podem ser verificados individualmente e as relações são compreensíveis fora da prévia.
+Keep traceability as compact references to the parent requirement and covered IDs. References supplement criteria rather than replacing their explanation.
 
-## Exemplo editorial: Autenticação
+For a UI delivery, include the primary visual source ID, repository-relative normalized path and relevant screen/state locators in `description.visual_references` (a nonempty string array rendered under `Referências`). Explain approved differences in fields, actions or states in delivery/limits, with their decision origin. Visual criteria describe the appearance to preserve and how it can be compared with the reference, including applicable viewport/state boundaries. Shared shell ownership and completion dependencies must be named. A source link alone, generic responsiveness, or reuse of existing components does not express visual acceptance. Backend-only slices inherit no unrelated visual work.
 
-Os trechos abaixo ilustram escrita, não uma nova decomposição nem uma descrição completa. Use fatos da inspeção corrente e preserve todos os demais requisitos ao aplicar o exemplo.
+**Complete when:** every assigned condition is represented, criteria can be checked individually, and relations are understandable outside the preview.
 
-Antes: “Permitir que pessoas de todos os perfis com conta ativa entrem no Nexum.”
+## Editorial example: authentication
 
-Depois, quando a inspeção comprovar a restrição atual: “O login atual restringe a entrada de alguns perfis. Ajustar a entrada para que qualquer conta ativa acesse o painel permitido ao seu perfil, preservando as restrições administrativas.”
+These Portuguese excerpts illustrate writing, not a new breakdown or a complete description. Use current inspection facts and preserve all other requirements when applying them.
 
-Antes: “Erro: Campos obrigatórios ausentes ou e-mail inválido exibem validação; credenciais inválidas recusam a entrada; conta inativa recebe orientação.”
+Before: “Permitir que pessoas de todos os perfis com conta ativa entrem no Nexum.”
 
-Depois:
+After, when inspection proves the existing restriction: “O login atual restringe a entrada de alguns perfis. Ajustar a entrada para que qualquer conta ativa acesse o painel permitido ao seu perfil, preservando as restrições administrativas.”
+
+Before: “Erro: Campos obrigatórios ausentes ou e-mail inválido exibem validação; credenciais inválidas recusam a entrada; conta inativa recebe orientação.”
+
+After:
 
 - Sem e-mail ou senha, o formulário informa os campos obrigatórios e permite corrigir sem autenticar.
 - Com e-mail em formato inválido, o formulário informa a validação e permite corrigir sem autenticar.
 - Com credenciais incorretas, a entrada é recusada com mensagem acessível.
 - Com conta inativa, a entrada é recusada e a mensagem orienta solicitar reativação.
 
-Antes: “Usa o bloqueio da entrega 1; compartilhar código não constitui bloqueio de início.”
+Before: “Usa o bloqueio da entrega 1; compartilhar código não constitui bloqueio de início.”
 
-Depois: “Pode iniciar com a base de login existente. Para concluir, integrar com ‘Autenticação - Entrada e navegação de contas ativas’ e verificar que a lembrança de acesso também recusa contas desativadas.”
+After: “Pode iniciar com a base de login existente. Para concluir, integrar com ‘Autenticação - Entrada e navegação de contas ativas’ e verificar que a lembrança de acesso também recusa contas desativadas.”
 
-## Revisar antes da aprovação
+## Review before approval
 
-Leia a descrição isoladamente, como a pessoa que receberá a tarefa. Confira a mudança esperada, a preservação do comportamento existente, a cobertura de cada requisito, a separação dos cenários e a identificação das tarefas relacionadas. Retire repetições, estimativas já mantidas em campo próprio e comentários administrativos sobre aprovação ou funcionamento do fluxo.
+Read the description independently as its recipient. Check expected change, preservation of existing behavior, every requirement's coverage, scenario separation and related-task identification. Remove repetition, estimates already held in dedicated fields and administrative comments about approval or workflow operation.
 
-**Concluído quando:** a descrição é autossuficiente e legível, sem omissões de cobertura, ampliação de escopo ou linguagem administrativa desnecessária. Essa revisão é semântica; um helper estrutural não comprova qualidade de escrita.
+**Complete when:** the description is self-contained and readable without coverage omissions, scope expansion or unnecessary administrative language. This is semantic review; a structural helper does not prove writing quality.

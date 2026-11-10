@@ -1,27 +1,35 @@
-# Inspeção técnica
+# Technical inspection
 
-## Seguir o comportamento efetivo
+## Follow effective behavior
 
-Inspecione somente os caminhos relevantes às decisões e critérios da tarefa. Identifique implementação, configuração, inicialização, providers/plugins e versões instaladas que podem alterar o resultado. Ausência de configuração na aplicação não prova ausência de configuração por uma dependência.
+Inspect only paths relevant to task decisions and criteria. Identify implementation, configuration, bootstrapping, providers/plugins and installed versions that can affect the result. Missing application configuration does not prove a dependency supplies none.
 
-Siga o caminho até o efeito observável. Confira sobrescritas e diferenças pertinentes entre produção, desenvolvimento e testes. Cite arquivo e símbolo, ou comando e resultado sanitizado, para afirmações que sustentam estado atual, arquitetura e riscos. Separe leitura de código de verificação executada; não exponha credenciais nem despeje configurações sensíveis.
+Trace the path to the observable effect. Check overrides and relevant differences between production, development and tests. Cite file and symbol, or command and sanitized result, for claims supporting current state, architecture and risks. Distinguish code reading from executed verification; never expose credentials or dump sensitive configuration.
 
-Para dependência externa relevante, confira sucesso, falha e indisponibilidade no código instalado ou documentação compatível. Descreva o resultado real; se conflitar com o requisito, apresente a decisão necessária e o impacto. Não invente fallback ou alteração de política para fechar o plano. Registre como incerteza aquilo que não pôde confirmar.
+For a relevant external dependency, check success, failure and unavailability in installed code or compatible documentation. Describe the actual outcome; if it conflicts with the requirement, present the necessary decision and impact. Do not invent fallback behavior or policy changes to finish the plan. Record what cannot be confirmed as uncertainty.
 
-**Concluído quando:** cada afirmação decisiva tem origem localizável, condições de ambiente relevantes estão explícitas e nenhuma hipótese foi apresentada como comportamento confirmado.
+**Complete when:** each decisive claim has a traceable source, relevant environment conditions are explicit, and no hypothesis is presented as confirmed behavior.
 
-## Conferir o alcance da solução
+## Inspect applicable visual evidence
 
-Antes de propor mudança em default, configuração global ou componente compartilhado, localize seus consumidores e compare o comportamento afetado com o escopo aprovado, inclusive por ambiente. Registre os consumidores relevantes e a evidência que sustenta essa avaliação na arquitetura ou nos riscos.
+For an interface delivery, inspect the declared design and current rendered UI or explain access limits. Identify applicable screens/states, approved field/action adaptations, supplied assets/tokens and the actual differences from existing components. Reuse behavior and implementation where suitable while adapting appearance to the primary visual source. A supplied CSS value is evidence; a hidden breakpoint guessed from a screenshot is not. New user-visible differences need requirement alignment, while component/CSS mechanisms remain implementation decisions.
 
-Se a proposta modificar comportamento fora do escopo, prefira uma aplicação localizada que preserve o compartilhamento necessário. Se ampliar o alcance for necessário, apresente o impacto e a decisão de produto pendente antes de tratar a arquitetura como pronta. Declarar um fluxo fora do escopo não neutraliza alterações nele; adaptar suas fixtures também não demonstra preservação funcional. Uma mudança compartilhada é válida quando os efeitos estão autorizados ou a inspeção sustenta a preservação dos demais consumidores.
+Identify how development and read-only validation can compare the rendered result with the reference, including environment prerequisites, relevant viewport/state and accessible evidence. Use existing project/browser tools; do not prescribe a new dependency merely to compare appearance. Backend-only phases can defer visual verification to their identified UI consumer phase.
 
-**Concluído quando:** o alcance real da solução é compatível com os limites da tarefa, e efeitos externos estão preservados com evidência ou dependem de decisão explícita.
+**Complete when:** applicable visual sources, current differences, authorized adaptations and a feasible comparison method are explicit, or the specific missing evidence/product decision blocks readiness.
 
-## Descobrir verificadores e pré-requisitos
+## Check solution reach
 
-Expanda os scripts agregados até identificar verificadores, opções e configurações relevantes. Inclua formatação, análise estática, refatoração em modo de verificação, tipos, testes e cobertura conforme existirem; não imponha ferramentas de outra stack. Consulte CI pertinente sem declarar equivalência se não a verificou.
+Before proposing a default, global configuration or shared-component change, locate consumers and compare affected behavior with approved scope, including environment differences. Record relevant consumers and supporting evidence in architecture or risks.
 
-Confira runtime, gerenciadores e suporte à cobertura exigidos. Distinga comandos que apenas verificam daqueles que corrigem arquivos. Identifique um caminho reproduzível de execução no ambiente do projeto e do Ralph; não reduza exigências nem instale dependências para contornar um baseline bloqueado.
+If a proposal changes out-of-scope behavior, prefer a localized application preserving necessary sharing. If broader reach is required, present impact and the pending product decision before declaring architecture ready. Declaring a flow out of scope does not neutralize changes to it; adapting its fixtures does not demonstrate functional preservation either. A shared change is valid when its effects are authorized or inspection supports preservation of other consumers.
 
-**Concluído quando:** o comando completo, sua composição e pré-requisitos são conhecidos, e seus efeitos permitem uma observação inicial sem modificar arquivos versionados.
+**Complete when:** the solution's actual reach matches task boundaries, and external effects are preserved with evidence or await an explicit decision.
+
+## Discover verifiers and prerequisites
+
+Expand aggregate scripts until relevant verifiers, options and configuration are identified. Include formatting, static analysis, refactoring in check mode, types, tests and coverage where present; do not impose another stack's tools. Consult relevant CI without claiming unverified equivalence.
+
+Check required runtime, package managers and coverage support. Distinguish commands that only check from commands that fix files. Identify a reproducible execution path in the project and Ralph environments; do not reduce requirements or install dependencies to bypass a blocked baseline.
+
+**Complete when:** the complete command, its composition and prerequisites are known, and its effects allow initial observation without modifying tracked files.

@@ -1,17 +1,17 @@
-# Evidência da inspeção
+# Inspection evidence
 
-## Conferir afirmações técnicas
+## Verify technical claims
 
-Para cada afirmação que sustenta um corte ou sua dispensa, registre o comportamento observado e a origem verificável: arquivo e símbolo ou linha, configuração efetiva, teste ou resultado de execução. Confira valores padrão no código da versão instalada e verifique sobrescritas no projeto. Registre valor, unidade e condição de aplicação; diferencie duração de cookie, validade de sessão e renovação quando essas distinções afetarem o requisito.
+For every claim supporting a slice or its omission, record observed behavior and a verifiable source: file/symbol or line, effective configuration, test or execution result. Check defaults in the installed version and project overrides. Record value, unit and applicability; distinguish cookie duration, session validity and renewal when these affect requirements.
 
-Separe o que foi constatado por leitura do que foi executado. Um teste encontrado só comprova o cenário que ele exercita; informe se foi executado. Se a configuração efetiva ou algum caminho relevante não puder ser confirmado, registre a incerteza e seu impacto sem ler ou persistir credenciais. Resolva fatos técnicos pela inspeção; decisões de produto permanecem com o tech lead.
+Separate reading findings from executed checks. A discovered test supports only its exercised scenario; state whether it ran. If effective configuration or a relevant path cannot be confirmed, record uncertainty and impact without reading or persisting credentials. Resolve technical facts by inspection; product decisions remain with the tech lead.
 
-**Concluído quando:** toda afirmação usada na classificação possui origem conferida, e valores ou condições desconhecidos estão explícitos, sem serem apresentados como comportamento confirmado.
+**Complete when:** every classification claim has a checked source and unknown values or conditions are explicit rather than presented as confirmed behavior.
 
-## Classificar o comportamento completo
+## Classify complete behavior
 
-Confronte a evidência com todas as condições do requisito: atores, permissões, caminhos de acesso, transições, prazos e dispositivos, quando aplicáveis. A presença de um mecanismo isolado, como exclusão lógica, logout ou filtro de menu, exige seguir os caminhos que o utilizam antes de concluir sobre o comportamento completo.
+Compare evidence against all requirement conditions: actors, permissions, access paths, transitions, timing and devices where applicable. An isolated mechanism such as soft deletion, logout or a menu filter requires tracing its consumers before concluding about complete behavior.
 
-Use `existing` somente quando a evidência sustentar integralmente o resultado aprovado. A leitura do caminho completo pode bastar; execute uma verificação direcionada quando a conclusão depender de comportamento em execução ainda incerto. Para implementação parcial, registre o que já funciona e o que falta, classifique a inspeção como `adapt` e atribua o requisito ao slice que entrega a diferença. Ausência de teste, por si só, não significa ausência de implementação. Evidência inconclusiva permanece como incerteza; se impedir os cortes completos, encaminhe ao ramo de Study do fluxo chamador.
+Use `existing` only when evidence fully supports the approved outcome. Reading the complete path may suffice; run a targeted check when the conclusion depends on uncertain runtime behavior. For partial implementation, record what works and what remains, classify inspection as `adapt` and assign the requirement to the slice delivering the difference. Missing tests alone do not mean missing implementation. Inconclusive evidence remains uncertain; if it prevents complete slicing, route to the caller's Study branch.
 
-**Concluído quando:** cada classificação `existing` sustenta todas as condições relevantes, cada adaptação identifica a diferença a entregar e nenhuma incerteza foi convertida em cobertura confirmada.
+**Complete when:** every `existing` classification supports all relevant conditions, every adaptation identifies its delivery gap, and no uncertainty becomes confirmed coverage.

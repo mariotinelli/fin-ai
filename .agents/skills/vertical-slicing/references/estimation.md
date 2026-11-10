@@ -1,44 +1,44 @@
-# Estimativa e calibração
+# Estimation and calibration
 
-## Estabelecer a base
+## Establish the basis
 
-Identifique requisito e revisão, contexto da equipe, capacidades existentes, adaptações e fornecedores pendentes. Use a referência indicada pelo usuário ou pelas instruções do projeto; não exija arquivo novo nem procure configuração pessoal. Sem histórico, estime pela evidência e declare as premissas. Valores de outro projeto não são padrões universais.
+Identify requirement and revision, team context, existing capabilities, adaptations and pending suppliers. Use references identified by the user or project instructions; neither require a new file nor search personal configuration. Without history, estimate from evidence and state assumptions. Another project's values are not universal defaults.
 
-Trate horas como esforço de trabalho, distinguindo espera de execução. Declare quais atividades DEV e QA estão incluídas, ferramentas e familiaridade relevantes, preparação e reteste. Pergunte apenas sobre premissas desconhecidas que alterem materialmente a proposta; não presuma uso de IA ou ambiente pronto.
+Treat hours as work effort, distinguishing waiting from execution. State included DEV/QA activities, relevant tools and familiarity, preparation and retesting. Ask only about unknown assumptions materially affecting the proposal; do not assume AI usage or a ready environment.
 
-Diferencie as fontes:
+Distinguish sources:
 
-- Número herdado sem contexto: não copiar como autoridade.
-- Referência calibrada pelo tech lead: usar por analogia, explicitando semelhanças e diferenças de escopo e execução.
-- Correção explícita da proposta: registrar autoria e preservar o valor anterior, sem chamá-la de cálculo independente.
-- Tempo realizado: registrar escopo executado, preparação e espera separadamente. Estimativa corrigida não é medição de execução.
+- Inherited number without context: do not copy it as authority.
+- Tech-lead-calibrated reference: use by analogy, explaining similarities and differences in scope and execution.
+- Explicit proposal correction: attribute it and preserve the previous value without calling it independent calculation.
+- Actual time: record executed scope, preparation and waiting separately. A corrected estimate is not an execution measurement.
 
-**Concluído quando:** contexto e fontes estão identificados e nenhuma premissa desconhecida é apresentada como fato.
+**Complete when:** context and sources are identified and no unknown assumption is presented as fact.
 
-## Estimar o trabalho restante
+## Estimate remaining work
 
-Considere mudança, integração e verificação relevante. Preparação comum tem um dono e é contabilizada uma vez. Capacidade publicada mas não implementada é fornecedor pendente, não reuso comprovado. Estime o esforço do consumidor sem reconstruir o fornecedor.
+Consider change, integration and relevant verification. Common preparation has one owner and is counted once. Published but unimplemented capability is a pending supplier, not proven reuse. Estimate consumer effort without rebuilding the supplier.
 
-Explique o esforço dominante de forma curta; decomponha horas somente quando ajudar uma decisão. Não acrescente blocos mínimos automáticos por camada, critério, revisão ou regressão. Tarefas simples com reuso podem ser rápidas; integrações iniciais complexas e muitos testes manuais podem exigir mais horas. Não aplique desconto uniforme nem distribua horas igualmente entre tarefas.
+Briefly explain dominant effort; break hours down only when it helps a decision. Do not add automatic minimum blocks per layer, criterion, review or regression. Simple reused tasks may be quick; complex initial integrations and extensive manual testing may take longer. Neither apply uniform discounts nor distribute hours equally.
 
-Explicite a dúvida técnica e seu impacto concreto antes de acrescentar esforço por incerteza. Inspecione fatos verificáveis; use Study apenas quando a dúvida impedir uma proposta coerente. Confira reuso, duplicação e calibração antes de dividir por ultrapassar seis horas. Se continuar acima, refine o resultado funcional ou encaminhe para revisão de escopo; não reduza horas para passar no limite.
+State the technical question and concrete impact before adding uncertainty effort. Inspect discoverable facts; use Study only when uncertainty prevents a coherent proposal. Check reuse, duplication and calibration before splitting over-six-hour work. If still over limit, refine the functional outcome or route to scope review rather than reducing hours to pass.
 
-**Concluído quando:** trabalho, reuso, verificação e diferenças em relação à referência têm justificativa revisável.
+**Complete when:** work, reuse, verification and differences from the reference have a reviewable justification.
 
-## Dimensionar QA
+## Size QA
 
-Estime preparação efetiva, jornadas, testes manuais específicos, conferência de evidências automatizadas pertinentes e registro dos resultados. QA integrada e verificação da DEV têm objetivos distintos; explicite a razão de repetições necessárias.
+Estimate actual preparation, journeys, specific manual tests, review of relevant automated evidence and result recording. Integrated QA and DEV verification serve different purposes; explain necessary repetitions.
 
-Agrupe execução com preparação e dados compartilhados, preservando a rastreabilidade de todas as condições. Não use porcentagem do DEV nem minutos fixos por condição. Muitos critérios simples podem ser mais rápidos que poucas jornadas com IA, concorrência ou resultado incerto. Automação só reduz execução manual quando há evidência adequada; não presuma cobertura nem remova critérios para caber nas horas.
+Group execution sharing preparation and data while preserving traceability of every condition. Do not use a DEV percentage or fixed minutes per condition. Many simple criteria may be quicker than a few journeys involving AI, concurrency or uncertain results. Automation reduces manual execution only with suitable evidence; neither assume coverage nor remove criteria to fit hours.
 
-Declare massa, ambiente, relógio e falhas controláveis necessários. Preparação inexistente não é gratuita; espera não é esforço ativo. Explicite o tratamento de retestes sem acrescentar campanha indefinida.
+State necessary data, environment, clock control and controlled failures. Missing preparation is not free; waiting is not active effort. Explain retest handling without adding an indefinite campaign.
 
-**Concluído quando:** QA mantém cobertura completa e sua estimativa distingue execução manual, evidências automatizadas e preparação.
+**Complete when:** QA retains full coverage and its estimate distinguishes manual execution, automated evidence and preparation.
 
-## Revisar e aprender
+## Review and learn
 
-Forneça aos avaliadores o mesmo contexto e referências comparáveis, sem revelar a estimativa candidata um do outro. Um verifica entrega e esforço restante; outro, reuso, sobreposição e testes. Reconcilie premissas pela evidência, não pela maior estimativa, média automática ou concordância dos agentes.
+Give evaluators the same context and comparable references without exposing either candidate estimate to the other. One checks delivery and remaining work; another checks reuse, overlap and testing. Reconcile assumptions through evidence, not the highest estimate, automatic averages or agent agreement.
 
-Entregue ao fluxo chamador base, premissas e correções para persistência nas decisões da proposta. Ao mudar os cortes, compare por comportamento e revisão, não por posição na lista. Preserve referências locais no projeto, sem transferir seus números automaticamente para outras equipes.
+Return basis, assumptions and corrections to the caller for persistence in proposal decisions. When slices change, compare behavior and revision rather than list position. Preserve local references in the project without automatically transferring their numbers to other teams. Keep the user-facing explanation in Portuguese.
 
-**Concluído quando:** estimativa do agente e correção humana são distinguíveis e a próxima revisão pode recuperar o contexto que sustenta as horas.
+**Complete when:** agent estimates and human corrections are distinguishable and the next review can recover the context supporting the hours.

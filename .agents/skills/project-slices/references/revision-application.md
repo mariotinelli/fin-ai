@@ -1,43 +1,43 @@
-# Aplicação de revisão aprovada
+# Approved revision application
 
-Use esta fase após uma revisão funcional corrente estar `authorized`. Leia primeiro a [disciplina de aplicação de revisões](../../vertical-slicing/references/revision-application.md). O helper processa somente JSON e Markdown locais; o agente executa leituras e mutações pelos tools do MCP Redmine.
+Use after a current functional review reaches `authorized`. First read [revision-application discipline](../../vertical-slicing/references/revision-application.md). The helper processes local JSON/Markdown only; the agent reads/mutates through Redmine MCP tools.
 
-Se a revisão semântica contém `conditions`, prepare antes a fonte e o documento conforme [condições após mudança do requisito](requirement-condition-revisions.md). O plano exige `condition_revision`, caminho absoluto do estado documental preparado. A prévia inclui a nota com as condições em Markdown ou, quando selecionado, o DOCX exato e sua nota de vigência; sua aprovação cobre essa publicação. Uma aplicação apenas documental pode ter `operations` vazio.
+If semantic review contains `conditions`, prepare source/document first under [conditions after requirement change](requirement-condition-revisions.md). The plan requires `condition_revision`, the prepared document-state absolute path. Preview includes the Markdown-condition note or selected exact DOCX/current-version note; approval covers publication. Document-only application may have empty `operations`.
 
-## Preparar o delta
+## Prepare the delta
 
-Releia pai, todas as filhas abertas e fechadas e todas as relações; grave em `.work` um snapshot sanitizado `{"parent": {...}, "tasks": [...], "relations": [...], "complete": true}`. Use os objetos de issue do MCP, com `project`, `parent`, `tracker`, `status` com ID e nome, e `journals` para comprovar cancelamentos. Marque `complete` somente após consumir todas as páginas. Consulte também os status nativos e grave `{"statuses": [{"id": 1, "name": "..."}]}`. O plano local contém `preview_snapshot`, `status_metadata`, mapeamento explícito de `not_started`, `in_progress`, `completed` e `cancelled`, e operações `create`, `update`, `cancel`, `relation-add` ou `relation-remove`.
+Reread parent, all open/closed children and relations; save a sanitized `.work` snapshot `{"parent": {...}, "tasks": [...], "relations": [...], "complete": true}`. Use MCP issue objects with `project`, `parent`, `tracker`, status ID/name and `journals` proving cancellations. Set `complete` only after all pages. Also retrieve native statuses and save `{"statuses": [{"id": 1, "name": "..."}]}`. Local plan contains `preview_snapshot`, `status_metadata`, explicit mapping of `not_started`, `in_progress`, `completed`, `cancelled`, and `create`, `update`, `cancel`, `relation-add` or `relation-remove` operations.
 
-Cada operação liga `revision_sha256` ao hash aprovado e lista somente `impact_ids` autorizados. Criações carregam o pai, título e descrição que cita esse hash; o payload acrescenta um marcador estável de reconciliação à descrição. Cancelamentos carregam o status nativo exato, motivo e `replacement_keys`; relações descrevem uma aresta nativa `blocks`. Execute `prepare` com `--change-review`, `--publication-state` e `--preview`. Mostre a prévia completa ao tech lead, incluindo os atributos exatos. Após sua aprovação, execute `approve --proposal-sha256 <hash retornado por prepare> --actor "<tech lead>" --at "<ISO-8601>"`. A autorização semântica identifica o impacto; esta aprovação vincula a execução à prévia concreta.
+Each operation binds `revision_sha256` to approved hash and lists authorized `impact_ids` only. Creates carry parent, title and description citing this hash; payload adds a stable reconciliation marker to description. Cancellations carry exact native status, reason and `replacement_keys`; relations describe native `blocks` edges. Run `prepare` with `--change-review`, `--publication-state`, `--preview`. Show the full preview in Portuguese, including exact attributes. After approval run `approve --proposal-sha256 <hash returned by prepare> --actor "<tech lead>" --at "<ISO-8601>"`. Semantic authorization identifies impact; this approval binds execution to the concrete preview.
 
-Para novas filhas, use uma `task_key` inédita. Em `relation-add`, `attributes.issue_id` e `attributes.issue_to_id` aceitam um ID publicado ou uma chave como `dev-new` e `qa`; o helper resolve a chave após confirmar a criação. Execute criações antes das relações e dos cancelamentos que dependem delas. Use chaves de operação inéditas em ciclos seguintes.
+For new children use an unused `task_key`. In `relation-add`, `attributes.issue_id`/`attributes.issue_to_id` accept published IDs or keys such as `dev-new`/`qa`; the helper resolves keys after confirming creation. Execute creates before dependent relations/cancellations. Use fresh operation keys in later cycles.
 
-**Concluído quando:** o hash da prévia concreta foi aprovado pelo tech lead, revisão e publicação estão atuais, todo status possui ID e nome nativos, cada operação cabe no impacto aprovado e a prévia distingue tarefas novas, em andamento, concluídas e não iniciadas.
+**Complete when:** tech lead approved the concrete preview hash, review/publication are current, statuses have native IDs/names, operations fit approved impact and preview distinguishes new, in-progress, completed and unstarted tasks.
 
-## Aprovar tarefas sensíveis
+## Approve sensitive tasks
 
-Para cada atualização em andamento e cada cancelamento, releia o snapshot completo e execute `approve-task --key ... --snapshot ... --actor ... --reason ...`. A aprovação adicional é exclusiva do tech lead e fica ligada ao hash da tarefa corrente e da intenção. Atualizações de tarefa não iniciada, criações e relações não exigem outro aprovador.
+For every in-progress update and cancellation, reread the complete snapshot and run `approve-task --key ... --snapshot ... --actor ... --reason ...`. Additional approval is exclusively the tech lead's and binds current task/intent hashes. Unstarted-task updates, creates and relations require no other approver.
 
-**Concluído quando:** toda tarefa em andamento ou cancelada possui aprovação específica sobre o snapshot e a mutação atuais; nenhuma aprovação ampla ou antiga foi reaproveitada.
+**Complete when:** every in-progress or canceled task has specific approval for current snapshot/mutation; no broad or old approval was reused.
 
-## Aplicar e retomar
+## Apply and resume
 
-Antes de cada chamada, produza novo snapshot e execute `begin --key ... --snapshot ...`; o comando retorna o tool e payload exatos. Registre a resposta com `finish`. Resultado `unknown` ou queda após `begin` exige readback completo e `observe --outcome matched|absent` antes de repetir. A observação vale para a última tentativa: `absent` exige busca completa sem resultado correspondente; múltiplos resultados ou conteúdo alterado mantêm a reconciliação pendente. Para `matched` de criação ou adição informe o ID remoto observado.
+Before each call, produce a fresh snapshot and run `begin --key ... --snapshot ...`; it returns exact tool/payload. Record response with `finish`. Unknown results or interruption after `begin` require full readback and `observe --outcome matched|absent` before retry. Observation applies to the latest attempt: `absent` requires a complete search without a matching result; multiple matches/changed content keep reconciliation pending. For matched create/add, supply observed remote ID.
 
-O helper recusa snapshot alterado desde a prévia, tarefa concluída, cancelamento sem prova de não início, impacto ampliado e operação já concluída. Reconcile a mudança por uma nova execução de `prepare`. Preserve no plano as operações já concluídas da aplicação parcial e reconcilie tentativas incertas antes de replanejar. Uma intenção alterada que já teve tentativa recebe nova chave. Apresente a nova prévia e registre suas aprovações, preservando IDs, resultados e aprovações anteriores no histórico.
+The helper rejects changed snapshots, completed tasks, cancellation without non-start proof, expanded impact and completed operations. Reconcile changes through new `prepare`. Preserve completed operations from partial application and reconcile uncertain attempts before replanning. A changed attempted intent receives a new key. Present the new preview/approvals while preserving earlier IDs, results and approvals in history.
 
-Na aplicação com documento, conclua as operações de tarefas e relações antes de iniciar o upload. Depois publique e confira anexo e nota no estado documental. Preserve a descrição e a identidade da QA existente. Alterações de título e estimativa seguem o delta e as aprovações da aplicação; a revisão das condições não as autoriza implicitamente.
+For document application, complete task/relation operations before uploading. Then publish/verify attachment and note in document state. Preserve existing QA description/identity. Title/estimate changes follow application delta/approvals; condition revision does not implicitly authorize them.
 
-**Concluído quando:** toda operação está concluída uma vez, com tentativas e observações append-only e sem duplicação após falha parcial.
+**Complete when:** every operation completed once, with append-only attempts/observations and no duplication after partial failure.
 
-## Conferir e concluir
+## Verify and complete
 
-Releia pai, tarefas e relações e execute `complete --readback`. O helper exige payload/status de cada mutação, evidência legível de cancelamento, bloqueios DEV→QA afetados, preservação exata de tarefas e relações não afetadas e o mesmo status do pai.
+Reread parent, tasks and relations and run `complete --readback`. The helper requires mutation payload/status, readable cancellation evidence, affected DEV→QA blockers, exact preservation of unaffected tasks/relations and unchanged parent status.
 
-Com `condition_revision`, inclua anexos e journals completos da QA no readback. A revisão documental deve estar concluída e corresponder à prévia da aplicação; anexo, nota de vigência e preservação dos anexos e journals anteriores são conferidos antes da conclusão integral.
+With `condition_revision`, include complete QA attachments/journals in readback. Document revision must be completed and match application preview; attachment, current-version note and previous attachments/journals are verified before overall completion.
 
-Somente depois dessa conferência integral, `complete` substitui atomicamente o `task.md` de cada filha gerenciada cujo conteúdo ou relações pertencem ao delta autorizado. O helper reutiliza o caminho encontrado por tipo e ID, preservando o ID e o slug fixado na primeira materialização, e aplica as mesmas regras de conteúdo estável da publicação inicial. Filhas concluídas, externas, adotadas mas não afetadas e todas as filhas fora do delta conservam seus arquivos byte a byte. Falha, resultado incerto, aplicação parcial, readback divergente ou artefato local alterado mantêm o `task.md` corrente intacto.
+Only after full verification does `complete` atomically replace each managed child's `task.md` whose content/relations belong to the authorized delta. It reuses paths found by type/ID, preserving ID and initially fixed slug, and applies initial publication's stable-content rules. Completed, external, adopted-but-unaffected and all out-of-delta children retain files byte-for-byte. Failure, uncertainty, partial application, divergent readback or changed local artifacts leave current `task.md` intact.
 
-**Concluído quando:** `.flow/slices-revision-application.json` está `completed`, o readback e as substituições canônicas estão hash-bound, somente os `task.md` do delta autorizado mudaram e os históricos anteriores de adoção/externalidade, Study, divergência e revisão semântica permanecem preservados.
+**Complete when:** `.flow/slices-revision-application.json` is `completed`, readback/canonical replacements are hash-bound, only authorized-delta `task.md` files changed, and previous adoption/externality, Study, divergence and semantic-review history is preserved.
 
-Após concluir uma aplicação, uma nova mudança do requisito pode iniciar outro ciclo nos mesmos arquivos de estado. A revisão seguinte incorpora IDs de filhas e relações criadas pelos ciclos concluídos. As evidências de requisitos, prévias, observações e readbacks são copiadas para arquivos identificados pelo conteúdo; preserve esses arquivos junto aos estados.
+After completed application, new requirement changes may start another cycle in the same state files. The next review includes child/relation IDs created by completed cycles. Requirement evidence, previews, observations/readbacks are copied to content-addressed files; preserve them with state.

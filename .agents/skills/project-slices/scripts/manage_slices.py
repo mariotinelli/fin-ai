@@ -439,7 +439,7 @@ def validate_proposal(proposal: dict[str, Any], *, strict_estimates: bool = Fals
             fail(f"slices[{index}].external_blockers keys must be unique")
         description = slice_value["description"]
         required_fields = {"delivery", "limits", "criteria", "dependencies", "traceability"}
-        allowed_fields = required_fields | {"technical_context"}
+        allowed_fields = required_fields | {"technical_context", "visual_references"}
         if not isinstance(description, dict) or not required_fields.issubset(description) or not set(description).issubset(allowed_fields):
             fail(f"slices[{index}].description fields are invalid")
         for field in required_fields - {"criteria", "traceability"}:
@@ -447,6 +447,12 @@ def validate_proposal(proposal: dict[str, Any], *, strict_estimates: bool = Fals
         technical_context = description.get("technical_context")
         if technical_context is not None:
             require_text(technical_context, f"slices[{index}].description.technical_context")
+        if "visual_references" in description:
+            references = description["visual_references"]
+            if not isinstance(references, list) or not references:
+                fail(f"slices[{index}].description.visual_references must be a nonempty array")
+            for reference in references:
+                require_text(reference, f"slices[{index}].description.visual_references entry")
         criteria = description["criteria"]
         if not isinstance(criteria, list) or not criteria:
             fail(f"slices[{index}] requires acceptance criteria")
@@ -697,6 +703,11 @@ def command_approve(arguments: argparse.Namespace) -> None:
     print(json.dumps({"status": "approved", "revision": revision["number"], "proposal_sha256": revision["proposal_sha256"]}, sort_keys=True))
 
 
+def visual_reference_lines(description: dict[str, Any]) -> list[str]:
+    lines = [f"- {reference}" for reference in description.get("visual_references", [])]
+    return lines + [""] if lines else []
+
+
 def render_markdown(proposal: dict[str, Any], revision: int, proposal_sha: str) -> str:
     lines = [f"# Fatiamento de {proposal['feature']['title']}", "", f"Revisão: {revision}  ", f"Hash: `{proposal_sha}`", "", "## Prévia numerada", ""]
     for slice_value in proposal["slices"]:
@@ -750,6 +761,7 @@ def render_markdown(proposal: dict[str, Any], revision: int, proposal_sha: str) 
         if description.get("technical_context"):
             lines.extend(["", "#### Contexto técnico", "", description["technical_context"]])
         lines.extend(["", "#### Referências", "", f"Item pai Redmine `#{proposal['feature']['issue_id']}`; regras/critérios {', '.join(description['traceability'])}.", ""])
+        lines.extend(visual_reference_lines(description))
     return "\n".join(lines).rstrip() + "\n"
 
 

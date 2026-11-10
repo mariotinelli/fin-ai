@@ -1,74 +1,80 @@
 ---
 name: ralph
-description: Planeja e executa pelo Ralph uma filha DEV identificada pelo ID do Redmine. Use para iniciar, retomar ou substituir seu planejamento; delega planos novos a plan-issue e aguarda aprovação antes de executar.
+description: Plan and execute a DEV child task through Ralph using its Redmine ID. Use to start, resume or replace its plan; delegate new plans to plan-issue and wait for approval before execution.
 ---
 
 # Ralph
 
-Conduza a execução de um `planning.md` pelo `ralph.sh` instalado com `plan-issue`. O script implementa as fases; esta skill identifica a tarefa, delega o planejamento quando ausente, recebe a aprovação ou escolha de executar e acompanha o processo. Use somente os artefatos locais, sem consultar ou alterar Redmine ou YouTrack. O usuário também pode usar `plan-issue` independentemente.
+Coordinate execution of a `planning.md` through the `ralph.sh` installed with `plan-issue`. The script implements phases; this skill identifies the task, delegates missing planning, receives approval or the execution choice, and monitors the process. Use local artifacts only, without reading or modifying Redmine or YouTrack. Users may also use `plan-issue` independently.
 
-## 1. Identificar a filha e o plano
+Respond in Brazilian Portuguese (pt-BR) from the first announcement, including questions, progress, approval previews, diagnostics and final summaries. Keep user-facing stage names and examples below in Portuguese. Preserve technical identifiers, commands and paths; apply the language rule when delegating.
 
-Receba o ID da filha no Redmine. Se o usuário não informou o código, peça-o e aguarde; título, caminho e ID do pai não o substituem.
+## 1. Identify the child and plan
 
-Na raiz do projeto, leia as instruções aplicáveis e localize exatamente um `tasks/dev-<id>-<slug>/task.md` sob `docs/harness/features` ou `docs/harness/bugs`. Confira o ID no documento e verifique se existe `planning.md` na mesma pasta. QA e Study não são elegíveis.
+Receive the child's Redmine ID. If the user did not supply it, ask and wait; title, path and parent ID are not substitutes.
 
-Quando não houver uma correspondência inequívoca ou a identidade divergir, informe os arquivos encontrados e o impedimento, sem escolher outra tarefa. Se o plano existir, leia-o e siga para a etapa 2. Se estiver ausente, siga [planejamento novo](references/new-planning.md) até sua aprovação e preparação no Git antes de retornar à etapa 2.
+At the project root, read applicable instructions and locate exactly one `tasks/dev-<id>-<slug>/task.md` under `docs/harness/features` or `docs/harness/bugs`. Verify its document ID and whether `planning.md` exists beside it. QA and Study are ineligible.
 
-**Concluído quando:** uma filha DEV foi identificada e seu plano existente foi lido ou seu plano novo foi aprovado e preparado no Git, ou o impedimento foi explicado e o fluxo parou.
+When no unambiguous match exists or identity differs, report discovered files and the obstacle without choosing another task. If the plan exists, read it and continue to step 2. If missing, follow [new planning](references/new-planning.md) through approval and Git preparation before returning to step 2.
 
-## 2. Apresentar e executar
+For an existing plan, check the visual source handoff required by `plan-issue`'s planning contract. Missing visual criteria/sources or a new material design/field/state conflict requires localized plan or requirement alignment before affected execution, preserving code, commits and resume state. Present changed plan content for review; existing execution authorization does not silently approve changed visual scope. A task with UI cannot be treated as backend-only because its historical plan omitted the design.
 
-Para um plano que já existia ao entrar no fluxo, mostre ID, título completo da filha e caminho do planejamento e ofereça:
+**Complete when:** one DEV child was identified and its existing plan read or its new plan approved and prepared in Git, or the obstacle was explained and the workflow stopped.
 
-- **Executar:** mantém o plano e a retomada existentes e chama o Ralph.
-- **Substituir:** remove somente esse plano e seu estado de retomada e gera outro considerando o projeto atual; preserva código, commits e logs. O novo conteúdo será apresentado para aprovação antes de executar.
+## 2. Present and execute
 
-A escolha de executar autoriza a chamada do script sem confirmação adicional. Se essa escolha já foi feita nesta conversa para o mesmo plano apresentado, prossiga. Escolher substituir autoriza a remoção específica explicada na opção: siga [substituição de planejamento](references/replace-planning.md). Para um plano novo ou substituto aprovado e preparado no Git pelo fluxo compartilhado, continue diretamente para o comando abaixo, sem reapresentar as opções: a aprovação já autoriza a execução na mesma conversa.
+For a plan that already existed on entry, show child ID, full title and plan path, then offer these Portuguese choices:
 
-Resolva `../plan-issue/ralph.sh` a partir da localização desta skill instalada, não a partir do diretório corrente. Leia [a referência do executor](../plan-issue/references/ralph-execution.md) para seu contrato de execução e retomada. Se a dependência estiver ausente, informe o problema de instalação e pare.
+- **Executar:** retain the existing plan and resume state and invoke Ralph.
+- **Substituir:** remove only this plan and its resume state and generate a replacement using the current project; preserve code, commits and logs. Present new content for approval before execution.
 
-Use os caminhos reais e proteja cada argumento conforme o shell em uso:
+Choosing execution authorizes the script call without another confirmation. If already chosen in this conversation for the same presented plan, continue. Choosing replacement authorizes the specific removal explained in the option: follow [plan replacement](references/replace-planning.md). For a new or replacement plan approved and prepared in Git through the shared workflow, proceed directly to the command below without offering the choices again: approval already authorizes execution in the same conversation.
+
+Resolve `../plan-issue/ralph.sh` relative to this installed skill, not the current directory. Read [the executor reference](../plan-issue/references/ralph-execution.md) for execution and resume contracts. If the dependency is missing, report the installation problem and stop.
+
+Use actual paths and protect every argument according to the shell:
 
 ```sh
-bash <plan-issue>/ralph.sh execute <pasta-dev>/planning.md
+bash <plan-issue>/ralph.sh execute <dev-directory>/planning.md
 ```
 
-Execute na raiz do projeto com as ferramentas do agente que permitem obter saída incremental e continuar acompanhando o mesmo processo. Preserve as opções padrão do executor; encaminhe opções suportadas apenas quando solicitadas pelo usuário. Os agentes da sessão podem ser Codex, Claude Code ou OpenCode; o backend do executor continua sendo o configurado nele.
+Run at the project root through agent tools supporting incremental output and continued monitoring of the same process. Preserve default executor options; forward supported options only when requested. The conversational agent may be Codex, Claude Code or OpenCode; the executor backend remains its configured one.
 
-Deixe o script decidir se é possível iniciar ou retomar. Não imponha uma checagem de worktree limpa que impeça retomar uma fase com mudanças. Não edite o plano, o estado, o código ou a configuração para contornar uma recusa do executor.
+Let the script decide whether execution or resume is possible. Do not impose a clean-worktree check that prevents resuming a phase with changes. Do not edit plan, state, code or configuration to bypass executor refusal.
 
-**Concluído quando:** o script foi chamado uma única vez para o plano escolhido e o processo está disponível para acompanhamento, ou a falha ao iniciar foi explicada.
+**Complete when:** the script was called once for the selected plan and its process is available for monitoring, or startup failure was explained.
 
-## 3. Acompanhar até terminar
+## 3. Monitor until completion
 
-Conserve o identificador da execução e acompanhe esse mesmo processo até obter seu resultado. Esperas curtas, de no máximo 60 segundos, devem permitir feedback contínuo ao usuário.
+Retain the execution identifier and monitor the same process until its result is observed. Short waits of at most 60 seconds must allow continuous user feedback.
 
-Comunique mudanças observadas em mensagens curtas, com **fase**, nome da etapa e **resultado** destacados. Prefira os nomes Desenvolvimento, Validação, Testes e Commit; mantenha o número do gate como referência secundária. Use o total de fases e o título do plano quando conhecidos. O Gate 1 termina como **finalizado**, não como aprovado. Preserve a diferença entre reprovação interna seguida de nova tentativa pelo script e interrupção do processo.
+Communicate observed changes in short messages highlighting **fase**, stage name and **resultado**. Prefer Desenvolvimento, Validação, Testes and Commit; keep gate number secondary. Use phase count and plan title when known. Gate 1 ends as **finalizado**, not approved. Distinguish internal rejection followed by script retry from process interruption.
 
-Exemplos de apresentação, preenchidos somente com fatos observados:
+User-facing examples, filled only with observed facts:
 
 - **Fase 1 de 2 — Política de senha** · **Desenvolvimento em andamento** (Gate 1).
 - **Fase 1 de 2** · **Validação aprovada**. Iniciando os testes (Gate 3).
 - **Fase 1 de 2 concluída** — testes aprovados e commit criado. **Próxima: Fase 2 de 2 — Desenvolvimento**.
 - **Fase 2 de 2** · **Testes reprovados — tentativa 2 de 3**. O executor iniciou a correção nesta mesma fase.
 
-Cada atualização deve conter apenas o avanço novo. Não reproduza uma lista crescente de mensagens anteriores nem envie uma mensagem por consulta ao processo. Sem novidade, mantenha o acompanhamento e, quando for necessário atualizar o usuário, use uma única linha: **Fase 2 de 2 · Desenvolvimento** — sem nova saída desde a última atualização. Respeite a frequência de comunicação exigida pelo ambiente; evite variações repetidas da mesma frase. Ausência de saída não comprova atividade ou travamento: não invente progresso, percentual ou horário.
+Each update contains only new progress. Do not repeat a growing history or send a message per poll. Without changes, continue monitoring and, when an update is needed, use one Portuguese line: **Fase 2 de 2 · Desenvolvimento** — sem nova saída desde a última atualização. Respect the environment's communication frequency; avoid repetitive variations. Missing output proves neither activity nor a hang: do not invent progress, percentages or times.
 
-Ao mudar de fase, anuncie explicitamente a conclusão da anterior e o início da próxima, para não parecer retorno ao Gate 1 da mesma fase. Horários e identificadores de commit entram somente quando disponíveis e úteis; não use blocos de código para status em prosa.
+On phase transitions, explicitly announce the previous phase's completion and next phase's start so it does not look like returning to Gate 1 of the same phase. Include times and commit identifiers only when available and useful; do not use code blocks for prose status.
 
-Mantenha as conversas internas, prompts e logs extensos fora do acompanhamento. Não use `--verbose` por padrão nem abra outro processo Ralph para verificar progresso. Se a ferramenta deixar de permitir acompanhamento, informe a limitação sem declarar conclusão, reiniciar ou encerrar um processo que possa continuar ativo.
+Keep internal conversations, prompts and extensive logs out of monitoring updates. Do not default to `--verbose` or start another Ralph process to check progress. If the tool loses monitoring capability, explain the limitation without claiming completion, restarting or terminating a potentially active process.
 
-**Concluído quando:** o processo terminou com resultado observado e o usuário recebeu o resumo, ou uma perda de acompanhamento foi informada explicitamente.
+**Complete when:** the process ended with an observed result and the user received a summary, or loss of monitoring was explicitly reported.
 
-## 4. Informar o resultado
+## 4. Report the result
 
-Em sucesso, informe a conclusão observada e os resultados disponíveis, incluindo a orientação do executor para revisar as mudanças. Fases já concluídas permanecem sob o controle da retomada existente.
+On success, report observed completion and available results, including the executor's instruction to review changes. Completed phases remain controlled by existing resume behavior.
 
-Comece por **Tarefa #ID concluída** ou **Tarefa #ID interrompida**, conforme observado. Resuma fases concluídas e verificações relevantes; em interrupção, destaque **fase e etapa**, causa e próximo passo. Prefira parágrafos curtos ou poucos itens a um histórico de polling.
+For UI phases, distinguish visual comparison verified, not applicable and blocked using observed validation results. A pending visual comparison is not completed visual acceptance, even when functional tests pass.
 
-Em interrupção, leia o diagnóstico apontado pelo script, resuma a causa comprovada e indique como retomar a mesma tarefa. Se não houver diagnóstico ou causa conclusiva, diga isso. Mostre apenas os trechos necessários e sanitizados, preservando segredos e conversas internas.
+Start with **Tarefa #ID concluída** or **Tarefa #ID interrompida**, as observed. Summarize completed phases and relevant checks; for interruption highlight **fase e etapa**, cause and next step. Prefer short paragraphs or a few items over polling history.
 
-Após a interrupção, aguarde a orientação do usuário para corrigir ou executar novamente. Não remova estado, desfaça commits nem reinicie por conta própria. As tentativas internas e os commits por fase pertencem exclusivamente ao script.
+On interruption, read the diagnostic identified by the script, summarize the proven cause and explain how to resume the same task. If no diagnostic or conclusive cause exists, say so. Show only necessary sanitized excerpts, protecting secrets and internal conversations.
 
-**Concluído quando:** o usuário conhece o resultado e, em caso de interrupção, o diagnóstico disponível e o próximo passo, sem execução adicional não solicitada.
+After interruption, wait for user direction before fixing or rerunning. Do not remove state, undo commits or restart independently. Internal attempts and per-phase commits belong exclusively to the script.
+
+**Complete when:** the user knows the result and, on interruption, available diagnostics and next step, without unsolicited further execution.

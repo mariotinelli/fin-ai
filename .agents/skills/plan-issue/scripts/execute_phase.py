@@ -14,7 +14,7 @@ import sys
 import tempfile
 import time
 import uuid
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 sys.dont_write_bytecode = True
@@ -88,6 +88,39 @@ def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
     return command, phases
 
 
+def visual_sources(repo: Path, planning: Path) -> list[Path]:
+    text = planning.read_text(encoding="utf-8")
+    # Ignore examples inside fences; only the actual plan declares required sources.
+    text = re.sub(r"^(`{3,}|~{3,})[^\n]*\n.*?^\1[ \t]*$", "", text, flags=re.MULTILINE | re.DOTALL)
+    sections = list(re.finditer(r"^## Referências visuais[ \t]*\r?$", text, re.MULTILINE))
+    if len(sections) != 1:
+        fail("planning.md requires exactly one Referências visuais section; review the plan before execution")
+    body = re.split(r"^## ", text[sections[0].end():], maxsplit=1, flags=re.MULTILINE)[0].strip()
+    if re.fullmatch(r"Não se aplica: [^\r\n]+", body):
+        return []
+    paths = []
+    for line in body.splitlines():
+        if not line.strip():
+            continue
+        match = re.fullmatch(r"- `([^`]+)`", line.strip())
+        if match is None:
+            fail("Referências visuais must list repository-relative Markdown paths or explain Não se aplica")
+        name = match.group(1)
+        relative = PurePosixPath(name)
+        if relative.is_absolute() or re.match(r"^[A-Za-z]:", name) or "\\" in name or ".." in relative.parts or relative.as_posix() != name or relative.suffix.lower() != ".md":
+            fail("visual sources must be repository-relative Markdown paths without traversal")
+        candidate = repo / name
+        if any(path.is_symlink() for path in (candidate, *candidate.parents) if path != repo and repo in path.parents):
+            fail("visual sources must not use symlinks")
+        if not candidate.resolve().is_relative_to(repo.resolve()) or not candidate.is_file():
+            fail("a declared visual source is missing or outside the repository")
+        if candidate not in paths:
+            paths.append(candidate)
+    if not paths:
+        fail("Referências visuais must identify sources or explain Não se aplica")
+    return paths
+
+
 def task_context(repo: Path, planning: Path) -> str:
     paths = [planning]
     candidates = [planning.parent / "task.md", planning.parent.parent.parent / "feature.md", planning.parent.parent.parent / "bug.md", repo / "AGENTS.md"]
@@ -98,6 +131,9 @@ def task_context(repo: Path, planning: Path) -> str:
     for candidate in candidates:
         if candidate.is_file() and candidate not in paths:
             paths.append(candidate)
+    for source in visual_sources(repo, planning):
+        if source not in paths:
+            paths.append(source)
     return "\n".join(f"- `{path.relative_to(repo).as_posix()}`" for path in paths)
 
 
@@ -243,6 +279,15 @@ def validate_result(result: dict[str, Any], mode: str) -> None:
             fail("development agent did not finish the phase")
     elif result.get("verdict") not in {"approved", "rejected"} or not isinstance(result.get("findings"), list):
         fail("validation agent returned an invalid result")
+    if mode != "develop":
+        visual = result.get("visual_validation")
+        if not isinstance(visual, dict) or visual.get("status") not in {"verified", "not-applicable", "blocked"}:
+            fail("validation agent must report visual_validation")
+        evidence = visual.get("evidence")
+        if not isinstance(evidence, list) or not evidence or any(not isinstance(item, str) or not item.strip() for item in evidence):
+            fail("visual validation requires comparison evidence or an explicit reason")
+        if result["verdict"] == "approved" and visual["status"] == "blocked":
+            fail("validation cannot approve with required visual verification blocked")
 
 
 def validation_report(result: dict[str, Any]) -> str:
@@ -322,6 +367,7 @@ def execute(arguments: argparse.Namespace) -> int:
     suite, phases = parse_planning(planning)
     _, suite_shell = baseline_command(planning.read_text(encoding="utf-8"))
     repo = repository_for(planning)
+    context = task_context(repo, planning)
     package = Path(__file__).resolve().parent.parent
     state_path = state_path_for(planning)
     state_relative = state_path.relative_to(repo).as_posix()
@@ -338,7 +384,6 @@ def execute(arguments: argparse.Namespace) -> int:
             signal.signal(signum, signal_handler)
         known = {number for number, _, _ in phases}
         state["completed_phases"] = [number for number in state["completed_phases"] if number in known]
-        context = task_context(repo, planning)
         for number, title, body in phases:
             if number in state["completed_phases"]:
                 continue

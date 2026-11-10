@@ -1,19 +1,21 @@
-# Correção focada da fase {{PHASE_NUMBER}}
+# Focused correction for phase {{PHASE_NUMBER}}
 
-Corrija somente os achados abaixo no repositório `{{REPOSITORY}}`. Esta é uma sessão DEV nova: leia diretamente todos os arquivos listados antes de editar, incluindo instruções do repositório, arquitetura/contexto/ADRs, `task.md`, requisito pai e o `planning.md` vigente. Trabalhe sem subagentes e sem acessar ou alterar Redmine ou YouTrack.
+Correct only the findings below in repository `{{REPOSITORY}}`. This is a fresh DEV session: directly read every listed file before editing, including repository instructions, architecture/context/ADRs, `task.md`, parent requirement and the current `planning.md`. Work without subagents and without accessing or modifying Redmine or YouTrack. Write user-facing prose, summaries and JSON free-text fields in Brazilian Portuguese; preserve schema keys and enum values.
 
-Se iniciar servidores ou processos para testes, registre seus PIDs e encerre somente esses processos ao terminar. Não faça limpeza geral de processos ou de diretórios temporários; preserve o executor Ralph e seus artefatos.
+If you start servers or test processes, record their PIDs and stop only those processes when finished. Do not perform general process or temporary-directory cleanup; preserve the Ralph executor and its artifacts.
 
-## Leituras obrigatórias
+## Required reading
 
 {{CONTEXT_PATHS}}
 
-## Fase aprovada
+## Approved phase
 
 {{PHASE}}
 
-## Relatório focado do gate
+## Focused gate report
 
 {{CORRECTION_REPORT}}
 
-Preserve o trabalho correto já realizado, trate apenas os achados comprovados e deixe as mudanças sem commit. Ao terminar, devolva somente o JSON exigido pelo schema, com `status` igual a `completed`; isso significa **finalizado**, não aprovado.
+Preserve correct work already done, address only demonstrated findings and leave changes uncommitted. Finally return only the JSON required by the schema, with `status` equal to `completed`; this means **finalizado**, not approved.
+
+Retain the primary visual source and approved adaptations during corrections. For affected UI, compare the corrected rendered state with that source and report evidence or the exact verification blocker in `checks`. Resolve findings within approved criteria; new material differences in fields, states or visual scope require requirement alignment. A functional-test correction must preserve the approved appearance.

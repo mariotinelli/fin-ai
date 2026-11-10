@@ -1,12 +1,12 @@
-# Reconciliação local de publicações históricas
+# Local reconciliation of historical publications
 
-Use este ramo somente quando uma publicação DEV/QA v1 ou um Study v1 já concluiu sua criação ou adoção, mas ainda conserva a representação posicional histórica em vez de `tasks/<tipo>-<id>-<slug>/task.md`. Ele materializa uma projeção local; todas as chamadas Redmine ficam fora deste ramo, e o estado, descrições, hashes, aprovações, tentativas e baselines históricos permanecem byte a byte.
+Use only when DEV/QA v1 publication or Study v1 completed creation/adoption but retains a historical positional representation rather than `tasks/<type>-<id>-<slug>/task.md`. It materializes a local projection; remote mutations are outside this branch, and historical state, descriptions, hashes, approvals, attempts and baselines remain byte-for-byte unchanged.
 
-## Releitura e prévia exata
+## Readback and exact preview
 
-Leia novamente o pai e cada filha gerenciada, incluindo todos os campos e relações, pelos tools Redmine de leitura. Grave somente a resposta sanitizada em `.work/slices-reconciliation-readback.json`. Para DEV/QA use `{"parent": {...}, "children": [...]}` com cada filha gerenciada exatamente uma vez; para Study use `{"parent": {...}, "study": {...}}`.
+Reread parent/every managed child with complete fields/relations through read-only Redmine tools. Save only sanitized response to `.work/slices-reconciliation-readback.json`. DEV/QA uses `{"parent": {...}, "children": [...]}` with every managed child exactly once; Study uses `{"parent": {...}, "study": {...}}`.
 
-Execute:
+Run:
 
 ```sh
 python <project-slices>/scripts/manage_reconciliation.py prepare .flow/slices-reconciliation.json \
@@ -15,13 +15,13 @@ python <project-slices>/scripts/manage_reconciliation.py prepare .flow/slices-re
   --preview slices/reconciliation.md
 ```
 
-O helper aceita somente estado v1 com resultado remoto concluído e ID inequívoco. Ele valida pai, projeto, tipo, tracker, status, prioridade, heranças, responsável e datas vazios, estimativa, título, descrição e relações relevantes. Divergência, publicação parcial, IDs ausentes ou repetidos, evidência alterada, caminho inseguro ou colisão interrompem sem gravar tarefas.
+The helper accepts only v1 state with completed remote outcome/unambiguous ID. It validates parent, project, type, tracker, status, priority, inheritance, empty assignee/dates, estimate, title, description and relevant relations. Divergence, partial publication, missing/duplicate IDs, changed evidence, unsafe path or collision stops without task writes.
 
-`slices/reconciliation.md` mostra cada destino, SHA-256 e os bytes Markdown exatos. Mostre-o integralmente ao tech lead. A conclusão desta fase exige que a prévia exista, os hashes do estado histórico e do readback permaneçam atuais e nenhuma pasta canônica tenha sido criada.
+`slices/reconciliation.md` shows destinations, SHA-256 and exact Markdown bytes. Show it completely to the tech lead in Portuguese. This phase ends only when preview exists, historical-state/readback hashes remain current and no canonical directory was created.
 
-## Decisão corrente e materialização
+## Current decision and materialization
 
-Depois de o tech lead aprovar explicitamente a prévia corrente, execute:
+After explicit approval of the current preview, run:
 
 ```sh
 python <project-slices>/scripts/manage_reconciliation.py approve .flow/slices-reconciliation.json \
@@ -30,8 +30,8 @@ python <project-slices>/scripts/manage_reconciliation.py materialize .flow/slice
   --at "<ISO-8601>"
 ```
 
-A decisão referencia o hash que combina origem, readback, destinos e conteúdo exato. Antes de aprovar e antes de materializar, o helper relê toda a evidência e repete a validação. Qualquer mudança exige preservar o registro existente, resolver a divergência e preparar outra reconciliação deliberada; aprovação anterior nunca migra para outra prévia.
+Decision references the hash combining source, readback, destinations and exact content. Before approval/materialization, the helper rereads evidence and repeats validation. Changes require preserving the record, resolving divergence and preparing another deliberate reconciliation; old approval never transfers.
 
-A gravação atômica produz o mesmo contrato `task.md` da publicação corrente. Uma pasta preexistente do mesmo tipo e ID preserva seu slug quando o conteúdo coincide; múltiplas pastas ou conteúdo diferente são conflito. Uma execução concluída pode ser repetida sem alterar arquivos.
+Atomic writes produce the current publication's `task.md` contract. Existing same-type/ID directories retain slugs when content matches; multiple directories or different content are conflicts. Completed execution may repeat without file changes.
 
-**Concluído quando:** `.flow/slices-reconciliation.json` está `completed`, cada `task.md` coincide com os bytes aprovados, os arquivos históricos conservam seus hashes originais e nenhuma mutação remota foi solicitada.
+**Complete when:** `.flow/slices-reconciliation.json` is `completed`, each `task.md` matches approved bytes, historical files retain original hashes and no remote mutation was requested.

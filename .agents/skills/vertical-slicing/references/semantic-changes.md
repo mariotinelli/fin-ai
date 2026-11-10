@@ -1,23 +1,25 @@
-# Disciplina de mudança semântica
+# Semantic-change discipline
 
-Use esta disciplina quando uma versão aprovada do requisito suceder a versão que fundamentou um fatiamento aprovado. O hash identifica versões; ele não classifica significado. Compare comportamentos observáveis, regras, erros, permissões e limites contra o baseline semântico aprovado.
+Use when an approved requirement supersedes the version supporting approved slicing. A hash identifies versions rather than classifying meaning. Compare observable behavior, rules, errors, permissions and boundaries against the approved semantic baseline.
 
-## Classificar
+## Classify
 
-Classifique como `editorial` quando formatação, ortografia ou redação mudarem sem alterar comportamento, regra, limite ou resultado verificável. Registre cada diferença e explique por que o significado permanece igual. Classifique como `functional` quando ao menos um comportamento observável, regra, limite, critério ou obrigação mudar. Uma diferença de bytes sozinha não sustenta `functional`.
+Use `editorial` when formatting, spelling or wording changes without altering behavior, rules, boundaries or verifiable results. Record each difference and explain equivalent meaning. Use `functional` when at least one observable behavior, rule, limit, criterion or obligation changes. Byte differences alone do not support `functional`.
 
-**Concluído quando:** cada diferença relevante possui antes, depois, classificação e justificativa semântica; a classificação geral é `functional` se, e somente se, existir diferença funcional.
+Apply the existing classification to visual obligations too: a changed target layout, identity, state appearance or approved field adaptation is `functional` when it changes visual acceptance, even if data operations remain identical. A source-locator correction preserving the same visual target can be `editorial`. Include affected visual criteria, references and QA comparisons in the impact partition; new design evidence does not authorize silently rewriting published tasks.
 
-## Localizar o impacto
+**Complete when:** each relevant difference has before, after, classification and semantic justification; overall classification is `functional` if and only if a functional difference exists.
 
-Particione integralmente tarefas publicadas/propostas, critérios de aceite, itens de cobertura e dependências entre afetados e ainda válidos. Para cada item, explique a relação com a mudança. Preserve IDs e evidências dos itens válidos; uma mudança localizada não implica recriar o conjunto inteiro. Inclua decisões sobre filhas adotadas ou externas, resultados de Study, divergências e cobertura de QA entre as evidências preservadas quando existirem.
+## Locate impact
 
-Quando existirem condições de teste, use as vigentes, rastreie sua origem no requisito e classifique cada ID como afetado ou ainda válido. Identifique separadamente condições novas. Resolva comportamento novo ou contraditório no requisito antes de aprovar resultados esperados; a validação estrutural não decide equivalência semântica.
+Fully partition published/proposed tasks, acceptance criteria, coverage items and dependencies into affected and still valid. Explain each item's relationship to the change. Preserve valid IDs/evidence; localized change does not imply recreating the whole set. Preserve adopted/external-child decisions, Study results, divergences and QA coverage when present.
 
-**Concluído quando:** todo item do baseline aparece exatamente uma vez como afetado ou não afetado e a justificativa permite ao tech lead conferir a fronteira sem conhecer termos internos do agente.
+When test conditions exist, use the current version, trace requirement origins and classify every ID as affected or still valid. Identify new conditions separately. Resolve new or contradictory behavior in the requirement before approving expected results; structural validation does not decide semantic equivalence.
 
-## Vincular a decisão
+**Complete when:** every baseline item appears exactly once as affected or unaffected, and the explanation lets the tech lead assess the boundary without internal agent terminology.
 
-Apresente classificação e impacto juntos. A aprovação precisa identificar o baseline, a nova versão, a classificação e o plano de impacto exatos. Mudança em qualquer um exige nova decisão. Uma mudança editorial registrada conserva a validade do fatiamento. Uma mudança funcional autoriza somente a preparação de novas revisões para os itens afetados; a política geral de atualizar ou remover tarefas pertence ao fluxo que a implementar.
+## Bind the decision
 
-**Concluído quando:** a decisão atribuída referencia o hash exato da revisão semântica e nenhuma mutação afetada usa aprovação anterior ou mais ampla.
+Present classification and impact together in Portuguese. Approval must identify the exact baseline, new version, classification and impact plan. Changes to any require a new decision. Recorded editorial change preserves slicing validity. Functional change authorizes only preparing new revisions for affected items; general task-update/removal policy belongs to its implementing workflow.
+
+**Complete when:** the attributed decision references the exact semantic-review hash and no affected mutation uses earlier or broader approval.
