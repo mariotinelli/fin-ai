@@ -81,6 +81,8 @@ On interruption, read the diagnostic identified by the script, summarize the pro
 
 For `validation-blocked`, explain the missing environment/access/evidence instead of requesting code corrections without a demonstrated defect. The same command resumes capture and validation directly after the obstacle is resolved. Keep the validator read-only; an existing plan missing its parent-side capture command needs ordinary reviewed amendment, not deletion of state or acceptance removal. Mixed findings may correct real defects before stopping on the remaining blocker.
 
+For `evidence-preparation`, report **Evidências**: the executor is running the approved capture command with the missing-evidence request, preserving development and existing images. For `evidence-blocked`, identify the remaining approved states and the capture/fixture support to complete in the project; resuming the same command supplies the saved request before independent validation. Explain the quoted `plan_basis` behind requested coverage. Require a full screen/state/viewport/theme product only when the approved plan explicitly requires it; scope ambiguity needs alignment. This stage generates evidence, without a new development session or permission to change application behavior. The executor makes one supplemental attempt; persistent gaps stop for user direction.
+
 After interruption, wait for user direction before fixing or rerunning. Do not remove state, undo commits or restart independently. Internal attempts and per-phase commits belong exclusively to the script.
 
 **Complete when:** the user knows the result and, on interruption, available diagnostics and next step, without unsolicited further execution.
