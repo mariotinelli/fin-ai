@@ -15,6 +15,8 @@ Receive the DEV child ID and locate exactly one `tasks/dev-<id>-<slug>/task.md` 
 
 Read applicable repository instructions, architecture, ADRs, conventions, automation, related implementation and existing tests. Before describing current state, architecture and risks, apply [technical inspection](references/technical-inspection.md). Discover the aggregate command and its verifiers from actual configuration rather than inferring its contents from its name.
 
+Read published Sequencing and supplier/blocker references as execution context. Numbering is owned by approved `project-slices` publication, not technical planning; preserve it and expose a dependency conflict instead of renumbering tasks. A lower number alone does not clear an unresolved blocker.
+
 For UI work, read the parent's and task's visual references and approved adaptations. Compare the existing UI with the primary design rather than treating the current theme as authority. Missing visual acceptance or a material mismatch in fields/states/navigation returns to requirement/task alignment; preserve unaffected planning while that decision is pending. Do not silently repair approved product documents or substitute the starter layout.
 
 **Complete when:** task, parent requirement, standards and verifiers are understood, and claims supporting decisions have traceable evidence.

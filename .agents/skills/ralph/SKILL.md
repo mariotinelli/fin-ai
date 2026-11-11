@@ -21,6 +21,8 @@ For an existing plan, check the visual source handoff required by `plan-issue`'s
 
 Preserve the separate visual foundation Feature boundary and delivery order. A dependent business task cannot implement missing system-wide visual alignment under its own phase; missing supplier implementation returns to planning/alignment rather than silently enlarging execution scope.
 
+Preserve published Sequencing and dependency evidence. Use the order to orient task selection, while blockers remain startup prerequisites. Ralph execution never allocates or renumbers Redmine work; missing numbering or a dependency conflict returns to the owning workflow rather than changing local task metadata to bypass it.
+
 **Complete when:** one DEV child was identified and its existing plan read or its new plan approved and prepared in Git, or the obstacle was explained and the workflow stopped.
 
 ## 2. Present and execute

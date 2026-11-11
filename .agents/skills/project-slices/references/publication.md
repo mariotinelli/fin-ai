@@ -6,6 +6,8 @@ Build this phase's plan while current decomposition is under review so all effec
 
 ## Confirm fields
 
+For `blocks-v1`, apply [Sequencing by version blocks](sequencing.md): prepare a complete version snapshot, add `sequencing` to the local plan and include its generated preview in the existing decision. Numbering is mandatory for new-policy parents and all child kinds; no field ID or numeric range is inferred from a tracker constant. Complete approved numbering updates before creation and add `--sequencing-snapshot` to each `begin-create` and final `complete`. The helper creates v3 publication state and verifies the parent's anchor and child numbers in readback.
+
 With existing children, first complete [existing-child and QA-only review](existing-children.md). `prepare` rejects nonempty child lists without complete dispositions.
 
 Reread parent with children/relations and consult project, trackers, statuses and priorities. Derive without asking: QA always uses native `Deliverable`; DEV uses `Task` for `Feature` parents and `Bug` for `Bug` parents; initial status is `New`; initial priority is `Normal`. Resolve native catalog IDs by name and stop if absent/ambiguous. Use parent's native `project_id`/`parent_issue_id`; inherit `category_id`/`fixed_version_id` when present. Leave assignee/start/due dates empty. Explicitly send Normal's `priority_id` without override. Write estimate to `estimated_hours`.

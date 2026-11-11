@@ -61,6 +61,8 @@ If technical uncertainty prevents complete vertical slicing, read [exceptional S
 
 ## Propose and review
 
+For new block-policy inputs, read [version block Sequencing](references/sequencing.md) before the publication preview, including Study and revision branches. Include parent/child numbers and any unstarted-issue shifts in the same complete decision. Legacy publication payloads remain unchanged on resume.
+
 Present verifiable outcome, hours basis and startup/completion dependencies in the preview. Record context, calibration sources, assumptions and attributed corrections in `decisions`. Preserve earlier estimates in history and identify human corrections as such. Use local references supplied by user/project without requiring new configuration or distributing their values as universal defaults.
 
 Prepare test conditions after inspection alongside the proposal: read [test conditions and mandatory DOCX](references/test-conditions.md). Include Feature, Bug and QA-only paths, preserving current QA description. Every new publication generates DOCX, includes `test_document` in the preview and completes only after the QA attachment is observed. Review conditions, coverage and slices jointly with the tech lead.

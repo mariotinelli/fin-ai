@@ -102,6 +102,8 @@ def projection(state):
             "reason": review["reason"],
             "previous_state_sha256": hashlib.sha256(previous.encode("utf-8")).hexdigest(),
         }
+    if "sequencing_policy" in state:
+        result["sequencing_policy"] = state["sequencing_policy"]
     retired_relations = [relation for relation in state.get("relations", []) if relation["status"] == "retired"]
     if retired_relations:
         result["retired_relations"] = retired_relations

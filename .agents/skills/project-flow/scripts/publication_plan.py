@@ -71,6 +71,12 @@ def prepare(state, document, path, reviewer, attributes=None, before=None, relat
             raise ValueError("existing issue must not be created again")
         if not isinstance(attributes, dict):
             raise ValueError("creation preview requires proposed attributes")
+        if state.get("sequencing_policy") == "blocks-v1":
+            field_id = state.get("sequencing_field_id")
+            if isinstance(field_id, bool) or not isinstance(field_id, int) or field_id < 1:
+                raise ValueError("resolve Sequencing field before preparing deferred-numbering creation")
+            if any(field.get("id") == field_id for field in attributes.get("custom_fields", [])):
+                raise ValueError("block-policy parents are created without Sequencing; assign it during slicing")
         allowed = {"project_id", "tracker_id", "status_id", "category_id", "fixed_version_id", "custom_fields"}
         if set(attributes) - allowed:
             raise ValueError("creation attributes contain unpreviewed fields")

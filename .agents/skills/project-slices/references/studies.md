@@ -4,6 +4,8 @@ This branch publishes one exceptional DEV child when `vertical-slicing` identifi
 
 ## Prepare and approve
 
+For new block-policy inputs, apply [version block Sequencing](sequencing.md). Add `sequencing` snapshot/config to the Study plan; its one early child position is included in this Study's exact preview and v3 state. The parent remains unnumbered. Add `--sequencing-snapshot` to `begin-create` and `complete`; ordinary slicing later retains the Study's number as part of its block. Existing Study states resume with their historical payloads.
+
 Save `.work/slices-study-plan.json` with source `slices-input-check.json`, sanitized parent/metadata snapshots, native fields and `study` containing `subject`, `question`, `expected_result`, `effort_limit`, `estimate_hours`. Description must be understandable without conversation and remain Portuguese. Run:
 
 ```sh

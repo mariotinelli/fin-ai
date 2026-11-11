@@ -8,6 +8,8 @@ Draft `feature.md` from `templates/feature.md`. Its objective explains actor, ne
 
 When a design applies, reconcile it under `design-inputs.md` and populate `Designs e evidências` with the visual sources, applicable screens/states and approved adaptations. Include numbered visual acceptance criteria in the same acceptance section. A design declared visual-only is an explicit visual requirement, not an unrequested non-functional target or an optional inspiration.
 
+For the separate visual foundation Feature, apply the existing-screen and future-navigation boundaries in `design-inputs.md`. Present the inspected screen inventory as coverage, including existing access/profile/settings, rather than reopening which screens to adapt. Future business pages and navigation are delivered by their own Features; do not manufacture a product question about placeholders versus disabled destinations to verify the foundation. Keep questions for material conflicts that remain after inspection and reuse settled answers.
+
 When late evidence exists, the shared workflow must reconcile its confirmed, contradicted, and reopened decisions before this contract can pass.
 
 **Complete when:** every required Feature section is substantive or explains why it is not applicable, each confirmed functional behavior appears in the document, every criterion is independently observable, explicit exclusions are attributed, and no material in-scope gap, contradiction, deferred question, or source reconciliation remains.

@@ -8,6 +8,8 @@ Follow `intake.md` to inventory, fully extract, and separately normalize every d
 
 For a fresh run, set `creation_timing: after-requirement` and `early_creation_request: null`. Use `docs/harness/.runs/<run-id>/` until an issue ID is durable. If the user explicitly requests registration before the interview, use the early-creation branch below. Existing v2-v4 runs retain their version, phase order and completed operations; use the legacy-resume branch below.
 
+Fresh standalone runs and items of new block-policy scopes also record `sequencing_policy: blocks-v1` and `sequencing_field_id: null` until project metadata resolves the field. Scope items always inherit their scope's original policy, including the absence of a policy in legacy scopes. Under `blocks-v1`, Feature/Bug parents are created without a Sequencing value; the initial catalog order remains readable and definitive numbers belong to slicing. Historical runs without this policy keep their original creation/retry payloads, including any earlier numbering.
+
 After verifying the project for a standalone demand, list every open Redmine version and ask the user which one owns this Feature or Bug. Persist the selected ID, name, open status and attribution in `redmine.version` before `item-ready`. A scope item inherits the scope selection and does not ask again.
 
 If the evidence describes multiple capabilities, recommend `new-scope`, explain the split and resolve that material scope decision. Preserve normalization and orientation when switching paths. A scope with one item continues here without restarting intake.

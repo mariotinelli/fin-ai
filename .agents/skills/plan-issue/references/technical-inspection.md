@@ -16,6 +16,8 @@ For an interface delivery, inspect the declared design and current rendered UI o
 
 System-wide visual adaptation is owned by the separate visual foundation Feature, whose implementation precedes dependent business deliveries. A business task may build its page-specific UI on that baseline; it cannot absorb missing logo/theme/shell alignment as incidental preparation. If the supplier or actual baseline is missing, expose the requirement/dependency gap before executable planning. A supplier marked published or requirement-completed does not demonstrate implementation. Plan the foundation's own tasks against their distinct approved acceptance and preservation criteria.
 
+Ground the foundation's screen inventory in existing routes/pages, including access/profile/settings where present. Apply the established visual language where a dedicated screen mockup is absent and preserve existing behavior. Compare current navigation using real supported destinations; future business screens/routes/navigation stay with their owning Features. Do not enlarge foundation implementation with artificial future pages to satisfy a navigation demonstration.
+
 Identify how development and read-only validation can compare the rendered result with the reference, including environment prerequisites, relevant viewport/state and accessible evidence. Use existing project/browser tools; do not prescribe a new dependency merely to compare appearance. Backend-only phases can defer visual verification to their identified UI consumer phase.
 
 **Complete when:** applicable visual sources, current differences, authorized adaptations and a feasible comparison method are explicit, or the specific missing evidence/product decision blocks readiness.

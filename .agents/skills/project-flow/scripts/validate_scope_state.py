@@ -277,6 +277,10 @@ def validate_v2(state: dict[str, Any], path: Path) -> dict[str, Any]:
         required |= SCOPE_FIELDS
     require_keys(state, required, "state")
     optional = {"legacy_review"} if state["schema_version"] == 3 else set()
+    if "sequencing_policy" in state:
+        optional.add("sequencing_policy")
+        if state["sequencing_policy"] != "blocks-v1":
+            fail("unsupported sequencing policy")
     if state.keys() - required - optional:
         fail("state has unknown keys")
     if "legacy_review" in state:
@@ -551,6 +555,8 @@ def next_eligible_item(state: dict[str, Any]) -> str | None:
 
 
 def validate_transition(previous: dict[str, Any], current: dict[str, Any]) -> None:
+    if previous.get("sequencing_policy") != current.get("sequencing_policy"):
+        fail("resume must preserve the original sequencing policy")
     if previous["schema_version"] == 1 and current["schema_version"] == 2:
         first = previous.get("first_item")
         if first and not any(record.get("catalog_item_id") == first["catalog_item_id"] and record.get("issue_id") == first["issue_id"] for record in current["item_progress"]):

@@ -22,6 +22,8 @@ Keep traceability as compact references to the parent requirement and covered ID
 
 For a UI delivery, include the primary visual source ID, repository-relative normalized path and relevant screen/state locators in `description.visual_references` (a nonempty string array rendered under `Referências`). Explain approved differences in fields, actions or states in delivery/limits, with their decision origin. Visual criteria describe the appearance to preserve and how it can be compared with the reference, including applicable viewport/state boundaries. Shared shell ownership and completion dependencies must be named. A source link alone, generic responsiveness, or reuse of existing components does not express visual acceptance. Backend-only slices inherit no unrelated visual work.
 
+For visual foundation slices, retain the inspected inventory of all existing screens and verify navigation on supported destinations. Screens lacking a dedicated mockup inherit the established visual language with their behavior preserved. Future business pages, routes and navigation belong to their supplier Features; do not introduce placeholder-page deliveries into the foundation's criteria. Explicit approved exclusions remain attributable boundaries.
+
 **Complete when:** every assigned condition is represented, criteria can be checked individually, and relations are understandable outside the preview.
 
 ## Editorial example: authentication

@@ -35,6 +35,8 @@ For an explicitly requested publication alignment of a completed item created by
 
 ## Run the selected path
 
+New scope/requirement runs use `sequencing_policy: blocks-v1`: catalog order is proposed here, while the definitive Sequencing of parents and all child types is allocated during approved slicing. Preserve the original policy of historical runs.
+
 For a declared design, the design contract requires comparing the current visual foundation before the initial catalog proposal. An absent/divergent foundation always becomes a separate first visual Feature; it is never folded into the first business Feature. Apply the contract's existing/aligned/standalone boundaries and ordinary approval flow.
 
 Now read [the source intake contract](references/intake.md) and [the artifact contract](references/artifact-contract.md) before the first local write. Follow its storage and retention policy for every generated file; prepare new directories with `manage_artifacts.py`. For `new-scope`, read [the new-scope workflow](references/new-scope.md); for `new-issue`, read [the shared item workflow](references/new-issue.md). Both paths route the selected item through that same shared Feature or Bug cycle. Read [the design contract](references/design-inputs.md) only when an input is presented as a design or design evidence. Read [the Redmine projection contract](references/redmine-publication.md) before preparing either remote write.

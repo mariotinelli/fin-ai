@@ -1,5 +1,7 @@
 # Sequential scope slicing
 
+For block-policy scopes, allocate definitive Sequencing in the approved catalog order as each item's complete slicing is published. Parents merely published by `project-flow` are still unnumbered. A Study keeps its item incomplete; later items cannot consume its pending block. Read [version block Sequencing](sequencing.md) for snapshots, serialized allocation and collision handling.
+
 Use when the tech lead requests a scope or provides no Feature/Bug. Coordinate multiple main-workflow executions; each item keeps its own inspection, complete-preview approval, publication and readback.
 
 ## Select

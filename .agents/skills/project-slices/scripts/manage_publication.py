@@ -18,6 +18,7 @@ from typing import Any
 sys.dont_write_bytecode = True
 
 import publication_attachments as attachment_contract
+import sequencing
 from test_conditions import conditions_markdown, document_requested
 
 from manage_slices import (
@@ -174,7 +175,7 @@ def validate_qa(qa: Any, feature_title: str, dev_keys: set[str], *, qa_only: boo
 
 def validate_plan(plan: dict[str, Any], slices_path: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     required = {"source", "parent_snapshot", "metadata_snapshot", "native_fields", "qa"}
-    if not isinstance(plan, dict) or not required.issubset(plan) or not set(plan).issubset(required | {"existing_children_review"}):
+    if not isinstance(plan, dict) or not required.issubset(plan) or not set(plan).issubset(required | {"existing_children_review", "sequencing"}):
         fail("publication plan has missing or unknown fields")
     source = exact(plan["source"], {"slices_state_path", "slices_state_sha256"}, "source")
     if Path(source["slices_state_path"]).absolute() != slices_path.absolute():
@@ -183,6 +184,8 @@ def validate_plan(plan: dict[str, Any], slices_path: Path) -> tuple[dict[str, An
         fail("plan source hash differs from the approved slicing state")
     _, revision, slicing_approval = approved_source(slices_path)
     feature_dir = slices_path.parent.parent
+    if sequencing.bind_policy(feature_dir) and "sequencing" not in plan:
+        fail("new-policy publication requires a Sequencing block plan")
     parent_snapshot_path = feature_evidence_path(feature_dir, plan["parent_snapshot"], "parent_snapshot")
     parent = issue_object(load_json(parent_snapshot_path))
     feature = revision["proposal"]["feature"]
@@ -511,6 +514,8 @@ def publication_digest(revision: dict[str, Any]) -> str:
         value["test_document"] = revision["test_document"]
     if "conditions_delivery" in revision:
         value["conditions_delivery"] = revision["conditions_delivery"]
+    if "sequencing" in revision:
+        value["sequencing"] = revision["sequencing"]
     return digest(value)
 
 
@@ -604,7 +609,7 @@ def canonical_task_path(feature_dir: Path, kind: str, remote_id: int, title: str
     return task_path
 
 
-def task_markdown(issue: dict[str, Any], kind: str, all_relations: list[dict[str, Any]]) -> str:
+def task_markdown(issue: dict[str, Any], kind: str, all_relations: list[dict[str, Any]], sequence: int | None = None) -> str:
     issue_id = positive_int(issue.get("id"), "canonical child.id")
     title = require_text(issue.get("subject"), "canonical child.subject")
     tracker = issue.get("tracker")
@@ -637,7 +642,7 @@ def task_markdown(issue: dict[str, Any], kind: str, all_relations: list[dict[str
         f"- Tipo: `{kind.upper()}`",
         f"- Tracker: {tracker_name} (`{tracker_id}`)",
         f"- Item pai: `#{parent_id}`",
-        f"- Estimativa: `{estimate:g}h`", "",
+        f"- Estimativa: `{estimate:g}h`", *([f"- Sequencing: `{sequence}`"] if sequence is not None else []), "",
         "## Descrição", "", description, "",
         "## Relações", "", *relation_lines, "",
     ])
@@ -728,6 +733,27 @@ def command_prepare(arguments: argparse.Namespace) -> None:
         child["attributes"] = child_attributes(child, native, parent)
         child["payload_sha256"] = digest({"attributes": child["attributes"]})
     review = review_existing_children(plan, feature_dir, parent, children, native)
+    sequence_plan = None
+    if "sequencing" in plan:
+        fixed = {child["key"]: child["remote_id"] for child in children if child.get("source") == "adopted"}
+        study_keys = []
+        for study in revision["proposal"].get("study_evidence", []):
+            from manage_study import validate_state as validate_study
+            study_state = load_json(Path(study["study_state_path"]))
+            validate_study(study_state)
+            if study_state["schema_version"] != 3 or study_state["operation"]["remote_id"] != study["study_remote_id"]:
+                fail("numbered Study evidence must come from its verified new-policy publication")
+            key = f"study-{study['study_remote_id']}"
+            fixed[key] = study["study_remote_id"]
+            study_keys.append(key)
+        sequence_plan = sequencing.prepare_config(feature_dir, plan["sequencing"], parent, study_keys + [c["key"] for c in children], fixed=fixed, initial_status_id=native["initial_status_id"])
+        sequence_evidence = load_json(contained_feature_path(feature_dir, plan["sequencing"]["snapshot"], "sequencing snapshot"))
+        edges = [(f"dev-{source}", f"dev-{item['number']}") for item in revision["proposal"]["slices"] for source in item["blocked_by"]]
+        edges += [(blocker["source_slice_issue_id"] or blocker["feature_issue_id"], f"dev-{item['number']}") for item in revision["proposal"]["slices"] for blocker in item.get("external_blockers", [])]
+        sequencing.check_dependencies(sequence_plan, edges, sequence_evidence)
+        for child in children:
+            child["attributes"]["custom_fields"] = sequencing.attributes(sequence_plan, child["key"])
+            child["payload_sha256"] = digest({"attributes": child["attributes"]})
     for child in children:
         child.pop("base_description", None)
     dev_relations = [
@@ -754,6 +780,8 @@ def command_prepare(arguments: argparse.Namespace) -> None:
     }
     if review is not None:
         revision_record["existing_children_review"] = review
+    if sequence_plan is not None:
+        revision_record["sequencing"] = sequence_plan
     revision_record["conditions_delivery"] = conditions_delivery(slices_path, revision)
     if document_requested(revision["proposal"]):
         revision_record["test_document"] = attachment_contract.document_for(slices_path, revision, slicing_approval)
@@ -762,7 +790,7 @@ def command_prepare(arguments: argparse.Namespace) -> None:
     if state_path.exists():
         state = load_json(state_path)
         validate_publication_state(state)
-        if state["operations"]:
+        if state["operations"] or state.get("sequencing_operations"):
             fail("a publication with remote progress cannot be revised")
         if state["schema_version"] == 1:
             state["schema_version"] = 2
@@ -780,13 +808,17 @@ def command_prepare(arguments: argparse.Namespace) -> None:
             "status_history": [{"status": "prepared", "recorded_at": recorded_at}],
             "revisions": [revision_record], "approvals": [], "operations": {}, "readback": None, "artifacts": None, "completed_at": None,
         }
+    if sequence_plan is not None:
+        state["schema_version"] = 3
+        state.setdefault("sequencing_operations", {})
+        state.setdefault("sequencing_history", [])
     validate_publication_state(state, check_files=False)
     delivery = revision_record["conditions_delivery"]
     delivery_path = Path(delivery["path"])
     if delivery_path.exists() and file_digest(delivery_path) != delivery["sha256"]:
         fail("existing conditions Markdown differs; preserve it and prepare a new slicing revision")
     attachment_preview = attachment_contract.preview(revision_record) if "test_document" in revision_record else "\nEntrega em Markdown; sem anexo DOCX.\n"
-    outputs = {preview_path: (render_preview(revision, children, relations, native, metadata, review) + "\n" + delivery["content"] + attachment_preview).encode("utf-8"),
+    outputs = {preview_path: (render_preview(revision, children, relations, native, metadata, review) + "\n" + delivery["content"] + attachment_preview + (sequencing.preview(sequence_plan) if sequence_plan else "")).encode("utf-8"),
                delivery_path: delivery["content"].encode("utf-8")}
     outputs[state_path] = canonical_bytes(state) + b"\n"
     atomic_batch_write(outputs)
@@ -796,10 +828,12 @@ def command_prepare(arguments: argparse.Namespace) -> None:
 def validate_publication_state(state: dict[str, Any], *, check_files: bool = True) -> None:
     version = state.get("schema_version")
     fields = {"schema_version", "status", "status_history", "revisions", "approvals", "operations", "readback", "completed_at"}
-    if version == 2:
+    if version in {2, 3}:
         fields.add("artifacts")
+    if version == 3:
+        fields |= {"sequencing_operations", "sequencing_history"}
     exact(state, fields, "publication state")
-    if version not in {1, 2} or state["status"] not in {"prepared", "approved", "publishing", "completed"}:
+    if version not in {1, 2, 3} or state["status"] not in {"prepared", "approved", "publishing", "completed"}:
         fail("unsupported publication state")
     if not isinstance(state["revisions"], list) or not state["revisions"]:
         fail("publication requires revision history")
@@ -813,7 +847,10 @@ def validate_publication_state(state: dict[str, Any], *, check_files: bool = Tru
         optional |= ({"test_document"} if "test_document" in revision else set())
         optional |= ({"conditions_delivery"} if "conditions_delivery" in revision else set())
         optional |= ({"semantic_baseline"} if "semantic_baseline" in revision else set())
+        optional |= ({"sequencing"} if "sequencing" in revision else set())
         exact(revision, revision_fields | optional, f"publication revision {number}")
+        if "sequencing" in revision:
+            sequencing.validate(revision["sequencing"])
         if "conditions_delivery" in revision:
             delivery = exact(revision["conditions_delivery"], {"format", "content", "path", "sha256"}, "conditions delivery")
             expected_path = Path(revision["slices_state_path"]).parent.parent / "slices" / f"condicoes-teste-r{revision['slicing_revision']:03d}.md"
@@ -841,7 +878,7 @@ def validate_publication_state(state: dict[str, Any], *, check_files: bool = Tru
         for child in revision["children"]:
             if version == 1 and "description_path" not in child:
                 fail("legacy publication child requires its description artifact")
-            if version == 2 and revision is state["revisions"][-1] and "description_path" in child:
+            if version >= 2 and revision is state["revisions"][-1] and "description_path" in child:
                 fail("new publication revisions cannot persist positional description artifacts")
             source = child.get("source", "create")
             if source not in {"create", "adopted"}:
@@ -852,6 +889,8 @@ def validate_publication_state(state: dict[str, Any], *, check_files: bool = Tru
                 fail("new child cannot carry adoption evidence")
             if child["payload_sha256"] != digest({"attributes": child["attributes"]}):
                 fail("child payload hash differs")
+            if "sequencing" in revision and child["attributes"].get("custom_fields") != sequencing.attributes(revision["sequencing"], child["key"]):
+                fail("child Sequencing differs from the approved block")
             expected_tracker = revision["native_fields"]["qa_tracker_id"] if child["kind"] == "qa" else revision["native_fields"]["dev_tracker_id"]
             if child["attributes"].get("tracker_id") != expected_tracker:
                 fail("child tracker differs from the derived DEV/QA contract")
@@ -915,7 +954,7 @@ def validate_publication_state(state: dict[str, Any], *, check_files: bool = Tru
         fail("remote publication requires final approval of the current content")
     if state["status"] == "completed" and (state["readback"] is None or state["completed_at"] is None):
         fail("completed publication requires readback evidence")
-    if version == 2:
+    if version >= 2:
         artifacts = state["artifacts"]
         if state["status"] == "completed" and (not isinstance(artifacts, list) or len(artifacts) != len(current["children"])):
             fail("completed publication requires one canonical artifact per managed child")
@@ -943,6 +982,11 @@ def validate_publication_state(state: dict[str, Any], *, check_files: bool = Tru
             recorded_artifacts = {(artifact["kind"], artifact["remote_id"]) for artifact in artifacts}
             if recorded_artifacts != expected_artifacts or len({artifact["path"] for artifact in artifacts}) != len(artifacts):
                 fail("canonical task artifacts differ from the managed children")
+    if version == 3:
+        if "sequencing" not in current:
+            fail("new publication state requires a Sequencing plan")
+        sequencing.validate_operations(state)
+        sequencing.validate_history(state, check_files)
     attachment_contract.validate_operations(state, check_files)
     reject_secrets(state, "publication state")
 
@@ -1002,6 +1046,7 @@ def command_begin_create(arguments: argparse.Namespace) -> None:
         fail("adopted child must not be sent to create")
     value = operation(state, f"create:{arguments.key}", "create")
     check_retry(value)
+    sequencing.before_create(path, state, load_json(current_evidence_path(state["revisions"][-1], arguments.sequencing_snapshot, "sequencing snapshot")) if getattr(arguments, "sequencing_snapshot", None) else None)
     attempted_at = require_timestamp(arguments.at, "attempted_at")
     attempt_id = len(value["attempts"]) + 1
     value["attempts"].append({
@@ -1043,6 +1088,9 @@ def command_finish_create(arguments: argparse.Namespace) -> None:
 
 def compare_issue(child: dict[str, Any], issue: dict[str, Any], baseline: dict[str, Any], native: dict[str, Any]) -> None:
     expected = child["attributes"]
+    for field in expected.get("custom_fields", []):
+        if sequencing.number(issue, field["id"]) != int(field["value"]):
+            fail("child Sequencing differs from approved content")
     comparisons = {
         "project": expected["project_id"], "parent": expected["parent_issue_id"], "tracker": expected["tracker_id"],
         "status": expected["status_id"], "priority": expected.get("priority_id", native["default_priority_id"]),
@@ -1293,6 +1341,12 @@ def command_complete(arguments: argparse.Namespace) -> None:
             fail("readback is missing a required DEV blocks QA relation")
     attachment_contract.verify_complete(state, snapshot)
     completed_at = require_timestamp(arguments.at, "completed_at")
+    sequence_plan = current.get("sequencing")
+    if sequence_plan is not None:
+        if not getattr(arguments, "sequencing_snapshot", None):
+            fail("completion requires fresh --sequencing-snapshot")
+        sequence_evidence = load_json(current_evidence_path(current, arguments.sequencing_snapshot, "sequencing readback"))
+        sequencing.check_live(sequence_plan, sequence_evidence, sequencing.bindings(state), final=True)
     feature_dir = Path(current["slices_state_path"]).parent.parent
     artifact_files: dict[Path, bytes] = {}
     artifacts: list[dict[str, Any]] = []
@@ -1305,7 +1359,7 @@ def command_complete(arguments: argparse.Namespace) -> None:
         remote_id = child_remote_id(state, child["key"])
         issue = by_id[remote_id]
         task_path = canonical_task_path(feature_dir, child["kind"], remote_id, issue["subject"])
-        content = task_markdown(issue, child["kind"], all_relations).encode("utf-8")
+        content = task_markdown(issue, child["kind"], all_relations, sequence_plan["assignments"][child["key"]] if sequence_plan else None).encode("utf-8")
         if task_path.is_file() and task_path.read_bytes() != content:
             fail(f"canonical task artifact conflicts with existing content: {task_path}")
         artifact_files[task_path] = content
@@ -1314,14 +1368,18 @@ def command_complete(arguments: argparse.Namespace) -> None:
             "sha256": hashlib.sha256(content).hexdigest(),
         })
     state["readback"] = {"path": str(snapshot_path.absolute()), "sha256": file_digest(snapshot_path), "observed_at": completed_at}
-    if state["schema_version"] == 2:
+    if state["schema_version"] >= 2:
         state["artifacts"] = artifacts
     state["completed_at"] = completed_at
     state["status"] = "completed"
     state["status_history"].append({"status": "completed", "recorded_at": completed_at})
     validate_publication_state(state, check_files=False)
     artifact_files[path] = canonical_bytes(state) + b"\n"
+    if sequence_plan is not None:
+        artifact_files.update(sequencing.renumbered_files(sequence_plan, sequence_evidence, completed_at))
     atomic_batch_write(artifact_files)
+    if sequence_plan is not None:
+        sequencing.lock(path, sequence_plan, release=True)
     print(json.dumps({"status": "completed", "child_ids": sorted(by_id)}))
 
 
@@ -1372,6 +1430,7 @@ def build_parser() -> argparse.ArgumentParser:
     approve = commands.add_parser("approve")
     approve.add_argument("state"); approve.add_argument("--actor", required=True); approve.add_argument("--at", required=True); approve.set_defaults(run=command_approve)
     create = commands.add_parser("begin-create")
+    create.add_argument("--sequencing-snapshot")
     create.add_argument("state"); create.add_argument("--key", required=True); create.add_argument("--at", required=True); create.set_defaults(run=command_begin_create)
     finish_create = commands.add_parser("finish-create")
     finish_create.add_argument("state"); finish_create.add_argument("--key", required=True); finish_create.add_argument("--attempt", type=int, required=True)
@@ -1390,9 +1449,11 @@ def build_parser() -> argparse.ArgumentParser:
     observe_relation.add_argument("state"); observe_relation.add_argument("--key", required=True); observe_relation.add_argument("--outcome", choices=("matched", "absent"), required=True)
     observe_relation.add_argument("--snapshot", required=True); observe_relation.add_argument("--at", required=True); observe_relation.set_defaults(run=command_observe_relation)
     complete = commands.add_parser("complete")
+    complete.add_argument("--sequencing-snapshot")
     complete.add_argument("state"); complete.add_argument("--readback", required=True); complete.add_argument("--at", required=True); complete.set_defaults(run=command_complete)
     validate = commands.add_parser("validate")
     validate.add_argument("state"); validate.add_argument("--previous"); validate.set_defaults(run=command_validate)
+    sequencing.register_commands(commands)
     return parser
 
 

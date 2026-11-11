@@ -401,6 +401,13 @@ def validate(path: Path, *, historical: bool = False) -> dict[str, Any]:
     reconciliation_keys = {"remote_observations", "requirement_divergences"}
     delivery_keys = {"title_convention", "delivery", "scope_item"}
     allow = required | reconciliation_keys | {"classification", "similarity"}
+    if "sequencing_policy" in state:
+        allow |= {"sequencing_policy", "sequencing_field_id"}
+        if state["schema_version"] != 5 or state["sequencing_policy"] != "blocks-v1":
+            fail("unsupported sequencing policy")
+        field_id = state.get("sequencing_field_id")
+        if field_id is not None and (isinstance(field_id, bool) or not isinstance(field_id, int) or field_id < 1):
+            fail("sequencing_field_id must be a positive integer or null")
     if state.get("schema_version") in {4, 5}:
         allow |= delivery_keys
         require_keys(state, delivery_keys, "schema v4 state")
@@ -465,6 +472,8 @@ def validate(path: Path, *, historical: bool = False) -> dict[str, Any]:
             if scope_path.is_absolute():
                 fail("scope_item.state_path must be relative")
             scope = validate_scope_file(checked_path(artifact_root(path) / scope_path))
+            if state.get("sequencing_policy") != scope.get("sequencing_policy"):
+                fail("scope item must inherit the catalog sequencing policy")
             known_catalog = any(a["kind"] == "complete-catalog-and-order" and a["subject_sha256"] == link["catalog_sha256"] for a in scope["approvals"])
             if scope["schema_version"] != 3 or not known_catalog:
                 fail("scope item must inherit the confirmed catalog projection")
@@ -854,6 +863,10 @@ def validate_operation_transition(old: dict[str, Any], new: dict[str, Any], name
 
 
 def validate_transition(previous: dict[str, Any], current: dict[str, Any]) -> None:
+    if previous.get("sequencing_policy") != current.get("sequencing_policy"):
+        fail("resume must preserve the original sequencing policy")
+    if previous.get("sequencing_field_id") is not None and previous.get("sequencing_field_id") != current.get("sequencing_field_id"):
+        fail("resume must preserve the resolved Sequencing field")
     for key in ("schema_version", "run_id", "internal_identity", "mode", "item_type"):
         if current[key] != previous[key]:
             fail(f"transition changed immutable field: {key}")

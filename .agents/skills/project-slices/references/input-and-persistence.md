@@ -18,6 +18,8 @@ Preserve canonical `project-flow` layout: `feature.md` or `bug.md` remains the p
 - `slices/change-review.md` for classification, localized impact and still-valid items;
 - `slices/revision-application.md` for concrete mutation/preservation preview;
 - `.flow/slices-publication.json` for final review, approval, IDs, attempts, observations and completion;
+- `.work/slices-sequencing-snapshot.json` for fresh complete project/version occupancy evidence; v3 publication/Study states embed the approved block and numbering operations under [Sequencing](sequencing.md);
+- `.flow/sequencing-history/<sha256>.json` for immutable prior states supporting approved numbering-only changes; canonical artifacts change only after verified readback;
 - `.flow/slices-condition-revisions.json`, `.flow/condition-evidence/` and `slices/conditions-revision-rNNN.md` for immutable history/previews of [localized condition revisions](condition-revisions.md), without rewriting original publication;
 - `.flow/slices-reconciliation.json` and `slices/reconciliation.md` for exact preview/decision on local materialization of historical publication;
 - `.flow/slices-dependencies.json` for external-dependency revisions, approvals, operations and readbacks;

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import sequencing
 import json
 from pathlib import Path
 from typing import Any
@@ -83,14 +84,17 @@ def evidence_path(feature_dir: Path, value: Any, label: str) -> Path:
 
 
 def study_digest(revision: dict[str, Any]) -> str:
-    return digest({
+    value = {
         "input_check_path": revision["input_check_path"],
         "input_check_sha256": revision["input_check_sha256"],
         "parent_baseline": revision["parent_baseline"],
         "metadata_baseline": revision["metadata_baseline"],
         "native_fields": revision["native_fields"],
         "study": revision["study"],
-    })
+    }
+    if "sequencing" in revision:
+        value["sequencing"] = revision["sequencing"]
+    return digest(value)
 
 
 def result_digest(result: dict[str, Any]) -> str:
@@ -102,7 +106,11 @@ def validate_revision(revision: dict[str, Any], number: int, schema_version: int
         "number", "recorded_by", "recorded_at", "reason", "input_check_path",
         "input_check_sha256", "parent_baseline", "metadata_baseline", "native_fields",
         "study", "publication_sha256",
-    }, f"study revision {number}")
+    } | ({"sequencing"} if "sequencing" in revision else set()), f"study revision {number}")
+    if "sequencing" in revision:
+        sequencing.validate(revision["sequencing"])
+        if revision["study"]["attributes"].get("custom_fields") != sequencing.attributes(revision["sequencing"], "study"):
+            fail("Study Sequencing differs from its block")
     if revision["number"] != number:
         fail("Study revision numbers must be contiguous")
     require_text(revision["recorded_by"], "study revision.recorded_by")
@@ -171,19 +179,25 @@ def validate_state(state: dict[str, Any], *, check_files: bool = True, previous:
         "schema_version", "status", "status_history", "revisions", "approvals",
         "operation", "result_history", "resumptions",
     }
-    if schema_version == 2:
+    if schema_version >= 2:
         fields.update({"readback", "artifact"})
+    if schema_version == 3:
+        fields.add("sequencing_operations")
     exact(state, fields, "Study state")
     statuses = {"prepared", "approved", "publishing", "awaiting-result", "result-recorded", "resumed"}
-    if schema_version == 2:
+    if schema_version >= 2:
         statuses.add("awaiting-confirmation")
-    if schema_version not in {1, 2} or state["status"] not in statuses:
+    if schema_version not in {1, 2, 3} or state["status"] not in statuses:
         fail("unsupported Study state")
     if not isinstance(state["revisions"], list) or not state["revisions"]:
         fail("Study state requires revision history")
     for number, revision in enumerate(state["revisions"], start=1):
         validate_revision(revision, number, schema_version, check_files=check_files and number == len(state["revisions"]))
     current = state["revisions"][-1]
+    if schema_version == 3:
+        if "sequencing" not in current:
+            fail("new Study publication requires Sequencing")
+        sequencing.validate_operations(state)
     if not isinstance(state["status_history"], list) or not state["status_history"]:
         fail("Study status history is required")
     for entry in state["status_history"]:
@@ -215,7 +229,7 @@ def validate_state(state: dict[str, Any], *, check_files: bool = True, previous:
     if state["status"] in {"awaiting-confirmation", "awaiting-result", "result-recorded", "resumed"}:
         if state["operation"] is None or state["operation"]["status"] != "completed":
             fail("Study result flow requires a reconciled remote Study ID")
-    if schema_version == 2:
+    if schema_version >= 2:
         readback = state["readback"]
         artifact = state["artifact"]
         if state["status"] in {"awaiting-result", "result-recorded", "resumed"}:
@@ -347,7 +361,9 @@ def command_prepare(arguments: argparse.Namespace) -> None:
     if preview_path.absolute() != (feature_dir / "slices" / "study.md").absolute():
         fail("Study preview must use slices/study.md")
     plan = load_json(Path(arguments.plan))
-    exact(plan, {"source", "parent_snapshot", "metadata_snapshot", "native_fields", "study"}, "Study plan")
+    exact(plan, {"source", "parent_snapshot", "metadata_snapshot", "native_fields", "study"} | ({"sequencing"} if "sequencing" in plan else set()), "Study plan")
+    if sequencing.bind_policy(feature_dir) and "sequencing" not in plan:
+        fail("new-policy Study requires Sequencing")
     source = exact(plan["source"], {"input_check_path", "input_check_sha256"}, "Study source")
     if Path(source["input_check_path"]).absolute() != input_path.absolute() or source["input_check_sha256"] != file_digest(input_path):
         fail("Study plan source differs from the checked parent")
@@ -402,6 +418,10 @@ def command_prepare(arguments: argparse.Namespace) -> None:
         "description": description,
     }
     study["attributes"] = child_attributes(study, native, parent)
+    sequence_plan = None
+    if "sequencing" in plan:
+        sequence_plan = sequencing.prepare_config(feature_dir, plan["sequencing"], parent, ["study"], study=True, initial_status_id=native["initial_status_id"])
+        study["attributes"]["custom_fields"] = sequencing.attributes(sequence_plan, "study")
     study["payload_sha256"] = digest({"attributes": study["attributes"]})
     recorded_at = require_timestamp(arguments.at, "recorded_at")
     revision = {
@@ -416,6 +436,8 @@ def command_prepare(arguments: argparse.Namespace) -> None:
         "metadata_baseline": {"path": str(metadata_path.absolute()), "sha256": file_digest(metadata_path)},
         "native_fields": copy.deepcopy(native), "study": study,
     }
+    if sequence_plan is not None:
+        revision["sequencing"] = sequence_plan
     revision["publication_sha256"] = study_digest(revision)
     if state_path.exists():
         state = load_json(state_path)
@@ -440,6 +462,9 @@ def command_prepare(arguments: argparse.Namespace) -> None:
             "revisions": [revision], "approvals": [], "operation": None,
             "result_history": [], "resumptions": [], "readback": None, "artifact": None,
         }
+    if sequence_plan is not None:
+        state["schema_version"] = 3
+        state.setdefault("sequencing_operations", {})
     validate_state(state, check_files=False)
     preview = "\n".join([
         f"# Previa excepcional de Study para {feature_title}", "",
@@ -447,7 +472,7 @@ def command_prepare(arguments: argparse.Namespace) -> None:
         f"Hash da previa: `{revision['publication_sha256']}`", "", description,
     ])
     atomic_batch_write({
-        preview_path: preview.encode("utf-8"),
+        preview_path: (preview + (sequencing.preview(sequence_plan) if sequence_plan else "")).encode("utf-8"),
         state_path: canonical_bytes(state) + b"\n",
     })
     print(json.dumps({"status": "prepared", "revision": revision["number"], "publication_sha256": revision["publication_sha256"]}))
@@ -488,6 +513,7 @@ def command_begin_create(arguments: argparse.Namespace) -> None:
     if operation["attempts"] and operation["attempts"][-1]["outcome"] in {"in-flight", "unknown"}:
         fail("uncertain Study create requires reconciliation before retry")
     current = state["revisions"][-1]
+    sequencing.before_create(path, state, load_json(evidence_path(path.parent.parent, arguments.sequencing_snapshot, "sequencing snapshot")) if getattr(arguments, "sequencing_snapshot", None) else None)
     at = require_timestamp(arguments.at, "attempted_at")
     attempt_id = len(operation["attempts"]) + 1
     operation["attempts"].append({"id": attempt_id, "attempted_at": at, "payload_sha256": current["study"]["payload_sha256"], "outcome": "in-flight", "finished_at": None})
@@ -517,7 +543,7 @@ def command_finish_create(arguments: argparse.Namespace) -> None:
     if outcome == "completed":
         operation["remote_id"] = positive_int(arguments.issue_id, "issue_id")
         operation["status"] = "completed"
-        next_status = "awaiting-confirmation" if state["schema_version"] == 2 else "awaiting-result"
+        next_status = "awaiting-confirmation" if state["schema_version"] >= 2 else "awaiting-result"
         state["status"] = next_status
         state["status_history"].append({"status": next_status, "recorded_at": attempt["finished_at"]})
     elif arguments.issue_id is not None:
@@ -529,6 +555,9 @@ def command_finish_create(arguments: argparse.Namespace) -> None:
 
 def compare_issue(study: dict[str, Any], issue: dict[str, Any], default_priority_id: int) -> None:
     attributes = study["attributes"]
+    for field in attributes.get("custom_fields", []):
+        if sequencing.number(issue, field["id"]) != int(field["value"]):
+            fail("Study Sequencing differs from approved content")
     comparisons = {
         "project": attributes["project_id"], "parent": attributes["parent_issue_id"],
         "tracker": attributes["tracker_id"], "status": attributes["status_id"],
@@ -579,7 +608,7 @@ def command_observe_create(arguments: argparse.Namespace) -> None:
         remote_id = positive_int(matches[0].get("id"), "reconciled Study id")
         operation["status"] = "completed"
         operation["remote_id"] = remote_id
-        next_status = "awaiting-confirmation" if state["schema_version"] == 2 else "awaiting-result"
+        next_status = "awaiting-confirmation" if state["schema_version"] >= 2 else "awaiting-result"
         state["status"] = next_status
         state["status_history"].append({"status": next_status, "recorded_at": require_timestamp(arguments.at, "observed_at")})
     elif outcome == "absent":
@@ -598,7 +627,7 @@ def command_complete(arguments: argparse.Namespace) -> None:
     path = Path(arguments.state)
     state = load_json(path)
     validate_state(state)
-    if state["schema_version"] != 2 or state["status"] != "awaiting-confirmation":
+    if state["schema_version"] < 2 or state["status"] != "awaiting-confirmation":
         fail("Study completion requires a reconciled remote ID awaiting full readback")
     current = state["revisions"][-1]
     feature_dir = path.parent.parent
@@ -621,8 +650,13 @@ def command_complete(arguments: argparse.Namespace) -> None:
     if not isinstance(relations, list):
         fail("Study readback requires complete relations")
     completed_at = require_timestamp(arguments.at, "observed_at")
+    sequence_plan = current.get("sequencing")
+    if sequence_plan is not None:
+        if not getattr(arguments, "sequencing_snapshot", None):
+            fail("Study completion requires fresh --sequencing-snapshot")
+        sequencing.check_live(sequence_plan, load_json(evidence_path(feature_dir, arguments.sequencing_snapshot, "sequencing readback")), sequencing.bindings(state), final=True)
     task_path = canonical_task_path(feature_dir, "study", remote_id, require_text(issue.get("subject"), "Study subject"))
-    content = task_markdown(issue, "study", relations).encode("utf-8")
+    content = task_markdown(issue, "study", relations, sequence_plan["assignments"]["study"] if sequence_plan else None).encode("utf-8")
     if task_path.is_file() and task_path.read_bytes() != content:
         fail(f"canonical Study artifact conflicts with existing content: {task_path}")
     state["readback"] = {"path": str(snapshot_path.absolute()), "sha256": file_digest(snapshot_path), "observed_at": completed_at}
@@ -634,6 +668,8 @@ def command_complete(arguments: argparse.Namespace) -> None:
     state["status_history"].append({"status": "awaiting-result", "recorded_at": completed_at})
     validate_state(state, check_files=False)
     atomic_batch_write({task_path: content, path: canonical_bytes(state) + b"\n"})
+    if sequence_plan is not None:
+        sequencing.lock(path, sequence_plan, release=True)
     print(json.dumps({"status": "awaiting-result", "study_remote_id": remote_id, "artifact": str(task_path.absolute())}))
 
 
@@ -763,12 +799,14 @@ def build_parser() -> argparse.ArgumentParser:
     approve = commands.add_parser("approve")
     approve.add_argument("state"); approve.add_argument("--actor", required=True); approve.add_argument("--at", required=True); approve.set_defaults(run=command_approve)
     begin = commands.add_parser("begin-create")
+    begin.add_argument("--sequencing-snapshot")
     begin.add_argument("state"); begin.add_argument("--at", required=True); begin.set_defaults(run=command_begin_create)
     finish = commands.add_parser("finish-create")
     finish.add_argument("state"); finish.add_argument("--attempt", type=int, required=True); finish.add_argument("--outcome", required=True); finish.add_argument("--issue-id", type=int); finish.add_argument("--at", required=True); finish.set_defaults(run=command_finish_create)
     observe = commands.add_parser("observe-create")
     observe.add_argument("state"); observe.add_argument("--outcome", required=True); observe.add_argument("--snapshot", required=True); observe.add_argument("--at", required=True); observe.set_defaults(run=command_observe_create)
     complete = commands.add_parser("complete")
+    complete.add_argument("--sequencing-snapshot")
     complete.add_argument("state"); complete.add_argument("--readback", required=True); complete.add_argument("--at", required=True); complete.set_defaults(run=command_complete)
     result = commands.add_parser("record-result")
     result.add_argument("state"); result.add_argument("--result", required=True); result.add_argument("--actor", required=True); result.add_argument("--at", required=True); result.set_defaults(run=command_record_result)
@@ -776,6 +814,7 @@ def build_parser() -> argparse.ArgumentParser:
     resume.add_argument("state"); resume.add_argument("proposal"); resume.add_argument("--slices-state", required=True); resume.add_argument("--input-check", required=True); resume.add_argument("--actor", required=True); resume.add_argument("--at", required=True); resume.add_argument("--reason", required=True); resume.set_defaults(run=command_resume)
     validate = commands.add_parser("validate")
     validate.add_argument("state"); validate.add_argument("--previous"); validate.set_defaults(run=command_validate)
+    sequencing.register_commands(commands)
     return parser
 
 
