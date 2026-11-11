@@ -13,6 +13,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 from pathlib import Path, PurePosixPath
@@ -67,12 +68,12 @@ def baseline_command(text: str) -> tuple[str, str]:
     return command.strip(), language or "bash"
 
 
-def rendered_command(phase: str) -> tuple[str, str] | None:
-    sections = list(re.finditer(r"^### Verificação renderizada[ \t]*\r?$", phase, re.MULTILINE))
+def rendered_command(phase: str, heading: str = "Verificação renderizada") -> tuple[str, str] | None:
+    sections = list(re.finditer(r"^### " + re.escape(heading) + r"[ \t]*\r?$", phase, re.MULTILINE))
     if not sections:
         return None
     if len(sections) != 1:
-        fail("phase requires at most one Verificação renderizada section")
+        fail(f"phase requires at most one {heading} section")
     body = re.split(r"^#{1,3} ", phase[sections[0].end():], maxsplit=1, flags=re.MULTILINE)[0].strip()
     if re.fullmatch(r"Não se aplica: [^\r\n]+", body):
         return None
@@ -96,6 +97,7 @@ def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
             fail(f"Fase {number} must not be empty")
         phases.append((number, match.group(2).strip(), body))
         rendered_command(body)
+        rendered_command(body, "Preflight da validação")
     numbers = [phase[0] for phase in phases]
     if numbers != sorted(set(numbers)):
         fail("phase numbers must be unique and increasing")
@@ -233,6 +235,56 @@ def communicate(process: subprocess.Popen[Any], timeout: float) -> tuple[str, st
         ACTIVE_PROCESS = None
 
 
+def stream_agent(process: subprocess.Popen[Any], timeout: float, stdout_path: Path, stderr_path: Path, phase: int, mode: str) -> tuple[str, str, int]:
+    """Drain both pipes concurrently; keep sanitized diagnostics even on interruption."""
+    global ACTIVE_PROCESS
+    ACTIVE_PROCESS = process
+    outputs: list[list[str]] = [[], []]
+    failures: list[Exception] = []
+
+    def drain(pipe: Any, path: Path, output: list[str]) -> None:
+        try:
+            with path.open("w", encoding="utf-8", newline="\n") as stream:
+                for line in pipe:
+                    safe = sanitize_text(line)
+                    output.append(safe)
+                    stream.write(safe)
+                    stream.flush()
+        except Exception as error:
+            failures.append(error)
+
+    readers = [threading.Thread(target=drain, args=(pipe, path, output), daemon=True)
+               for pipe, path, output in zip((process.stdout, process.stderr), (stdout_path, stderr_path), outputs)]
+    started = time.monotonic()
+    next_progress = started + 30
+    try:
+        for reader in readers:
+            reader.start()
+        while process.poll() is None:
+            now = time.monotonic()
+            if CANCELLED or now - started >= timeout:
+                terminate_process_tree(process)
+                fail("execution cancelled" if CANCELLED else f"process timed out after {timeout:g} seconds")
+            if now >= next_progress:
+                emit("agent-progress", phase=phase, gate="development" if mode == "develop" else "validation",
+                     result="running", report_path=stderr_path, duration_ms=int((now - started) * 1000))
+                next_progress = now + 30
+            time.sleep(0.1)
+        if CANCELLED:
+            fail("execution cancelled")
+    finally:
+        if process.poll() is None:
+            terminate_process_tree(process)
+        for reader in readers:
+            reader.join(timeout=5)
+        ACTIVE_PROCESS = None
+    if any(reader.is_alive() for reader in readers):
+        fail("agent output pipes did not close; diagnostics preserved")
+    if failures:
+        fail(f"cannot persist agent diagnostics: {failures[0]}")
+    return "".join(outputs[0]), "".join(outputs[1]), process.returncode
+
+
 def extract_error(stderr: str) -> str:
     decoder = json.JSONDecoder()
     for marker in reversed(list(re.finditer(r"^\s*ERROR:\s*", stderr, re.MULTILINE))):
@@ -287,9 +339,10 @@ def invoke_agent(package: Path, repo: Path, mode: str, prompt: str, schema: Path
         environment["RALPH_SESSION_ID"] = session
         environment["RALPH_MODEL"] = model
         process = popen_group(command, cwd=repo, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=environment)
-        stdout, stderr, returncode = communicate(process, timeout)
-        stdout_path.write_text(sanitize_text(stdout), encoding="utf-8", newline="\n")
-        stderr_path.write_text(sanitize_text(stderr), encoding="utf-8", newline="\n")
+        try:
+            stdout, stderr, returncode = stream_agent(process, timeout, stdout_path, stderr_path, phase, mode)
+        except ExecutionError as error:
+            fail(f"{sanitize(str(error))}. Diagnóstico: {stderr_path}; saída: {stdout_path}")
         if returncode:
             gate = "Gate 1" if mode == "develop" else "Gate 2"
             fail(f"{gate} falhou: {extract_error(stderr)} (código de saída {returncode}). Diagnóstico: {stderr_path}")
@@ -388,8 +441,8 @@ def run_tests(repo: Path, command: str, phase: int, timeout: float, language: st
     return returncode == 0, "\n".join(lines[-80:]) or f"test command exited with code {returncode}", output_path
 
 
-def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: float) -> dict[str, Any]:
-    capture = rendered_command(phase_body)
+def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: float, *, heading: str = "Verificação renderizada") -> dict[str, Any]:
+    capture = rendered_command(phase_body, heading)
     if capture is None:
         return {"status": "not-configured", "images": [], "message": "Sem comando de captura no plano; usar evidências acessíveis existentes ou registrar bloqueio."}
     if EVENTS is None:
@@ -402,11 +455,12 @@ def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: 
     environment = os.environ.copy()
     environment["RALPH_EVIDENCE_DIR"] = str(directory.resolve())
     environment["RALPH_PHASE_NUMBER"] = str(phase)
+    environment["RALPH_CAPTURE_MODE"] = "preflight" if heading == "Preflight da validação" else "validation"
     report: dict[str, Any] = {"status": "failed", "directory": str(directory), "log": str(log), "images": []}
     try:
         with tempfile.TemporaryDirectory(prefix="ralph-capture-") as temporary:
             environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
-            passed, output, _ = run_tests(repo, capture[0], phase, timeout, capture[1], environment=environment, output_path=log, label="Verificação renderizada")
+            passed, output, _ = run_tests(repo, capture[0], phase, timeout, capture[1], environment=environment, output_path=log, label=heading)
         report["message"] = output
         if directory.is_symlink() or directory.resolve() != canonical:
             fail("capture directory was redirected")
@@ -494,11 +548,24 @@ def execute(arguments: argparse.Namespace) -> int:
                 continue
             if worktree_changes(repo) and state.get("current_phase") != number:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
-            resume_validation = state.get("current_phase") == number and state.get("current_gate") == "validation-blocked"
+            resume_validation = state.get("current_phase") == number and state.get("current_gate") in {"validation", "validation-blocked"}
             save_state(state_path, state, current_phase=number, current_gate="validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
             correction = str(state.get("last_failure", "")).strip()
             rendered: dict[str, Any] = {"status": "not-configured", "images": []}
+            development_path = EVENTS.root.parent / f"phase-{number}-development.json"
+            development: dict[str, Any] = {"status": "unavailable", "message": "Relatório anterior indisponível; verificar evidências existentes e registrar lacunas."}
+            if resume_validation and development_path.is_file():
+                try:
+                    development = redact_result(json.loads(development_path.read_text(encoding="utf-8")))
+                    if not isinstance(development, dict):
+                        fail("saved development report must be a JSON object")
+                except (OSError, ValueError) as error:
+                    fail(f"cannot read saved development report; changes preserved: {sanitize(str(error))}")
+            preflight = run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60, heading="Preflight da validação")
+            if preflight["status"] == "failed":
+                save_state(state_path, state, current_gate="validation-blocked" if resume_validation else "preflight-blocked")
+                fail(f"Preflight da validação bloqueado; corrija o ambiente e retome. Diagnóstico: {preflight.get('log')}. {sanitize(str(preflight.get('message', '')))}")
             for attempt in range(1, arguments.max_attempts + 1):
                 values = {"REPOSITORY": str(repo), "CONTEXT_PATHS": context, "PHASE": body, "PHASE_NUMBER": str(number), "CORRECTION_REPORT": correction,
                           "RENDERED_VERIFICATION": json.dumps(rendered, ensure_ascii=False, indent=2)}
@@ -509,6 +576,8 @@ def execute(arguments: argparse.Namespace) -> int:
                     validate_result(result, "develop")
                     if not worktree_changes(repo):
                         fail("Gate 1 finished without repository changes")
+                    development = redact_result(result)
+                    atomic_json(development_path, development)
                     gate_finished(number, "development", attempt, "completed", started)
                 resume_validation = False
 
@@ -516,6 +585,8 @@ def execute(arguments: argparse.Namespace) -> int:
                 started = gate_started(number, "validation", attempt)
                 rendered = run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60)
                 values["RENDERED_VERIFICATION"] = json.dumps(rendered, ensure_ascii=False, indent=2)
+                values["DEVELOPMENT_REPORT"] = json.dumps(development, ensure_ascii=False, indent=2)
+                values["VALIDATION_PREFLIGHT"] = json.dumps(preflight, ensure_ascii=False, indent=2)
                 before = worktree_fingerprint(repo)
                 try:
                     validation = invoke_agent(package, repo, "validate", render(package / "prompts" / "validate.md", values), package / "schemas" / "validation-result.schema.json", number, arguments.validation_timeout_minutes * 60, arguments.model)

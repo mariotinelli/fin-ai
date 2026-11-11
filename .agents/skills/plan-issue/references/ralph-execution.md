@@ -29,6 +29,10 @@ When the approved phase contains `### Verificação renderizada`, Ralph runs its
 
 Existing UI plans without a capture command need a reviewed amendment when accessible current evidence is missing. Do not delete resume state, erase changes or approve static inspection as visual acceptance. Runtime artifacts are diagnostic evidence; no new approval manifest or state hash is introduced.
 
+Development returns a complete report with `checks` and labelled `visual_evidence` (path, reference, screen, state, viewport and theme). Ralph saves the sanitized report under the task's Git runtime directory and injects it in full into validation, including when resuming a blocked or interrupted validation session. Corrections replace that report. Historical runs without a saved report explicitly report its absence; accessible evidence can still be inspected. The local `.flow` state remains minimal. Evidence is input to independent comparison, never an inherited approval.
+
+An approved `### Preflight da validação` command exercises the real bootstrap/browser/authenticated fixture and writes a protected-screen capture before development and again on resume, under the same parent capture environment. Failure saves `preflight-blocked` before development or retains `validation-blocked` on review resume, preserving source changes. Repairing the environment and rerunning continues at the appropriate stage. Plans without the section do not perform this check; prepare it under [the capture contract](planning-contract.md) before claiming readiness. Authentication must be recreated independently or replaced by durable, labelled rendered evidence; closing development's browser must not invalidate review.
+
 The executor defaults to `gpt-6.1-sol` for development and validation gates. Choose another model with `ralph.sh execute <planning.md> --model <model>`. The default runner fixes reasoning effort at `medium` in both gates, overriding Codex CLI configuration for those runs. The executor does not access Redmine or YouTrack and uses no subagents. Its default backend requires Codex CLI; `RALPH_AGENT_COMMAND_JSON` may provide another compatible runner as a JSON argument array, and the chosen model is available as `RALPH_MODEL`. This backend dependency is separate from the `ralph` skill, which can be operated through Codex, Claude Code or OpenCode.
 
 Before opening a model session, the default runner probes the selected `CODEX_BIN`/PATH executable with `codex exec --help` and checks its advertised model/config/sandbox/structured-output flags and the required role mode. Missing options, startup errors and probe timeout produce an explicit compatibility/configuration diagnostic without launching a model or falling back to broader permissions. This checks the CLI interface, not whether an effective sandbox implementation is available. Windows implementation selection remains with the user's/administrator's configuration; Ralph does not force MXC, clone/filter `config.toml`, disable user configuration or enable network access. Development remains `workspace-write` and review remains `read-only`. Validation startup/protocol failures save the same blocked stage for direct validation resume.
@@ -37,7 +41,7 @@ Each parent-side capture receives a separately owned short-lived temporary direc
 
 ## Resume and minimal safety
 
-A task allows only one simultaneous execution. A new phase requires a clean worktree. If a phase attempt already left changes, rerunning the same command resumes that phase from development. If execution ended immediately after commit, state at the commit gate with a clean worktree recognizes current `HEAD` as the phase commit and continues.
+A task allows only one simultaneous execution. A new phase requires a clean worktree. If a phase attempt already left changes, rerunning the same command resumes that phase from development, except that interrupted or blocked validation resumes directly at validation with the saved handoff. If execution ended immediately after commit, state at the commit gate with a clean worktree recognizes current `HEAD` as the phase commit and continues.
 
 The `.flow` directory must be Git-ignored. There are no hashes, fingerprints, manifests, baseline approval, trailer proof or evidence reconciliation. The developer remains responsible for reviewing history and deciding when to delete state or undo work.
 
@@ -56,5 +60,7 @@ Fase 1 finalizada
 ```
 
 Errors show the sanitized cause and diagnostic path. Prompts, stdout, stderr, tests and structured events remain in `.git/ralph-runtime`. Use `--verbose` to display technical events in the terminal.
+
+Agent stdout/stderr are drained concurrently and sanitized line by line into their diagnostic files while the process runs, including before timeout or cancellation. Every 30 seconds the console reports that the gate remains active and identifies the diagnostic log; this heartbeat is liveness, not a claim of completed work. Partial lines become available when the runner flushes a newline or closes its output.
 
 Default timeouts are 60 minutes for development, 30 for validation, 10 for parent-side capture and 60 for tests. Adjust with `--dev-timeout-minutes`, `--validation-timeout-minutes`, `--render-timeout-minutes` and `--tests-timeout-minutes`. Capture owns its declared processes and must clean them up; timeout/cancellation terminates only the subprocess tree started by Ralph.

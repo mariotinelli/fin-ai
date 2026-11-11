@@ -8,6 +8,18 @@ Visual acceptance required by this phase belongs to this gate. Read the declared
 
 Return `visual_validation` with `status` and nonempty `evidence`: `verified` identifies reference and current rendered evidence, states/viewports, comparison results and approved differences; `not-applicable` explains why this phase has no visual acceptance and identifies a later UI phase when relevant; `blocked` states the missing access/tool/evidence preventing the required comparison. Each finding requires `kind`: `defect` for a demonstrated correctable implementation error, or `verification-blocked` for a required check prevented by missing environment/access/evidence. EPERM launching Chromium, missing screenshots and unavailable build tooling are verification blockers unless separate evidence proves an implementation defect. Severity does not classify cause. Include both kinds when both exist. A required comparison left pending returns `verdict: rejected` with a `verification-blocked` finding; never invent a code defect to request another development attempt. Never use `not-applicable` to bypass affected UI or approve with visual verification blocked. Product conflicts return for alignment without authorizing new behavior. On approval, the ordinary `findings` array remains empty.
 
+## Development handoff (claims to verify independently)
+
+{{DEVELOPMENT_REPORT}}
+
+Read the complete report, including every `checks` entry and `visual_evidence` item. Open every applicable capture and compare it independently with its named reference, screen, state, viewport and theme. Report coverage and any missing/unreadable or stale artifacts explicitly; a development claim is not an independent verdict. Authenticated captures remain usable after the development browser/session closes: review their pixels with image tools rather than relying on live access or requesting credentials. An unlabelled capture or a login screenshot alone cannot demonstrate a protected screen. If coverage is incomplete, return a verification blocker identifying the missing comparison.
+
+## Validation environment preflight
+
+{{VALIDATION_PREFLIGHT}}
+
+Preflight captures demonstrate environment readiness before development; phase acceptance requires current post-development evidence.
+
 ## Parent-side rendered verification
 
 {{RENDERED_VERIFICATION}}
