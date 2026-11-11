@@ -140,12 +140,12 @@ def human_event(record: dict[str, Any]) -> str | None:
     if event == "gate-started":
         return f"[{label}] {gate_name} em andamento [{instant}]"
     if event == "gate-finished":
-        status = {"completed": "finalizado", "approved": "aprovado", "rejected": "reprovado"}.get(result, result)
+        status = {"completed": "finalizado", "approved": "aprovado", "rejected": "reprovado", "blocked": "bloqueado por verificação"}.get(result, result)
         detail = ""
         if result == "rejected":
             values = record.get("details", {}).get("findings") or record.get("details", {}).get("normalized_failures") or []
             if values:
-                first = values[0]
+                first = next((value for value in values if isinstance(value, dict) and value.get("kind") == "defect"), values[0])
                 detail = f": {first.get('evidence', first) if isinstance(first, dict) else first}"
         return f"[{label}] {gate_name} {status}{detail} [{instant}]"
     if event in {"gate-uncertain", "gate-interrupted"}:

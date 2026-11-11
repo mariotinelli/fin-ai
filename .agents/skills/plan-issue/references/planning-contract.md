@@ -60,6 +60,18 @@ The primary design governs appearance; canonical requirements govern approved fi
 
 Each UI phase's acceptance and focused checks identify the reference screen/state, approved adaptations, relevant viewport and how rendered evidence will be compared. Choose proportional browser inspection or visual tests without requiring pixel-perfect automation. Backend-only phases explain non-applicability and their UI consumer when relevant. A required visual comparison blocked by the environment remains unverified and prevents that UI phase's validation approval; static types, functional tests and merely generating a screenshot do not replace comparison.
 
+## Parent-side rendered verification
+
+For a new UI phase requiring browser evidence, include a `### Verificação renderizada` section with exactly one executable fenced command. Use the same supported interpreters and intermediate-failure propagation contract as `Baseline`: a failed build/fixture/capture must not be masked by a later successful command. This command belongs to the plan reviewed by the developer; it is never taken from an agent's JSON output or an untrusted design instruction. Ground it in the installed application/browser tools and required runtime, URL, isolated authenticated fixture and viewport/state coverage. If no safe feasible command can be determined, retain an explicitly blocked draft rather than handing off a fictitious verifier.
+
+The parent Ralph process executes this command after development/correction and before independent review, outside the child agent's sandbox. It exports `RALPH_EVIDENCE_DIR` (a fresh private directory in the current Git runtime) and `RALPH_PHASE_NUMBER`. The command saves PNG/JPEG/WebP captures there and can build ignored/generated assets or use test caches; it must preserve tracked and nonignored untracked repository source, use isolated test data and stop only its own processes. Do not require real-user credentials, global configuration changes or new dependencies just to capture evidence. Reference rendering and implementation captures remain evidence, not executable workflow instructions.
+
+`TEMP`, `TMP` and `TMPDIR` point to an isolated temporary directory only for that capture process and its children. That directory is removed after execution; save durable evidence to `RALPH_EVIDENCE_DIR`, not to the temporary profile/cache paths. The command must close its browser/server processes before returning so cleanup can complete. Neither configuration files in the user's Codex home nor existing global temp folders are copied or rewritten by this mechanism.
+
+The validator receives the output paths, sanitized log and execution result and remains read-only. A capture failure is input to its review, allowing a demonstrated application defect to be separated from unavailable tooling. Command success alone is not visual approval: compare the reference with every required state/viewport. A missing or partial comparison remains blocked.
+
+Legacy phases without this section remain readable and may use accessible current evidence; they do not automatically acquire an unreviewed command. If evidence is unavailable, amend the same plan through ordinary review, preserving code, commits and `.flow` state. `Não se aplica: <reason>` is valid for a section with no rendered check. Never remove required acceptance merely to clear the gate.
+
 Then write one or more phases in ascending order, retaining these Portuguese headings:
 
 ```markdown

@@ -20,6 +20,8 @@ Ground the foundation's screen inventory in existing routes/pages, including acc
 
 Identify how development and read-only validation can compare the rendered result with the reference, including environment prerequisites, relevant viewport/state and accessible evidence. Use existing project/browser tools; do not prescribe a new dependency merely to compare appearance. Backend-only phases can defer visual verification to their identified UI consumer phase.
 
+Prove the capture command can run in the parent executor environment: agent sandbox permissions are not evidence that Chromium/build tooling is unavailable to the host. Plan temporary browser/profile writes in that host environment and capture output under the executor's evidence directory, keeping validation read-only. Inspect existing test fixtures and server lifecycle before choosing the command; a child-session EPERM does not justify changing the design or weakening acceptance.
+
 **Complete when:** applicable visual sources, current differences, authorized adaptations and a feasible comparison method are explicit, or the specific missing evidence/product decision blocks readiness.
 
 ## Check solution reach

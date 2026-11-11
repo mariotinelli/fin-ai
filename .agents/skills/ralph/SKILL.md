@@ -79,6 +79,8 @@ Start with **Tarefa #ID concluída** or **Tarefa #ID interrompida**, as observed
 
 On interruption, read the diagnostic identified by the script, summarize the proven cause and explain how to resume the same task. If no diagnostic or conclusive cause exists, say so. Show only necessary sanitized excerpts, protecting secrets and internal conversations.
 
+For `validation-blocked`, explain the missing environment/access/evidence instead of requesting code corrections without a demonstrated defect. The same command resumes capture and validation directly after the obstacle is resolved. Keep the validator read-only; an existing plan missing its parent-side capture command needs ordinary reviewed amendment, not deletion of state or acceptance removal. Mixed findings may correct real defects before stopping on the remaining blocker.
+
 After interruption, wait for user direction before fixing or rerunning. Do not remove state, undo commits or restart independently. Internal attempts and per-phase commits belong exclusively to the script.
 
 **Complete when:** the user knows the result and, on interruption, available diagnostics and next step, without unsolicited further execution.

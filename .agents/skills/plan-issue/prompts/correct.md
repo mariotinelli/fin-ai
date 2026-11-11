@@ -19,3 +19,5 @@ If you start servers or test processes, record their PIDs and stop only those pr
 Preserve correct work already done, address only demonstrated findings and leave changes uncommitted. Finally return only the JSON required by the schema, with `status` equal to `completed`; this means **finalizado**, not approved.
 
 Retain the primary visual source and approved adaptations during corrections. For affected UI, compare the corrected rendered state with that source and report evidence or the exact verification blocker in `checks`. Resolve findings within approved criteria; new material differences in fields, states or visual scope require requirement alignment. A functional-test correction must preserve the approved appearance.
+
+The correction report contains actionable implementation defects. The parent executor reruns the approved `Verificação renderizada` command after correction; do not repeat browser-launch attempts inside the agent sandbox solely to clear EPERM or declare a blocked comparison verified. Preserve the capture contract, test isolation and evidence directory; changes to the approved command require plan review.
