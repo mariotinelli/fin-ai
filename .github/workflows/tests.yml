@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
-    branches:
-      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,6 +15,20 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: fin_ai_testing
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d fin_ai_testing"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -57,10 +70,14 @@ jobs:
           composer run-script post-autoload-dump
 
       - name: Copy Environment File
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          cp .env.testing.example .env.testing
 
       - name: Generate Application Key
-        run: php artisan key:generate
+        run: |
+          php artisan key:generate
+          php artisan key:generate --env=testing --force
 
       - name: Install Bun Dependencies
         run: bun install
@@ -77,15 +94,15 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+          key: ${{ runner.os }}-playwright-chromium-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: bunx playwright install --with-deps
+        run: bunx playwright install --with-deps chromium
 
       - name: Install Playwright System Dependencies
         if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: bunx playwright install-deps
+        run: bunx playwright install-deps chromium
 
       - name: Cache Rector
         uses: actions/cache@v6
