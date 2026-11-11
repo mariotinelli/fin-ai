@@ -1,5 +1,5 @@
 interface:
-  display_name: "Refinamento de requisitos"
+  display_name: "requirements-grilling"
   short_description: "Resolve lacunas de requisitos em rodadas curtas"
   default_prompt: "Use $requirements-grilling para esclarecer lacunas relevantes dos requisitos em rodadas curtas e revisar comigo o requisito final."
 policy:

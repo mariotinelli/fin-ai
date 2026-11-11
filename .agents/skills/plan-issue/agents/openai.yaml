@@ -1,5 +1,5 @@
 interface:
-  display_name: "Planejar tarefa"
+  display_name: "plan-issue"
   short_description: "Planeja uma filha DEV para o Ralph"
   default_prompt: "Use $plan-issue para planejar a filha DEV informada sem implementá-la."
 policy:

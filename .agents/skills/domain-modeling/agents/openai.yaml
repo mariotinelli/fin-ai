@@ -1,5 +1,5 @@
 interface:
-  display_name: "Modelagem de domínio"
+  display_name: "domain-modeling"
   short_description: "Alinha vocabulário e avalia candidatos a ADR"
   default_prompt: "Use $domain-modeling para alinhar os termos do domínio e avaliar possíveis decisões de arquitetura."
 policy:
