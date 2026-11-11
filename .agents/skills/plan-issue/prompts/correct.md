@@ -16,7 +16,13 @@ If you start servers or test processes, record their PIDs and stop only those pr
 
 {{CORRECTION_REPORT}}
 
-Preserve correct work already done, address only demonstrated findings and leave changes uncommitted. Finally return only the JSON required by the schema, with `status` equal to `completed`; this means **finalizado**, not approved.
+Preserve correct work already done, address only demonstrated findings and leave changes uncommitted. Return only the schema JSON: `status: completed` after implementing the corrections (**finalizado**, not approved), or `status: blocked` when a concrete obstacle prevents completion. A blocked result explains the cause and remaining work in `summary`, supplies nonempty diagnostic `checks` and lists preserved partial changes.
+
+## Parent-side preflight result
+
+{{VALIDATION_PREFLIGHT}}
+
+This check already ran in the parent host. On `completed`, proceed with the focused correction; inspect the supplied artifacts without repeating preflight inside this session or requiring a new `CAPTURE_OK`. Capture environment variables are intentionally limited to the parent's capture subprocess. Their absence in this agent session is expected. If a new implementation obstacle appears, report `blocked` with diagnostic evidence.
 
 Retain the primary visual source and approved adaptations during corrections. For affected UI, compare the corrected rendered state with that source and report evidence or the exact verification blocker in `checks`. Resolve findings within approved criteria; new material differences in fields, states or visual scope require requirement alignment. A functional-test correction must preserve the approved appearance.
 
