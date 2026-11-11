@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -12,6 +13,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 from pathlib import Path, PurePosixPath
@@ -66,6 +68,18 @@ def baseline_command(text: str) -> tuple[str, str]:
     return command.strip(), language or "bash"
 
 
+def rendered_command(phase: str, heading: str = "Verificação renderizada") -> tuple[str, str] | None:
+    sections = list(re.finditer(r"^### " + re.escape(heading) + r"[ \t]*\r?$", phase, re.MULTILINE))
+    if not sections:
+        return None
+    if len(sections) != 1:
+        fail(f"phase requires at most one {heading} section")
+    body = re.split(r"^#{1,3} ", phase[sections[0].end():], maxsplit=1, flags=re.MULTILINE)[0].strip()
+    if re.fullmatch(r"Não se aplica: [^\r\n]+", body):
+        return None
+    return baseline_command("## Baseline\n" + body + "\n")
+
+
 def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
     if planning.name != "planning.md" or not planning.is_file() or planning.is_symlink():
         fail("expected an existing planning.md file")
@@ -82,6 +96,8 @@ def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
         if len(body.splitlines()) < 2:
             fail(f"Fase {number} must not be empty")
         phases.append((number, match.group(2).strip(), body))
+        rendered_command(body)
+        rendered_command(body, "Preflight da validação")
     numbers = [phase[0] for phase in phases]
     if numbers != sorted(set(numbers)):
         fail("phase numbers must be unique and increasing")
@@ -164,6 +180,24 @@ def worktree_changes(repo: Path) -> str:
     return git(repo, "status", "--porcelain=v1", "--untracked-files=all")
 
 
+def worktree_fingerprint(repo: Path) -> str:
+    """Detect content changes even when porcelain still lists the same modified files."""
+    result = hashlib.sha256()
+    for arguments in (("rev-parse", "--verify", "HEAD"), ("diff", "--binary"), ("diff", "--cached", "--binary")):
+        value = run(["git", *arguments], repo)
+        if value.returncode and arguments[0] != "rev-parse":
+            fail("cannot inspect repository contents for read-only verification")
+        result.update(value.stdout.encode("utf-8"))
+    files = run(["git", "ls-files", "--others", "--exclude-standard", "-z"], repo)
+    if files.returncode:
+        fail("cannot inspect untracked verification inputs")
+    for name in sorted(filter(None, files.stdout.split("\0"))):
+        path = repo / name
+        result.update(name.encode("utf-8"))
+        result.update(os.readlink(path).encode("utf-8") if path.is_symlink() else path.read_bytes())
+    return result.hexdigest()
+
+
 def render(template: Path, values: dict[str, str]) -> str:
     text = template.read_text(encoding="utf-8")
     for key, value in values.items():
@@ -199,6 +233,56 @@ def communicate(process: subprocess.Popen[Any], timeout: float) -> tuple[str, st
         return stdout or "", stderr or "", process.returncode
     finally:
         ACTIVE_PROCESS = None
+
+
+def stream_agent(process: subprocess.Popen[Any], timeout: float, stdout_path: Path, stderr_path: Path, phase: int, mode: str) -> tuple[str, str, int]:
+    """Drain both pipes concurrently; keep sanitized diagnostics even on interruption."""
+    global ACTIVE_PROCESS
+    ACTIVE_PROCESS = process
+    outputs: list[list[str]] = [[], []]
+    failures: list[Exception] = []
+
+    def drain(pipe: Any, path: Path, output: list[str]) -> None:
+        try:
+            with path.open("w", encoding="utf-8", newline="\n") as stream:
+                for line in pipe:
+                    safe = sanitize_text(line)
+                    output.append(safe)
+                    stream.write(safe)
+                    stream.flush()
+        except Exception as error:
+            failures.append(error)
+
+    readers = [threading.Thread(target=drain, args=(pipe, path, output), daemon=True)
+               for pipe, path, output in zip((process.stdout, process.stderr), (stdout_path, stderr_path), outputs)]
+    started = time.monotonic()
+    next_progress = started + 30
+    try:
+        for reader in readers:
+            reader.start()
+        while process.poll() is None:
+            now = time.monotonic()
+            if CANCELLED or now - started >= timeout:
+                terminate_process_tree(process)
+                fail("execution cancelled" if CANCELLED else f"process timed out after {timeout:g} seconds")
+            if now >= next_progress:
+                emit("agent-progress", phase=phase, gate="development" if mode == "develop" else "validation",
+                     result="running", report_path=stderr_path, duration_ms=int((now - started) * 1000))
+                next_progress = now + 30
+            time.sleep(0.1)
+        if CANCELLED:
+            fail("execution cancelled")
+    finally:
+        if process.poll() is None:
+            terminate_process_tree(process)
+        for reader in readers:
+            reader.join(timeout=5)
+        ACTIVE_PROCESS = None
+    if any(reader.is_alive() for reader in readers):
+        fail("agent output pipes did not close; diagnostics preserved")
+    if failures:
+        fail(f"cannot persist agent diagnostics: {failures[0]}")
+    return "".join(outputs[0]), "".join(outputs[1]), process.returncode
 
 
 def extract_error(stderr: str) -> str:
@@ -255,9 +339,10 @@ def invoke_agent(package: Path, repo: Path, mode: str, prompt: str, schema: Path
         environment["RALPH_SESSION_ID"] = session
         environment["RALPH_MODEL"] = model
         process = popen_group(command, cwd=repo, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace", env=environment)
-        stdout, stderr, returncode = communicate(process, timeout)
-        stdout_path.write_text(sanitize_text(stdout), encoding="utf-8", newline="\n")
-        stderr_path.write_text(sanitize_text(stderr), encoding="utf-8", newline="\n")
+        try:
+            stdout, stderr, returncode = stream_agent(process, timeout, stdout_path, stderr_path, phase, mode)
+        except ExecutionError as error:
+            fail(f"{sanitize(str(error))}. Diagnóstico: {stderr_path}; saída: {stdout_path}")
         if returncode:
             gate = "Gate 1" if mode == "develop" else "Gate 2"
             fail(f"{gate} falhou: {extract_error(stderr)} (código de saída {returncode}). Diagnóstico: {stderr_path}")
@@ -288,46 +373,114 @@ def validate_result(result: dict[str, Any], mode: str) -> None:
             fail("visual validation requires comparison evidence or an explicit reason")
         if result["verdict"] == "approved" and visual["status"] == "blocked":
             fail("validation cannot approve with required visual verification blocked")
+        for finding in result["findings"]:
+            if not isinstance(finding, dict) or finding.get("kind", "defect") not in {"defect", "verification-blocked"}:
+                fail("validation finding requires a valid kind")
+            for field in ("severity", "criterion", "evidence"):
+                if not isinstance(finding.get(field), str) or not finding[field].strip():
+                    fail("validation finding requires severity criterion and evidence")
+        if result["verdict"] == "approved" and result["findings"]:
+            fail("approved validation cannot contain defects or verification blockers")
 
 
-def validation_report(result: dict[str, Any]) -> str:
+def validation_action(result: dict[str, Any]) -> str:
+    validate_result(result, "validate")
+    if result["verdict"] == "approved":
+        return "approved"
+    visual_blocked = result["visual_validation"]["status"] == "blocked"
+    # Historical custom runners lacked kinds: an untyped visual blocker must not
+    # be guessed to be a code defect and trigger another development loop.
+    if any(f.get("kind", "verification-blocked" if visual_blocked else "defect") == "defect" for f in result["findings"]):
+        return "retry"
+    if visual_blocked or any(f.get("kind") == "verification-blocked" for f in result["findings"]):
+        return "blocked"
+    fail("rejected validation requires a demonstrated defect or verification blocker")
+
+
+def validation_report(result: dict[str, Any], *, defects_only: bool = False) -> str:
     lines = []
     for finding in result.get("findings", []):
         if isinstance(finding, dict):
+            if defects_only and finding.get("kind", "verification-blocked" if result.get("visual_validation", {}).get("status") == "blocked" else "defect") != "defect":
+                continue
             lines.append(f"- {finding.get('severity', 'unknown')}: {finding.get('criterion', 'criterion')} — {finding.get('evidence', 'no evidence')}")
     return "\n".join(lines) or str(result.get("summary", "validation rejected without details"))
 
 
-def run_tests(repo: Path, command: str, phase: int, timeout: float, language: str = "bash") -> tuple[bool, str, Path]:
+def run_tests(repo: Path, command: str, phase: int, timeout: float, language: str = "bash", *, environment: dict[str, str] | None = None, output_path: Path | None = None, label: str = "Gate 3") -> tuple[bool, str, Path]:
     if EVENTS is None:
         fail("runtime log is unavailable")
-    output_path = EVENTS.private_file(f"phase-{phase}-tests.log")
+    output_path = output_path or EVENTS.private_file(f"phase-{phase}-tests.log")
     executable = "bash" if language in ("bash", "sh", "shell", "") else ("cmd" if language == "bat" else language)
     shell = shutil.which(executable)
     if shell is None:
-        fail(f"Gate 3 requires {executable} in PATH; tests were not started")
+        fail(f"{label} requires {executable} in PATH; tests were not started")
     if executable == "bash":
         syntax = run([shell, "--noprofile", "--norc", "-n", "-c", command], repo)
         if syntax.returncode:
             output_path.write_text(sanitize_text(syntax.stderr or syntax.stdout), encoding="utf-8")
-            fail(f"Gate 3 baseline has invalid Bash syntax; tests were not started. Diagnóstico: {output_path}")
+            fail(f"{label} baseline has invalid Bash syntax; tests were not started. Diagnóstico: {output_path}")
         invocation = [shell, "--noprofile", "--norc", "-c", command]
     elif executable in ("powershell", "pwsh"):
         invocation = [shell, "-NoProfile", "-NonInteractive", "-Command", command]
     else:
         invocation = [shell, "/d", "/s", "/c", command]
-    with output_path.open("w+", encoding="utf-8", newline="\n") as output:
-        process = popen_group(invocation, cwd=repo, stdout=output, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
-        _, _, returncode = communicate(process, timeout)
-        output.seek(0)
-        content = sanitize_text(output.read())
-        output.seek(0)
-        output.truncate()
-        output.write(content)
+    with output_path.open("w+", encoding="utf-8", errors="replace", newline="\n") as output:
+        try:
+            process = popen_group(invocation, cwd=repo, stdout=output, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", env=environment)
+            _, _, returncode = communicate(process, timeout)
+        finally:
+            output.seek(0)
+            content = sanitize_text(output.read())
+            output.seek(0)
+            output.truncate()
+            output.write(content)
     if (executable == "bash" and returncode in (126, 127)) or (executable == "cmd" and returncode == 9009):
-        fail(f"Gate 3 operational failure: command unavailable or not executable (exit {returncode}); changes preserved. Diagnóstico: {output_path}")
+        fail(f"{label} operational failure: command unavailable or not executable (exit {returncode}); changes preserved. Diagnóstico: {output_path}")
     lines = [line for line in content.splitlines() if line.strip()]
     return returncode == 0, "\n".join(lines[-80:]) or f"test command exited with code {returncode}", output_path
+
+
+def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: float, *, heading: str = "Verificação renderizada") -> dict[str, Any]:
+    capture = rendered_command(phase_body, heading)
+    if capture is None:
+        return {"status": "not-configured", "images": [], "message": "Sem comando de captura no plano; usar evidências acessíveis existentes ou registrar bloqueio."}
+    if EVENTS is None:
+        fail("runtime evidence directory is unavailable")
+    directory = EVENTS.root / f"phase-{phase}-rendered-{uuid.uuid4()}"
+    directory.mkdir(mode=0o700)
+    canonical = directory.resolve()
+    log = directory / "capture.log"
+    before = worktree_fingerprint(repo)
+    environment = os.environ.copy()
+    environment["RALPH_EVIDENCE_DIR"] = str(directory.resolve())
+    environment["RALPH_PHASE_NUMBER"] = str(phase)
+    environment["RALPH_CAPTURE_MODE"] = "preflight" if heading == "Preflight da validação" else "validation"
+    report: dict[str, Any] = {"status": "failed", "directory": str(directory), "log": str(log), "images": []}
+    try:
+        with tempfile.TemporaryDirectory(prefix="ralph-capture-") as temporary:
+            environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
+            passed, output, _ = run_tests(repo, capture[0], phase, timeout, capture[1], environment=environment, output_path=log, label=heading)
+        report["message"] = output
+        if directory.is_symlink() or directory.resolve() != canonical:
+            fail("capture directory was redirected")
+        for path in directory.rglob("*"):
+            if path.is_symlink() or not path.resolve().is_relative_to(canonical):
+                fail("rendered evidence contains an unsafe path")
+            if path.is_file() and path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}:
+                report["images"].append(str(path.resolve()))
+        if passed and report["images"]:
+            report["status"] = "completed"
+        elif passed:
+            report["message"] = "O comando terminou sem capturas renderizadas no RALPH_EVIDENCE_DIR."
+    except (ExecutionError, OSError) as error:
+        if CANCELLED:
+            raise
+        report["message"] = sanitize_text(str(error))
+    if worktree_fingerprint(repo) != before:
+        fail(f"rendered verification modified repository source; changes preserved. Diagnóstico: {log}")
+    atomic_json(directory / "report.json", report)
+    return report
 
 
 def emit(event: str, **values: Any) -> None:
@@ -395,28 +548,69 @@ def execute(arguments: argparse.Namespace) -> int:
                 continue
             if worktree_changes(repo) and state.get("current_phase") != number:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
-            save_state(state_path, state, current_phase=number, current_gate="development")
+            resume_validation = state.get("current_phase") == number and state.get("current_gate") in {"validation", "validation-blocked"}
+            save_state(state_path, state, current_phase=number, current_gate="validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
             correction = str(state.get("last_failure", "")).strip()
+            rendered: dict[str, Any] = {"status": "not-configured", "images": []}
+            development_path = EVENTS.root.parent / f"phase-{number}-development.json"
+            development: dict[str, Any] = {"status": "unavailable", "message": "Relatório anterior indisponível; verificar evidências existentes e registrar lacunas."}
+            if resume_validation and development_path.is_file():
+                try:
+                    development = redact_result(json.loads(development_path.read_text(encoding="utf-8")))
+                    if not isinstance(development, dict):
+                        fail("saved development report must be a JSON object")
+                except (OSError, ValueError) as error:
+                    fail(f"cannot read saved development report; changes preserved: {sanitize(str(error))}")
+            preflight = run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60, heading="Preflight da validação")
+            if preflight["status"] == "failed":
+                save_state(state_path, state, current_gate="validation-blocked" if resume_validation else "preflight-blocked")
+                fail(f"Preflight da validação bloqueado; corrija o ambiente e retome. Diagnóstico: {preflight.get('log')}. {sanitize(str(preflight.get('message', '')))}")
             for attempt in range(1, arguments.max_attempts + 1):
-                started = gate_started(number, "development", attempt)
-                template = package / "prompts" / ("correct.md" if correction else "develop.md")
-                values = {"REPOSITORY": str(repo), "CONTEXT_PATHS": context, "PHASE": body, "PHASE_NUMBER": str(number), "CORRECTION_REPORT": correction}
-                result = invoke_agent(package, repo, "develop", render(template, values), package / "schemas" / "development-result.schema.json", number, arguments.dev_timeout_minutes * 60, arguments.model)
-                validate_result(result, "develop")
-                if not worktree_changes(repo):
-                    fail("Gate 1 finished without repository changes")
-                gate_finished(number, "development", attempt, "completed", started)
+                values = {"REPOSITORY": str(repo), "CONTEXT_PATHS": context, "PHASE": body, "PHASE_NUMBER": str(number), "CORRECTION_REPORT": correction,
+                          "RENDERED_VERIFICATION": json.dumps(rendered, ensure_ascii=False, indent=2)}
+                if not resume_validation:
+                    started = gate_started(number, "development", attempt)
+                    template = package / "prompts" / ("correct.md" if correction else "develop.md")
+                    result = invoke_agent(package, repo, "develop", render(template, values), package / "schemas" / "development-result.schema.json", number, arguments.dev_timeout_minutes * 60, arguments.model)
+                    validate_result(result, "develop")
+                    if not worktree_changes(repo):
+                        fail("Gate 1 finished without repository changes")
+                    development = redact_result(result)
+                    atomic_json(development_path, development)
+                    gate_finished(number, "development", attempt, "completed", started)
+                resume_validation = False
 
                 save_state(state_path, state, current_gate="validation")
                 started = gate_started(number, "validation", attempt)
-                before = worktree_changes(repo)
-                validation = invoke_agent(package, repo, "validate", render(package / "prompts" / "validate.md", values), package / "schemas" / "validation-result.schema.json", number, arguments.validation_timeout_minutes * 60, arguments.model)
-                validate_result(validation, "validate")
-                if worktree_changes(repo) != before:
+                rendered = run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60)
+                values["RENDERED_VERIFICATION"] = json.dumps(rendered, ensure_ascii=False, indent=2)
+                values["DEVELOPMENT_REPORT"] = json.dumps(development, ensure_ascii=False, indent=2)
+                values["VALIDATION_PREFLIGHT"] = json.dumps(preflight, ensure_ascii=False, indent=2)
+                before = worktree_fingerprint(repo)
+                try:
+                    validation = invoke_agent(package, repo, "validate", render(package / "prompts" / "validate.md", values), package / "schemas" / "validation-result.schema.json", number, arguments.validation_timeout_minutes * 60, arguments.model)
+                    validate_result(validation, "validate")
+                except (ExecutionError, RuntimeFailure, OSError) as error:
+                    if worktree_fingerprint(repo) != before:
+                        fail("Gate 2 modified the repository before failing; changes were preserved")
+                    reason = sanitize_text(str(error))
+                    save_state(state_path, state, current_gate="validation-blocked", last_failure=reason)
+                    gate_finished(number, "validation", attempt, "blocked", started, reason=reason, rendered=rendered)
+                    fail(f"Gate 2 indisponível por falha de configuração/runtime ou resultado inválido; retome após resolver o impedimento. {reason}")
+                if worktree_fingerprint(repo) != before:
                     fail("Gate 2 modified the repository")
-                if validation["verdict"] == "rejected":
-                    correction = validation_report(validation)
+                action = validation_action(validation)
+                if action == "approved" and rendered["status"] == "failed":
+                    action = "blocked"
+                if action == "blocked":
+                    reason = validation_report(validation) + "\n" + str(rendered.get("message", ""))
+                    diagnostic = str(rendered.get("log") or EVENTS.events_path)
+                    save_state(state_path, state, current_gate="validation-blocked", last_failure=reason + "\nDiagnóstico: " + diagnostic)
+                    gate_finished(number, "validation", attempt, "blocked", started, findings=validation.get("findings", []), rendered=rendered)
+                    fail(f"Gate 2 interrompido por verificação bloqueada; corrija o ambiente/evidências e retome o mesmo comando. Diagnóstico: {diagnostic}. {sanitize(reason)}")
+                if action == "retry":
+                    correction = validation_report(validation, defects_only=True)
                     save_state(state_path, state, current_gate="development", last_failure=correction)
                     gate_finished(number, "validation", attempt, "rejected", started, findings=validation.get("findings", []))
                     if attempt == arguments.max_attempts:
@@ -467,6 +661,7 @@ def parser() -> argparse.ArgumentParser:
     value.add_argument("--max-attempts", type=int, default=3)
     value.add_argument("--dev-timeout-minutes", type=positive, default=60.0)
     value.add_argument("--validation-timeout-minutes", type=positive, default=30.0)
+    value.add_argument("--render-timeout-minutes", type=positive, default=10.0)
     value.add_argument("--tests-timeout-minutes", type=positive, default=60.0)
     value.add_argument("--verbose", action="store_true")
     return value

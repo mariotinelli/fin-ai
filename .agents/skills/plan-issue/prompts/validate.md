@@ -4,9 +4,27 @@ Validate the implementation of the approved phase below in repository `{{REPOSIT
 
 The complete suite belongs to Gate 3, after this validation. Do not reject solely because that gate's result is unavailable or because of historical test caches: report demonstrable defects in the current implementation. Check focused tests and their coverage of phase criteria.
 
-Visual acceptance required by this phase belongs to this gate. Read the declared visual sources, inspect the rendered result or accessible rendered evidence, and compare the relevant screens/states/viewports with the primary reference and approved adaptations. State what was actually inspected; static code, functional assertions, overflow checks and screenshots without comparison do not demonstrate fidelity. Existing framework appearance is not the visual authority when a design applies.
+Visual acceptance required by this phase belongs to this gate. Read the declared visual sources, inspect the rendered evidence supplied below, and compare the relevant screens/states/viewports with the primary reference and approved adaptations. The parent executor runs the approved capture command outside the agent sandbox; this session remains read-only. Do not relaunch a browser, build assets or create temporary capture files inside this session to work around sandbox restrictions. If no usable current evidence exists, report the concrete verification blocker while still inspecting code for demonstrable defects. State what was actually inspected; static code, functional assertions, overflow checks and screenshots without comparison do not demonstrate fidelity. Existing framework appearance is not the visual authority when a design applies.
 
-Return `visual_validation` with `status` and nonempty `evidence`: `verified` identifies reference and rendered evidence, states/viewports, comparison results and approved differences; `not-applicable` explains why this phase has no visual acceptance and identifies a later UI phase when relevant; `blocked` states the missing access/tool/evidence preventing the required comparison. A required comparison left pending must return `verdict: rejected` and a finding identifying the unverified criterion and blocker. Never use `not-applicable` to bypass affected UI or approve with visual verification blocked. Product conflicts return for alignment without authorizing new behavior. On approval, the ordinary `findings` array remains empty.
+Return `visual_validation` with `status` and nonempty `evidence`: `verified` identifies reference and current rendered evidence, states/viewports, comparison results and approved differences; `not-applicable` explains why this phase has no visual acceptance and identifies a later UI phase when relevant; `blocked` states the missing access/tool/evidence preventing the required comparison. Each finding requires `kind`: `defect` for a demonstrated correctable implementation error, or `verification-blocked` for a required check prevented by missing environment/access/evidence. EPERM launching Chromium, missing screenshots and unavailable build tooling are verification blockers unless separate evidence proves an implementation defect. Severity does not classify cause. Include both kinds when both exist. A required comparison left pending returns `verdict: rejected` with a `verification-blocked` finding; never invent a code defect to request another development attempt. Never use `not-applicable` to bypass affected UI or approve with visual verification blocked. Product conflicts return for alignment without authorizing new behavior. On approval, the ordinary `findings` array remains empty.
+
+## Development handoff (claims to verify independently)
+
+{{DEVELOPMENT_REPORT}}
+
+Read the complete report, including every `checks` entry and `visual_evidence` item. Open every applicable capture and compare it independently with its named reference, screen, state, viewport and theme. Report coverage and any missing/unreadable or stale artifacts explicitly; a development claim is not an independent verdict. Authenticated captures remain usable after the development browser/session closes: review their pixels with image tools rather than relying on live access or requesting credentials. An unlabelled capture or a login screenshot alone cannot demonstrate a protected screen. If coverage is incomplete, return a verification blocker identifying the missing comparison.
+
+## Validation environment preflight
+
+{{VALIDATION_PREFLIGHT}}
+
+Preflight captures demonstrate environment readiness before development; phase acceptance requires current post-development evidence.
+
+## Parent-side rendered verification
+
+{{RENDERED_VERIFICATION}}
+
+Inspect listed images with the available image-reading tools and read the capture log when needed. A successful command or generated image alone does not establish visual acceptance. A failed required capture cannot be approved; distinguish a demonstrated application error in its output from an environmental blocker.
 
 ## Required reading
 
