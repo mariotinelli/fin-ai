@@ -360,8 +360,14 @@ def invoke_agent(package: Path, repo: Path, mode: str, prompt: str, schema: Path
 
 def validate_result(result: dict[str, Any], mode: str) -> None:
     if mode == "develop":
-        if result.get("status") != "completed":
-            fail("development agent did not finish the phase")
+        if result.get("status") not in {"completed", "blocked"}:
+            fail("development agent returned an invalid status")
+        if result["status"] == "blocked":
+            if not isinstance(result.get("summary"), str) or not result["summary"].strip():
+                fail("blocked development requires a concrete reason in summary")
+            checks = result.get("checks")
+            if not isinstance(checks, list) or not checks or any(not isinstance(item, str) or not item.strip() for item in checks):
+                fail("blocked development requires diagnostic checks")
     elif result.get("verdict") not in {"approved", "rejected"} or not isinstance(result.get("findings"), list):
         fail("validation agent returned an invalid result")
     if mode != "develop":
@@ -422,6 +428,14 @@ def validation_report(result: dict[str, Any], *, defects_only: bool = False) -> 
                 continue
             lines.append(f"- {finding.get('severity', 'unknown')}: {finding.get('criterion', 'criterion')} — {finding.get('evidence', 'no evidence')}")
     return "\n".join(lines) or str(result.get("summary", "validation rejected without details"))
+
+
+def development_report(result: dict[str, Any]) -> str:
+    lines = [str(result.get("summary", "Desenvolvimento sem relatório conclusivo."))]
+    checks = result.get("checks", [])
+    if isinstance(checks, list):
+        lines.extend(f"- {item}" for item in checks if isinstance(item, str))
+    return sanitize_text("\n".join(lines))
 
 
 def run_tests(repo: Path, command: str, phase: int, timeout: float, language: str = "bash", *, environment: dict[str, str] | None = None, output_path: Path | None = None, label: str = "Gate 3") -> tuple[bool, str, Path]:
@@ -569,10 +583,11 @@ def execute(arguments: argparse.Namespace) -> int:
                 continue
             if worktree_changes(repo) and state.get("current_phase") != number:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
-            resume_validation = state.get("current_phase") == number and state.get("current_gate") in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked"}
+            previous_gate = state.get("current_gate") if state.get("current_phase") == number else None
+            resume_validation = previous_gate in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked"}
             save_state(state_path, state, current_phase=number, current_gate="validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
-            correction = str(state.get("last_failure", "")).strip()
+            correction = str(state.get("last_failure", "")).strip() if previous_gate == "development" else ""
             rendered: dict[str, Any] = {"status": "not-configured", "images": []}
             development_path = EVENTS.root.parent / f"phase-{number}-development.json"
             evidence_request_path = EVENTS.root.parent / f"phase-{number}-evidence-request.json"
@@ -601,17 +616,29 @@ def execute(arguments: argparse.Namespace) -> int:
                 fail(f"Preflight da validação bloqueado; corrija o ambiente e retome. Diagnóstico: {preflight.get('log')}. {sanitize(str(preflight.get('message', '')))}")
             for attempt in range(1, arguments.max_attempts + 1):
                 values = {"REPOSITORY": str(repo), "CONTEXT_PATHS": context, "PHASE": body, "PHASE_NUMBER": str(number), "CORRECTION_REPORT": correction,
-                          "RENDERED_VERIFICATION": json.dumps(rendered, ensure_ascii=False, indent=2)}
+                          "RENDERED_VERIFICATION": json.dumps(rendered, ensure_ascii=False, indent=2),
+                          "VALIDATION_PREFLIGHT": json.dumps(preflight, ensure_ascii=False, indent=2)}
                 if not resume_validation:
                     previous_rendered = {}
                     started = gate_started(number, "development", attempt)
                     template = package / "prompts" / ("correct.md" if correction else "develop.md")
-                    result = invoke_agent(package, repo, "develop", render(template, values), package / "schemas" / "development-result.schema.json", number, arguments.dev_timeout_minutes * 60, arguments.model)
-                    validate_result(result, "develop")
-                    if not worktree_changes(repo):
-                        fail("Gate 1 finished without repository changes")
-                    development = redact_result(result)
-                    atomic_json(development_path, development)
+                    report_available = False
+                    try:
+                        result = invoke_agent(package, repo, "develop", render(template, values), package / "schemas" / "development-result.schema.json", number, arguments.dev_timeout_minutes * 60, arguments.model)
+                        development = redact_result(result)
+                        atomic_json(development_path, development)
+                        report_available = True
+                        validate_result(development, "develop")
+                        if development["status"] == "blocked":
+                            fail(f"Desenvolvimento bloqueado: {development_report(development)}")
+                        if not worktree_changes(repo):
+                            fail(f"Gate 1 finished without repository changes. {development_report(development)}")
+                    except (ExecutionError, RuntimeFailure, OSError) as error:
+                        reason = sanitize_text(str(error))
+                        diagnostic = development_path if report_available else EVENTS.events_path
+                        save_state(state_path, state, current_gate="development-blocked", last_failure=reason)
+                        gate_finished(number, "development", attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
+                        fail(f"{sanitize(reason)} Diagnóstico: {diagnostic}. Corrija o impedimento e retome o mesmo comando; trabalho preservado.")
                     gate_finished(number, "development", attempt, "completed", started)
                 resume_validation = False
 
