@@ -19,6 +19,8 @@ When no unambiguous match exists or identity differs, report discovered files an
 
 For an existing plan, check the visual source handoff required by `plan-issue`'s planning contract. Missing visual criteria/sources or a new material design/field/state conflict requires localized plan or requirement alignment before affected execution, preserving code, commits and resume state. Present changed plan content for review; existing execution authorization does not silently approve changed visual scope. A task with UI cannot be treated as backend-only because its historical plan omitted the design.
 
+Preserve the separate visual foundation Feature boundary and delivery order. A dependent business task cannot implement missing system-wide visual alignment under its own phase; missing supplier implementation returns to planning/alignment rather than silently enlarging execution scope.
+
 **Complete when:** one DEV child was identified and its existing plan read or its new plan approved and prepared in Git, or the obstacle was explained and the workflow stopped.
 
 ## 2. Present and execute

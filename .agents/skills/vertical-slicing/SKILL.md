@@ -15,9 +15,9 @@ Define the functional outcome and how to demonstrate it before estimating. Seek 
 
 Map every rule and criterion to observable behavior. Before classifying creation, adaptation or existing behavior, read and apply [inspection evidence](references/inspection-evidence.md). Group changes that must cross necessary layers together to produce the outcome; do not create tasks per layer or include a layer the behavior does not require.
 
-For UI with a declared design, inspect its normalized sources and the parent's visual criteria/adaptations. Cover visual outcomes alongside functional ones; “visual only” does not remove them. Compare existing components/shell with the reference before claiming reuse or existing coverage. Assign shared visual adaptation to its first consuming slice and identify consumers; include that work in estimates. Every UI slice retains its applicable visual criteria and reference locators. If the parent merely names a design without specifying visual acceptance or leaves a material field/state conflict unresolved, return the exact gap to the caller for requirement alignment before affected slicing approval.
+For UI with a declared design, inspect its normalized sources and the parent's visual criteria/adaptations. Cover visual outcomes alongside functional ones; “visual only” does not remove them. Compare existing components/shell with the reference before claiming reuse or existing coverage. System-wide visual adaptation belongs to a separate visual foundation Feature, delivered first, with its own DEV/QA slices and estimates. Business slices name that supplier and consume its implemented baseline while owning their screen-specific appearance. If a business parent absorbs foundational alignment or omits its prerequisite, return the exact boundary/dependency gap for requirement alignment before affected slicing approval. Every UI slice retains its applicable visual criteria and reference locators; missing visual acceptance or unresolved field/state conflicts likewise return to the caller.
 
-Integrate common technical preparation into its first consuming slice. Separate preparation only when it has its own verifiable purpose and the exception is explicit for approval. A small Feature may be one DEV slice; implemented behavior receives evidence and coverage rather than invented work. When the entire Feature is implemented, propose empty slices with complete `existing` coverage for the caller to confirm through review and route to QA only.
+Integrate common technical preparation into its first consuming slice within the responsible Feature. The visual foundation is an independently accepted product Feature, not technical preparation to merge into a business slice. Separate other preparation only when it has its own verifiable purpose and the exception is explicit for approval. A small Feature may be one DEV slice; implemented behavior receives evidence and coverage rather than invented work. When the entire Feature is implemented, propose empty slices with complete `existing` coverage for the caller to confirm through review and route to QA only.
 
 **Complete when:** each slice delivers verifiable behavior and every Feature behavior has exactly one coverage destination.
 
@@ -30,6 +30,8 @@ When an objective technical question prevents complete slicing, read [Study disc
 **Complete when:** complete slices are defined or the blocking uncertainty is formulated as a bounded Study.
 
 ## Order and estimate
+
+Under the visual-first delivery policy, the separate foundation's implemented and visually verified baseline is a startup prerequisite for dependent business slices, not merely integration needed at final acceptance. Name the supplier and preserve that approved order without duplicating its visual work in consumers.
 
 Separate startup blockers from suppliers required for completion. Publication does not prove implementation, and a simulated presentation does not prove integration. For mutual completion dependencies, define joint verification or revise slices without cyclic native blockers. Apply the ceiling after slicing, reuse review and calibration; it does not determine task count.
 
