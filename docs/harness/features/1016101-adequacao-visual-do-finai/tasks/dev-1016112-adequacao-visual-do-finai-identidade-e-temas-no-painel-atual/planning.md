@@ -148,6 +148,24 @@ Completar a linguagem visual dos controles existentes e demonstrar que claro, es
 
 Fase 1 concluída. Usar seus tokens e componentes; não refazer a base nem ampliar a navegação.
 
+### Preflight da validação
+
+Executar a fixture autenticada isolada no host pai e salvar as capturas protegidas em `RALPH_EVIDENCE_DIR`. O executor define `RALPH_CAPTURE_MODE=preflight`.
+
+```powershell
+python 'docs/harness/features/1016101-adequacao-visual-do-finai/tasks/dev-1016112-adequacao-visual-do-finai-identidade-e-temas-no-painel-atual/capture.py'
+exit $LASTEXITCODE
+```
+
+### Verificação renderizada
+
+Complementar as evidências existentes com os avisos positivos de login, recuperação e verificação de e-mail; perfil não verificado e confirmação do reenvio; e os links nos dois modos do desafio de dois fatores. Conferir cada estado nos nove viewports e dois temas já aprovados. A fixture usa sessões e factories isoladas, afirma a presença do estado, escreve imagens e metadados em `RALPH_EVIDENCE_DIR` e falha se faltar qualquer captura esperada. Quando houver `RALPH_EVIDENCE_REQUEST`, lê o pedido como dados e gera toda essa cobertura aprovada. Preservar o relatório e as imagens anteriores; não alterar o comportamento da aplicação para a captura.
+
+```powershell
+python 'docs/harness/features/1016101-adequacao-visual-do-finai/tasks/dev-1016112-adequacao-visual-do-finai-identidade-e-temas-no-painel-atual/capture.py'
+exit $LASTEXITCODE
+```
+
 ### Mudanças esperadas
 
 Adequar primitivas e consumidores compartilhados necessários: botões, inputs, checkbox, seletores, menus, diálogos/sheets, cards, alertas, erro de campo, links, avatar, skeleton/spinner e toast, incluindo hover, foco, ativo, desabilitado, carregamento e feedback quando existentes. Remover cores neutras/fixas que contradigam a identidade, incluindo `appearance-tabs.tsx`, preservando valores, rótulos e eventos. Reusar o mecanismo de tema; mudar sua lógica somente se um defeito observado impedir o comportamento aprovado.

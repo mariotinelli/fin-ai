@@ -20,6 +20,7 @@
     --shadow-overlay: 0 16px 48px #17262220;
 
     --color-positive: var(--positive);
+    --color-overlay: #172622;
     --color-background: var(--background);
     --color-foreground: var(--foreground);
 

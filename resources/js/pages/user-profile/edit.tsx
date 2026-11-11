@@ -90,7 +90,7 @@ export default function Edit({ status }: { status?: string }) {
                                         <Link
                                             href={send()}
                                             as="button"
-                                            className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                            className="rounded-sm text-primary underline decoration-primary/40 underline-offset-4 transition-colors duration-200 ease-out hover:decoration-current focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-ring"
                                         >
                                             Click here to resend the
                                             verification email.
@@ -98,7 +98,7 @@ export default function Edit({ status }: { status?: string }) {
                                     </p>
 
                                     {status === 'verification-link-sent' && (
-                                        <div className="mt-2 text-sm font-medium text-green-600">
+                                        <div className="mt-2 text-sm font-medium text-positive">
                                             A new verification link has been
                                             sent to your email address.
                                         </div>

@@ -118,7 +118,7 @@ export default function Show() {
                                 <span>or you can </span>
                                 <button
                                     type="button"
-                                    className="cursor-pointer text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
+                                    className="cursor-pointer rounded-sm text-primary underline decoration-primary/40 underline-offset-4 transition-colors duration-200 ease-out hover:decoration-current focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-ring"
                                     onClick={() =>
                                         toggleRecoveryMode(clearErrors)
                                     }
