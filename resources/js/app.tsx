@@ -8,7 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import '../css/app.css';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'FinAI';
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
@@ -30,7 +30,7 @@ void createInertiaApp({
         );
     },
     progress: {
-        color: '#4B5563',
+        color: '#145C46',
     },
 });
 

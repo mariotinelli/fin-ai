@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
+from contextlib import ExitStack
 from pathlib import Path
 
 sys.dont_write_bytecode = True
@@ -36,6 +39,29 @@ def cli_compatibility(codex: str, repo: str, sandbox: str) -> str | None:
     return None
 
 
+def permission_profile_config(cleanup: ExitStack) -> str:
+    codex_home = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
+    source = codex_home / "config.toml"
+    content = source.read_text(encoding="utf-8") if source.exists() else ""
+    lines = []
+    section = ""
+    for line in content.splitlines(keepends=True):
+        if line.lstrip().startswith("["):
+            section = line.strip().split("#", 1)[0].strip()
+        if not section and re.match(r"\s*(sandbox_mode|default_permissions)\s*=", line):
+            continue
+        if section == "[sandbox_workspace_write]":
+            continue
+        lines.append(line)
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf-8", prefix="ralph-runtime-", suffix=".config.toml", dir=codex_home, delete=False
+    ) as config:
+        config.write("".join(lines))
+        path = Path(config.name)
+    cleanup.callback(path.unlink, missing_ok=True)
+    return path.name.removesuffix(".config.toml")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=("develop", "validate"), required=True)
@@ -60,8 +86,6 @@ def main() -> int:
         arguments.model,
         "--config",
         'model_reasoning_effort="medium"',
-        "--sandbox",
-        sandbox,
         "--output-schema",
         str(Path(arguments.schema).resolve()),
         "--output-last-message",
@@ -69,15 +93,48 @@ def main() -> int:
         "-",
     ]
     prompt = Path(arguments.prompt).read_text(encoding="utf-8")
-    completed = subprocess.run(
-        command,
-        cwd=arguments.repo,
-        input=prompt,
-        text=True,
-        encoding="utf-8",
-        errors="strict",
-        check=False,
-    )
+    environment = os.environ.copy()
+    with ExitStack() as cleanup:
+        if os.name == "nt":
+            config_profile = permission_profile_config(cleanup)
+            command[2:2] = ["--ignore-user-config", "--profile", config_profile, "--config", 'windows.sandbox="mxc"']
+            if "PLAYWRIGHT_BROWSERS_PATH" not in environment and environment.get("LOCALAPPDATA"):
+                environment["PLAYWRIGHT_BROWSERS_PATH"] = str(Path(environment["LOCALAPPDATA"]) / "ms-playwright")
+            profile = "ralph-validation" if arguments.mode == "validate" else "ralph-development"
+            parent = ":read-only" if arguments.mode == "validate" else ":workspace"
+            command[2:2] = [
+                "--config", f'permissions.{profile}.extends="{parent}"',
+                "--config", f"permissions.{profile}.network.enabled=true",
+                "--config", f'default_permissions="{profile}"',
+            ]
+
+        if os.name == "nt" and arguments.mode == "validate":
+            temporary_directory = cleanup.enter_context(tempfile.TemporaryDirectory(prefix="ralph-validation-"))
+            environment.update(TEMP=temporary_directory, TMP=temporary_directory, TMPDIR=temporary_directory)
+            writable_path = json.dumps(Path(temporary_directory).as_posix())
+            command[2:2] = [
+                "--config", f'permissions.ralph-validation.filesystem={{{writable_path}="write"}}',
+            ]
+            prompt += (
+                "\n\nAmbiente de validação: o repositório permanece em somente leitura. "
+                f"Grave capturas e artefatos temporários somente em {temporary_directory}. "
+                "TEMP, TMP e TMPDIR apontam para essa pasta, removida ao encerrar a validação. "
+                "Acesso de rede está disponível para inspecionar a aplicação local. "
+                "Não execute operações que alterem dados da aplicação durante a revisão.\n"
+            )
+        elif os.name != "nt":
+            command[2:2] = ["--sandbox", sandbox]
+
+        completed = subprocess.run(
+            command,
+            cwd=arguments.repo,
+            input=prompt,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            check=False,
+            env=environment,
+        )
     return completed.returncode
 
 

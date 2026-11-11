@@ -14,11 +14,25 @@ function Toaster({ ...props }: ToasterProps) {
       theme={appearance}
       className="toaster group"
       position="bottom-right"
+      toastOptions={{
+        classNames: {
+          toast: "!shadow-overlay",
+          success: "!border-positive !bg-positive !text-primary-foreground",
+          error: "!border-destructive !bg-destructive !text-destructive-foreground",
+        },
+      }}
       style={
         {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
+          "--normal-bg": "var(--foreground)",
+          "--normal-text": "var(--background)",
+          "--normal-border": "var(--foreground)",
+          "--border-radius": "var(--radius-control)",
+          "--success-bg": "var(--positive)",
+          "--success-text": "var(--primary-foreground)",
+          "--success-border": "var(--positive)",
+          "--error-bg": "var(--destructive)",
+          "--error-text": "var(--destructive-foreground)",
+          "--error-border": "var(--destructive)",
         } as CSSProperties
       }
       {...props}
