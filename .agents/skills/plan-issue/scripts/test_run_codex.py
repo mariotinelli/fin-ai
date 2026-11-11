@@ -59,7 +59,7 @@ class WindowsRunnerTest(unittest.TestCase):
                 raise subprocess.SubprocessError("runner unavailable")
 
             with patch.dict(os.environ, {"CODEX_HOME": directory}), patch.object(sys, "argv", argv):
-                with patch.object(run_codex.subprocess, "run", fail):
+                with patch.object(run_codex, "cli_compatibility", return_value=None), patch.object(run_codex.subprocess, "run", fail):
                     with self.assertRaises(subprocess.SubprocessError):
                         run_codex.main()
             self.assertFalse(observed["temporary"].exists())
