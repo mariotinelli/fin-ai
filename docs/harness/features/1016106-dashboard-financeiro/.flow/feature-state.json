@@ -1,0 +1,305 @@
+{
+  "schema_version": 5,
+  "run_id": "d346be46-ce4c-418a-a37e-bd652d5d7049",
+  "internal_identity": "543aaf95-a35c-4035-96d6-f7884702e442",
+  "mode": "new-scope",
+  "item_type": "Feature",
+  "creation_timing": "after-requirement",
+  "early_creation_request": null,
+  "phase": "completed",
+  "completed_phases": [
+    "mode-confirmed",
+    "inputs-normalized",
+    "repository-analyzed",
+    "interviewing",
+    "requirement-proposed",
+    "item-ready",
+    "requirement-approved",
+    "item-created",
+    "redmine-synchronized",
+    "completed"
+  ],
+  "identity": {
+    "redmine_user_id": 131789,
+    "display_name": "Mário Tinelli",
+    "confirmed_at": "2026-11-11T12:04:38.613981+00:00"
+  },
+  "redmine": {
+    "project_id": 65224,
+    "project_name": "FinAi",
+    "tracker_id": 2,
+    "tracker_name": "Feature",
+    "initial_status_id": 1,
+    "initial_status_name": "New",
+    "mapping_confirmations": [
+      {
+        "kind": "tracker",
+        "selected_id": 2,
+        "selected_name": "Feature",
+        "confirmed_by": "Mário Tinelli",
+        "confirmed_at": "2026-11-11T13:01:36.224298+00:00"
+      },
+      {
+        "kind": "initial-status",
+        "selected_id": 1,
+        "selected_name": "New",
+        "confirmed_by": "Mário Tinelli",
+        "confirmed_at": "2026-11-11T13:01:36.224298+00:00"
+      }
+    ],
+    "version": {
+      "id": 20355,
+      "name": "Sprint 1",
+      "status": "open",
+      "selected_by": "Usu?rio nesta conversa",
+      "selected_at": "2026-11-11T12:04:38.613981+00:00"
+    },
+    "category": {
+      "id": null,
+      "name": null,
+      "confirmed_by": "Mário Tinelli",
+      "confirmed_at": "2026-11-11T13:01:36.224298+00:00"
+    },
+    "issue_id": 1016106
+  },
+  "sources": [
+    {
+      "id": "conversation-input-001",
+      "name": "Escopo Inicial do MVP",
+      "type": "conversa",
+      "origin": "Conversa com o usuário",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "../../scopes/2026-11-11-finai-mvp/sources/conversation-input-001.md",
+      "original_sha256": "f64ad2f891515ac642c71cc7731d86335e1d33a81347c5109f42b788f9abbd2c",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "370f11679cbcf03951fa694bb3975f55b4325039258033749e57e93a226a3086",
+      "extraction_method": "Transcrição UTF-8 da entrada do usuário, com quebras de linha LF",
+      "fully_read": true
+    },
+    {
+      "id": "conversation-input-002",
+      "name": "Decisões de delimitação do catálogo",
+      "type": "conversa",
+      "origin": "Conversa com o usuário",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "../../scopes/2026-11-11-finai-mvp/sources/conversation-input-002.md",
+      "original_sha256": "cd643306d1cc5f905e8db3e64d8f0d63861f785ae4811e7a35d7be2673b8c79a",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "6ae4c34f0e767dcfc6c6c7b897409aca147a455870118fbc2490aab6b0c5592f",
+      "extraction_method": "Transcrição UTF-8 da entrada do usuário, com quebras de linha LF",
+      "fully_read": true
+    },
+    {
+      "id": "design-input-001",
+      "name": "FinAI-Controle-Financeiro.zip",
+      "type": "pacote de design",
+      "origin": "C:\\Users\\maari\\Downloads\\FinAI-Controle-Financeiro.zip",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "../../scopes/2026-11-11-finai-mvp/sources/design-input-001.md",
+      "original_sha256": "d7fec0da8d116208b921ee8cb152b8c3710cf4a7500e30aca6d7b43270dddbd5",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "867b473644faa8058016c35bdf58adc874597f5b7c6aa17e41f484cb5be8e7ee",
+      "extraction_method": "zipfile; três membros UTF-8 lidos integralmente sem executar o conteúdo",
+      "fully_read": true
+    }
+  ],
+  "repository": {
+    "stack": [
+      "PHP ^8.5 e Laravel ^13.40 conforme composer.json",
+      "React ^19.3 e Inertia ^3.11 conforme package.json",
+      "Aplicação web com dashboard placeholder e componentes compartilhados"
+    ],
+    "vocabulary": [
+      {
+        "term": "Saldo geral",
+        "evidence_paths": [
+          "../../scopes/2026-11-11-finai-mvp/sources/design-input-001.md"
+        ]
+      },
+      {
+        "term": "Movimentações realizadas",
+        "evidence_paths": [
+          "docs/harness/features/1016105-gestao-de-transacoes/feature.md"
+        ]
+      }
+    ],
+    "exclusions": [
+      ".env*",
+      "auth.json",
+      "credentials",
+      "vendor/**",
+      "node_modules/**",
+      ".git/**",
+      "public/build/**",
+      "storage/**",
+      "*.sqlite",
+      "arquivos gerados de rotas",
+      "conte?do de todas as issues Redmine existentes"
+    ]
+  },
+  "decisions": [],
+  "approvals": [
+    {
+      "id": "req-dashboard-001",
+      "kind": "requirement",
+      "subject_sha256": "c7e6839399ca74ee6c27d25a269fe3e5280065a09018ea84f865615ff6f0d135",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T13:01:36.224298+00:00",
+      "status": "valid",
+      "document_path": ".flow/publications/683b6ce8-7a63-40f6-8735-bd51feab37eb/feature-snapshot.md"
+    },
+    {
+      "id": "plan-dashboard-001",
+      "kind": "publication-plan",
+      "subject_sha256": "025a67b0916e38800d93b38378c24141ff85dc5870187ab8f9cb5b75798f17d5",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T13:01:36.224298+00:00",
+      "status": "valid",
+      "plan_path": ".flow/publications/683b6ce8-7a63-40f6-8735-bd51feab37eb/plan.json"
+    }
+  ],
+  "deferred_questions": [],
+  "pauses": [],
+  "lock": {
+    "item_key": "finai-65224-dashboard-financeiro",
+    "lock_id": "3717f33b-b59d-419b-ab77-8c1133dcbaf3",
+    "path": "docs/harness/.locks/6f4195d504f0719f0f01b2c57d8c8eaabf32a9df277affe93c42c3b88631a091.lock.json",
+    "acquired_at": "2026-11-11T12:56:54.234847Z"
+  },
+  "remote_operations": {
+    "create": {
+      "status": "completed",
+      "payload_sha256": "2d8adf12d46980999b30d19ca98ed5f6d3be72ffca852843e445caa375f35cf6",
+      "plan_approval_id": "plan-dashboard-001",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T13:01:36.224298+00:00",
+      "attempts": [
+        {
+          "id": "create-dashboard-attempt-001",
+          "attempted_at": "2026-11-11T13:02:00.956024+00:00",
+          "outcome": "completed"
+        }
+      ],
+      "completed_at": "2026-11-11T13:02:00.956024+00:00",
+      "observation_id": "create-dashboard-observation-001"
+    },
+    "publish": {
+      "status": "completed",
+      "payload_sha256": "fa01f2b10f2e16d87f6b69d477d0346247d3d9b2591b70217831c1e3071c6d6a",
+      "plan_approval_id": "plan-dashboard-001",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T13:01:36.224298+00:00",
+      "attempts": [
+        {
+          "id": "publish-dashboard-attempt-001",
+          "attempted_at": "2026-11-11T13:03:05.867575+00:00",
+          "outcome": "completed"
+        }
+      ],
+      "baseline_path": ".flow/publications/683b6ce8-7a63-40f6-8735-bd51feab37eb/publish-baseline.json",
+      "baseline_sha256": "bd0d15007ccfb765291f44bde94f34cb90ee6a2e004bcc1d7120307ecc4bfa36",
+      "completed_at": "2026-11-11T13:03:05.867575+00:00",
+      "observation_id": "publish-dashboard-observation-001"
+    },
+    "relations": [
+      {
+        "status": "completed",
+        "payload_sha256": "7112391e19e2032b6f5f2cd82ee39383fc433bd3622ab0b2d7574a36b1c2455a",
+        "plan_approval_id": "plan-dashboard-001",
+        "approved_by": "Mário Tinelli",
+        "approved_at": "2026-11-11T13:01:36.224298+00:00",
+        "attempts": [
+          {
+            "id": "relation-dashboard-attempt-001",
+            "attempted_at": "2026-11-11T13:03:55.519022+00:00",
+            "outcome": "completed"
+          }
+        ],
+        "key": "transacoes-blocks-dashboard",
+        "relation_type": "blocks",
+        "source_issue_id": 1016105,
+        "target_issue_id": 1016106,
+        "completed_at": "2026-11-11T13:03:55.519022+00:00",
+        "observation_id": "relation-dashboard-observation-001"
+      }
+    ]
+  },
+  "remote_observations": [
+    {
+      "id": "create-dashboard-observation-001",
+      "operation_key": "create",
+      "observed_at": "2026-11-11T13:02:00.956024+00:00",
+      "outcome": "matched",
+      "summary": "MCP confirmou a operacao aprovada create da Feature dashboard; resposta retida no diretorio de publicacao."
+    },
+    {
+      "id": "publish-dashboard-observation-001",
+      "operation_key": "publish",
+      "observed_at": "2026-11-11T13:03:05.867575+00:00",
+      "outcome": "matched",
+      "summary": "MCP confirmou a operacao aprovada publish da Feature dashboard; resposta retida no diretorio de publicacao."
+    },
+    {
+      "id": "relation-dashboard-observation-001",
+      "operation_key": "transacoes-blocks-dashboard",
+      "observed_at": "2026-11-11T13:03:55.519022+00:00",
+      "outcome": "matched",
+      "summary": "MCP confirmou a operacao aprovada relation da Feature dashboard; resposta retida no diretorio de publicacao."
+    }
+  ],
+  "requirement_divergences": [],
+  "title_convention": {
+    "surfaces": [
+      "WEB"
+    ],
+    "audiences": [
+      "USUARIO"
+    ],
+    "audience_mode": "single",
+    "shared_public_rule": "USUARIO identifica o titular da conta pessoal; os fluxos públicos de acesso pertencem à mesma jornada. Proposta de títulos para este catálogo, independente das issues antigas.",
+    "confirmation": {
+      "statement": "Proposta do agente: [WEB] [USUARIO] Nome da capacidade; sujeita à aprovação integral do catálogo.",
+      "confirmed_by": "Agente — proposta ainda não aprovada pelo usuário",
+      "confirmed_at": "2026-11-11T12:06:47.153690+00:00"
+    }
+  },
+  "delivery": {
+    "surface": "WEB",
+    "audiences": [
+      "USUARIO"
+    ],
+    "name": "Dashboard financeiro",
+    "title": "[WEB] [USUARIO] Dashboard financeiro",
+    "visible_delivery": "Saldo geral, receitas e despesas do mês e últimas movimentações refletem os dados do titular.",
+    "user_result": "Compreender a situação financeira pessoal a partir dos registros reais.",
+    "included": [
+      "Saldo geral e totais mensais; seleção de mês",
+      "Balanço simples de receitas/despesas e resultado mensal demonstrados no design",
+      "Movimentações recentes e acessos ao histórico, cadastro e assistente",
+      "Atualização após alterações persistidas; isolamento por titular; estados vazio e indisponibilidade"
+    ],
+    "boundary_reason": "Entrega de leitura e síntese; o histórico completo e as operações pertencem à gestão de transações. O balanço simples não amplia para relatórios avançados."
+  },
+  "scope_item": {
+    "state_path": "../../scopes/2026-11-11-finai-mvp/.flow/scope-state.json",
+    "catalog_item_id": "dashboard",
+    "catalog_sha256": "8c275dfb1852fd8d83c9f1d70c12405fec8c1cc3b5ed263b5df4b4f5d61e0f8f"
+  },
+  "classification": {
+    "suggested_type": "Feature",
+    "rationale": "Capacidade de visualização financeira prevista no catálogo aprovado, baseada nos registros pessoais persistidos.",
+    "confirmed_type": "Feature",
+    "confirmed_by": "Mário Tinelli",
+    "confirmed_at": "2026-11-11T13:01:36.224298+00:00"
+  },
+  "similarity": {
+    "searched_at": "2026-11-11T12:59:03.665513+00:00",
+    "candidates": [],
+    "decision": "new-demand",
+    "confirmed_by": "Mário Tinelli",
+    "confirmed_at": "2026-11-11T13:01:36.224298+00:00"
+  }
+}

@@ -1,0 +1,1 @@
+{"id":1016104,"project":{"id":65224,"name":"FinAi"},"fixed_version":{"id":20355,"name":"Sprint 1"},"subject":"[WEB] [USUARIO] Acesso à conta pessoal","status":{"id":1,"name":"New","is_closed":false},"relations":[{"id":835,"issue_id":1016101,"issue_to_id":1016104,"relation_type":"blocks","delay":null}]}

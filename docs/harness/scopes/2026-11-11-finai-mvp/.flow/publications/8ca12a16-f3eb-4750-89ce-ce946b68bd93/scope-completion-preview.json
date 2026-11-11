@@ -1,0 +1,123 @@
+{
+  "summary_sha256": "d2a86ccfcbc8ae65eb17d07db234cf37c1cd1a64bb0322dfbc55acfd51ababc1",
+  "summary": {
+    "issues": [
+      {
+        "id": 1016101,
+        "name": "Adequação visual do FinAI",
+        "sequencing": 1,
+        "version": "Sprint 1",
+        "status": "New"
+      },
+      {
+        "id": 1016104,
+        "name": "Acesso à conta pessoal",
+        "sequencing": 2,
+        "version": "Sprint 1",
+        "status": "New"
+      },
+      {
+        "id": 1016105,
+        "name": "Gestão de transações",
+        "sequencing": 3,
+        "version": "Sprint 1",
+        "status": "New"
+      },
+      {
+        "id": 1016106,
+        "name": "Dashboard financeiro",
+        "sequencing": 4,
+        "version": "Sprint 1",
+        "status": "New"
+      },
+      {
+        "id": 1016107,
+        "name": "Assistente financeiro com IA",
+        "sequencing": 5,
+        "version": "Sprint 1",
+        "status": "New"
+      }
+    ],
+    "relations": [
+      {
+        "id": 835,
+        "from_issue_id": 1016101,
+        "to_issue_id": 1016104,
+        "type": "blocks"
+      },
+      {
+        "id": 836,
+        "from_issue_id": 1016104,
+        "to_issue_id": 1016105,
+        "type": "blocks"
+      },
+      {
+        "id": 837,
+        "from_issue_id": 1016105,
+        "to_issue_id": 1016106,
+        "type": "blocks"
+      },
+      {
+        "id": 838,
+        "from_issue_id": 1016105,
+        "to_issue_id": 1016107,
+        "type": "blocks"
+      }
+    ],
+    "artifacts": [
+      "docs/harness/scopes/2026-11-11-finai-mvp/scope.md",
+      "docs/harness/features/1016101-adequacao-visual-do-finai/feature.md",
+      "docs/harness/features/1016104-acesso-a-conta-pessoal/feature.md",
+      "docs/harness/features/1016105-gestao-de-transacoes/feature.md",
+      "docs/harness/features/1016106-dashboard-financeiro/feature.md",
+      "docs/harness/features/1016107-assistente-financeiro-com-ia/feature.md"
+    ],
+    "approvals": [
+      {
+        "kind": "complete-catalog-and-order",
+        "approved_by": "Mário Tinelli",
+        "subject_sha256": "8c275dfb1852fd8d83c9f1d70c12405fec8c1cc3b5ed263b5df4b4f5d61e0f8f"
+      },
+      {
+        "item_id": "visual",
+        "requirement": "req-visual-001",
+        "publication_plan": "plan-visual-001",
+        "approved_by": "Mário Tinelli"
+      },
+      {
+        "item_id": "acesso",
+        "requirement": "req-acesso-001",
+        "publication_plan": "plan-acesso-001",
+        "approved_by": "Mário Tinelli"
+      },
+      {
+        "item_id": "transacoes",
+        "requirement": "req-transacoes-001",
+        "publication_plan": "plan-transacoes-001",
+        "approved_by": "Mário Tinelli"
+      },
+      {
+        "item_id": "dashboard",
+        "requirement": "req-dashboard-001",
+        "publication_plan": "plan-dashboard-001",
+        "approved_by": "Mário Tinelli"
+      },
+      {
+        "item_id": "assistente",
+        "requirement": "req-assistente-001",
+        "publication_plan": "plan-assistente-001",
+        "approved_by": "Mário Tinelli"
+      }
+    ],
+    "validations": [
+      "Cinco estados de requisito em completed validados.",
+      "Cinco descrições remotas comparadas integralmente com os requisitos aprovados.",
+      "Quatro relações conferidas em ambos os extremos.",
+      "Projeto FinAi, Sprint 1, Sequencing 1 a 5 e estado New conferidos.",
+      "Três fontes normalizadas com hashes conferidos.",
+      "Estado do escopo e catálogo gerado validados, sem lacunas funcionais abertas."
+    ],
+    "next_recommendation": "Preparar as fatias DEV e QA da Adequação visual do FinAI (#1016101), respeitando a ordem de dependências; implementação ainda não executada."
+  },
+  "scope_document": "docs/harness/scopes/2026-11-11-finai-mvp/scope.md"
+}

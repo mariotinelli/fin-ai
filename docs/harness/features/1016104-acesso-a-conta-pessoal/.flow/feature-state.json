@@ -1,0 +1,328 @@
+{
+  "schema_version": 5,
+  "run_id": "92c15ad8-bf89-4c23-bf1f-6c6c4b7f6710",
+  "internal_identity": "d710cb76-d6ed-42c3-a90f-fafb140727d3",
+  "mode": "new-scope",
+  "item_type": "Feature",
+  "creation_timing": "after-requirement",
+  "early_creation_request": null,
+  "phase": "completed",
+  "completed_phases": [
+    "mode-confirmed",
+    "inputs-normalized",
+    "repository-analyzed",
+    "interviewing",
+    "requirement-proposed",
+    "item-ready",
+    "requirement-approved",
+    "item-created",
+    "redmine-synchronized",
+    "completed"
+  ],
+  "identity": {
+    "redmine_user_id": 131789,
+    "display_name": "Mário Tinelli",
+    "confirmed_at": "2026-11-11T12:04:38.613981+00:00"
+  },
+  "redmine": {
+    "project_id": 65224,
+    "project_name": "FinAi",
+    "tracker_id": 2,
+    "tracker_name": "Feature",
+    "initial_status_id": 1,
+    "initial_status_name": "New",
+    "mapping_confirmations": [
+      {
+        "kind": "tracker",
+        "selected_id": 2,
+        "selected_name": "Feature",
+        "confirmed_by": "Mário Tinelli",
+        "confirmed_at": "2026-11-11T12:44:24.937466+00:00"
+      },
+      {
+        "kind": "initial-status",
+        "selected_id": 1,
+        "selected_name": "New",
+        "confirmed_by": "Mário Tinelli",
+        "confirmed_at": "2026-11-11T12:44:24.937466+00:00"
+      }
+    ],
+    "version": {
+      "id": 20355,
+      "name": "Sprint 1",
+      "status": "open",
+      "selected_by": "Usu?rio nesta conversa",
+      "selected_at": "2026-11-11T12:04:38.613981+00:00"
+    },
+    "category": {
+      "id": null,
+      "name": null,
+      "confirmed_by": "Mário Tinelli",
+      "confirmed_at": "2026-11-11T12:44:24.937466+00:00"
+    },
+    "issue_id": 1016104
+  },
+  "sources": [
+    {
+      "id": "conversation-input-001",
+      "name": "Escopo Inicial do MVP",
+      "type": "conversa",
+      "origin": "Conversa com o usuário",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "../../scopes/2026-11-11-finai-mvp/sources/conversation-input-001.md",
+      "original_sha256": "f64ad2f891515ac642c71cc7731d86335e1d33a81347c5109f42b788f9abbd2c",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "370f11679cbcf03951fa694bb3975f55b4325039258033749e57e93a226a3086",
+      "extraction_method": "Transcrição UTF-8 da entrada do usuário, com quebras de linha LF",
+      "fully_read": true
+    },
+    {
+      "id": "conversation-input-002",
+      "name": "Decisões de delimitação do catálogo",
+      "type": "conversa",
+      "origin": "Conversa com o usuário",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "../../scopes/2026-11-11-finai-mvp/sources/conversation-input-002.md",
+      "original_sha256": "cd643306d1cc5f905e8db3e64d8f0d63861f785ae4811e7a35d7be2673b8c79a",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "6ae4c34f0e767dcfc6c6c7b897409aca147a455870118fbc2490aab6b0c5592f",
+      "extraction_method": "Transcrição UTF-8 da entrada do usuário, com quebras de linha LF",
+      "fully_read": true
+    },
+    {
+      "id": "design-input-001",
+      "name": "FinAI-Controle-Financeiro.zip",
+      "type": "pacote de design",
+      "origin": "C:\\Users\\maari\\Downloads\\FinAI-Controle-Financeiro.zip",
+      "status": "normalized",
+      "decision_reconciliation": "not-applicable",
+      "path": "../../scopes/2026-11-11-finai-mvp/sources/design-input-001.md",
+      "original_sha256": "d7fec0da8d116208b921ee8cb152b8c3710cf4a7500e30aca6d7b43270dddbd5",
+      "hash_unavailable_reason": null,
+      "normalized_sha256": "867b473644faa8058016c35bdf58adc874597f5b7c6aa17e41f484cb5be8e7ee",
+      "extraction_method": "zipfile; três membros UTF-8 lidos integralmente sem executar o conteúdo",
+      "fully_read": true
+    }
+  ],
+  "repository": {
+    "stack": [
+      "PHP ^8.5 e Laravel ^13.40 conforme composer.json",
+      "React ^19.3 e Inertia ^3.11 conforme package.json",
+      "Aplicação web com dashboard placeholder e componentes compartilhados"
+    ],
+    "vocabulary": [
+      {
+        "term": "Conta pessoal",
+        "evidence_paths": [
+          "app/Models/User.php",
+          "app/Http/Requests/CreateUserRequest.php"
+        ]
+      },
+      {
+        "term": "Confirmação de e-mail",
+        "evidence_paths": [
+          "app/Models/User.php",
+          "routes/web.php"
+        ]
+      }
+    ],
+    "exclusions": [
+      ".env*",
+      "auth.json",
+      "credentials",
+      "vendor/**",
+      "node_modules/**",
+      ".git/**",
+      "public/build/**",
+      "storage/**",
+      "*.sqlite",
+      "arquivos gerados de rotas",
+      "conte?do de todas as issues Redmine existentes"
+    ]
+  },
+  "decisions": [
+    {
+      "id": "acesso-cadastro-001",
+      "statement": "Cadastro aberto: qualquer visitante pode criar sua conta, sem convite ou liberação prévia.",
+      "decided_by": "Usuário nesta conversa: q5. A",
+      "decided_at": "2026-11-11T12:36:05.989267+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "acesso-confirmacao-001",
+      "statement": "Sem confirmar o e-mail, o usuário não acessa a área do sistema. A jornada restrita de confirmação, reenvio e saída permite concluir a confirmação ou encerrar o acesso.",
+      "decided_by": "Usuário nesta conversa: q6. acredito que sem confirmar e-mail ele nao consegue acessar o sistema",
+      "decided_at": "2026-11-11T12:36:05.989267+00:00",
+      "status": "valid"
+    },
+    {
+      "id": "acesso-senha-001",
+      "statement": "Cadastro e redefinição exigem senha de 12 a 255 caracteres, com maiúscula, minúscula, número e símbolo, rejeitando senhas conhecidas em vazamentos. Aplicar a mesma validação nos ambientes de teste e uso.",
+      "decided_by": "Usuário nesta conversa: a, em resposta a Q7",
+      "decided_at": "2026-11-11T12:38:16.964864+00:00",
+      "status": "valid"
+    }
+  ],
+  "approvals": [
+    {
+      "id": "req-acesso-001",
+      "kind": "requirement",
+      "subject_sha256": "9827a21983cb3421337ae2ad66216b4043ee5ce74c4ca8f6a559ed8d82708652",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T12:44:24.937466+00:00",
+      "status": "valid",
+      "document_path": ".flow/publications/69ab98d6-4dfa-4992-989d-66a892ecb79b/feature-snapshot.md"
+    },
+    {
+      "id": "plan-acesso-001",
+      "kind": "publication-plan",
+      "subject_sha256": "bb0e78234c512425bddbe77233b5bd9b3a5d120faf135df948301d13b95fcd2a",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T12:44:24.937466+00:00",
+      "status": "valid",
+      "plan_path": ".flow/publications/69ab98d6-4dfa-4992-989d-66a892ecb79b/plan.json"
+    }
+  ],
+  "deferred_questions": [],
+  "pauses": [],
+  "lock": {
+    "item_key": "finai-65224-acesso-conta-pessoal",
+    "lock_id": "63abd9ae-cb43-420d-b0fd-7205ddc67bc5",
+    "path": "docs/harness/.locks/0667e86e4798c5627fc4bfd6cbdae54410fdc7fb1e926f39c74c1501eb348abb.lock.json",
+    "acquired_at": "2026-11-11T12:24:42.733245Z"
+  },
+  "remote_operations": {
+    "create": {
+      "status": "completed",
+      "payload_sha256": "da262e8f47a1965cee9138f7bc59a7811dd0f487ede96e66b4b81917747a1a99",
+      "plan_approval_id": "plan-acesso-001",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T12:44:24.937466+00:00",
+      "attempts": [
+        {
+          "id": "create-acesso-attempt-001",
+          "attempted_at": "2026-11-11T12:44:51.660465+00:00",
+          "outcome": "completed"
+        }
+      ],
+      "completed_at": "2026-11-11T12:44:51.660465+00:00",
+      "observation_id": "create-acesso-observation-001"
+    },
+    "publish": {
+      "status": "completed",
+      "payload_sha256": "a51dcbf3b5760cf058648af04dcbd93e3910d5ef43219eadb11bf7df771a8a65",
+      "plan_approval_id": "plan-acesso-001",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T12:44:24.937466+00:00",
+      "attempts": [
+        {
+          "id": "publish-acesso-attempt-001",
+          "attempted_at": "2026-11-11T12:45:55.918077+00:00",
+          "outcome": "completed"
+        }
+      ],
+      "baseline_path": ".flow/publications/69ab98d6-4dfa-4992-989d-66a892ecb79b/publish-baseline.json",
+      "baseline_sha256": "80c17bc1ad1945edb593807fe9d3f37c23fc82c897042c9200c7f1a3a351000c",
+      "completed_at": "2026-11-11T12:45:55.918077+00:00",
+      "observation_id": "publish-acesso-observation-001"
+    },
+    "relations": [
+      {
+        "status": "completed",
+        "payload_sha256": "52a3e1dd6dfaa92e1c584159b4f63f42015578dd5ef79070873f7566605675e5",
+        "plan_approval_id": "plan-acesso-001",
+        "approved_by": "Mário Tinelli",
+        "approved_at": "2026-11-11T12:44:24.937466+00:00",
+        "attempts": [
+          {
+            "id": "relation-acesso-attempt-001",
+            "attempted_at": "2026-11-11T12:46:35.665968+00:00",
+            "outcome": "completed"
+          }
+        ],
+        "key": "visual-blocks-acesso",
+        "relation_type": "blocks",
+        "source_issue_id": 1016101,
+        "target_issue_id": 1016104,
+        "completed_at": "2026-11-11T12:46:35.665968+00:00",
+        "observation_id": "relation-acesso-observation-001"
+      }
+    ]
+  },
+  "remote_observations": [
+    {
+      "id": "create-acesso-observation-001",
+      "operation_key": "create",
+      "observed_at": "2026-11-11T12:44:51.660465+00:00",
+      "outcome": "matched",
+      "summary": "MCP confirmou a operacao aprovada create do requisito de acesso; resposta retida no diretorio de publicacao."
+    },
+    {
+      "id": "publish-acesso-observation-001",
+      "operation_key": "publish",
+      "observed_at": "2026-11-11T12:45:55.918077+00:00",
+      "outcome": "matched",
+      "summary": "MCP confirmou a operacao aprovada publish do requisito de acesso; resposta retida no diretorio de publicacao."
+    },
+    {
+      "id": "relation-acesso-observation-001",
+      "operation_key": "visual-blocks-acesso",
+      "observed_at": "2026-11-11T12:46:35.665968+00:00",
+      "outcome": "matched",
+      "summary": "MCP confirmou a operacao aprovada relation do requisito de acesso; resposta retida no diretorio de publicacao."
+    }
+  ],
+  "requirement_divergences": [],
+  "title_convention": {
+    "surfaces": [
+      "WEB"
+    ],
+    "audiences": [
+      "USUARIO"
+    ],
+    "audience_mode": "single",
+    "shared_public_rule": "USUARIO identifica o titular da conta pessoal; os fluxos públicos de acesso pertencem à mesma jornada. Proposta de títulos para este catálogo, independente das issues antigas.",
+    "confirmation": {
+      "statement": "Proposta do agente: [WEB] [USUARIO] Nome da capacidade; sujeita à aprovação integral do catálogo.",
+      "confirmed_by": "Agente — proposta ainda não aprovada pelo usuário",
+      "confirmed_at": "2026-11-11T12:06:47.153690+00:00"
+    }
+  },
+  "delivery": {
+    "surface": "WEB",
+    "audiences": [
+      "USUARIO"
+    ],
+    "name": "Acesso à conta pessoal",
+    "title": "[WEB] [USUARIO] Acesso à conta pessoal",
+    "visible_delivery": "Cadastro, entrada, saída e recuperação de senha disponíveis ao titular.",
+    "user_result": "Criar e acessar uma conta própria para manter o espaço financeiro pessoal separado.",
+    "included": [
+      "Cadastro, login, saída e recuperação de senha",
+      "Estados de validação, sucesso e falha na jornada de acesso",
+      "Identificação da conta atual; delimitação de acesso ao espaço pessoal"
+    ],
+    "boundary_reason": "Capacidade completa de acesso; isolamento de cada operação e consulta financeira é coberto na Feature que a realiza. Não se presume nenhuma entrega anterior."
+  },
+  "scope_item": {
+    "state_path": "../../scopes/2026-11-11-finai-mvp/.flow/scope-state.json",
+    "catalog_item_id": "acesso",
+    "catalog_sha256": "8c275dfb1852fd8d83c9f1d70c12405fec8c1cc3b5ed263b5df4b4f5d61e0f8f"
+  },
+  "classification": {
+    "suggested_type": "Feature",
+    "rationale": "Capacidade de acesso pessoal prevista no catálogo aprovado, com cadastro, confirmação, entrada, saída e recuperação.",
+    "confirmed_type": "Feature",
+    "confirmed_by": "Mário Tinelli",
+    "confirmed_at": "2026-11-11T12:44:24.937466+00:00"
+  },
+  "similarity": {
+    "searched_at": "2026-11-11T12:38:43.806325+00:00",
+    "candidates": [],
+    "decision": "new-demand",
+    "confirmed_by": "Mário Tinelli",
+    "confirmed_at": "2026-11-11T12:44:24.937466+00:00"
+  }
+}
