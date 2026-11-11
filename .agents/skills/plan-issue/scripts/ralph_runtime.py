@@ -137,6 +137,8 @@ def human_event(record: dict[str, Any]) -> str | None:
             return "Execução concluída. Revise o diff completo e teste no navegador quando aplicável."
         return None
     label, gate_name = gates[gate]
+    if event == "evidence-preparation":
+        return f"[EVIDÊNCIAS] Completando capturas com o comando aprovado; pedido: {record['report_path']} [{instant}]"
     if event == "agent-progress":
         return f"[{label}] {gate_name} em andamento; diagnóstico atualizado: {record['report_path']} [{instant}]"
     if event == "gate-started":

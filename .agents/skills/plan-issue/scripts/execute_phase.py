@@ -374,11 +374,15 @@ def validate_result(result: dict[str, Any], mode: str) -> None:
         if result["verdict"] == "approved" and visual["status"] == "blocked":
             fail("validation cannot approve with required visual verification blocked")
         for finding in result["findings"]:
-            if not isinstance(finding, dict) or finding.get("kind", "defect") not in {"defect", "verification-blocked"}:
+            if not isinstance(finding, dict) or finding.get("kind", "defect") not in {"defect", "verification-blocked", "evidence-missing"}:
                 fail("validation finding requires a valid kind")
             for field in ("severity", "criterion", "evidence"):
                 if not isinstance(finding.get(field), str) or not finding[field].strip():
                     fail("validation finding requires severity criterion and evidence")
+            if finding.get("kind") == "evidence-missing" and (not isinstance(finding.get("plan_basis"), str) or not finding["plan_basis"].strip()):
+                fail("missing evidence requires the approved plan excerpt in plan_basis")
+            if finding.get("kind") == "evidence-missing" and visual["status"] != "blocked":
+                fail("missing required visual evidence must report blocked visual validation")
         if result["verdict"] == "approved" and result["findings"]:
             fail("approved validation cannot contain defects or verification blockers")
 
@@ -393,8 +397,21 @@ def validation_action(result: dict[str, Any]) -> str:
     if any(f.get("kind", "verification-blocked" if visual_blocked else "defect") == "defect" for f in result["findings"]):
         return "retry"
     if visual_blocked or any(f.get("kind") == "verification-blocked" for f in result["findings"]):
+        if result["findings"] and all(f.get("kind") == "evidence-missing" for f in result["findings"]):
+            return "prepare-evidence"
         return "blocked"
     fail("rejected validation requires a demonstrated defect or verification blocker")
+
+
+def validate_evidence_scope(result: dict[str, Any], planning: str, phase_body: str) -> None:
+    """Evidence gaps must point to this phase or its shared approved plan."""
+    shared = re.split(r"^## Fase \d+\s+[—-]\s+", planning, maxsplit=1, flags=re.MULTILINE)[0]
+    approved = " ".join((shared + "\n" + phase_body).split())
+    for finding in result.get("findings", []):
+        if finding.get("kind") == "evidence-missing":
+            basis = " ".join(str(finding.get("plan_basis", "")).split())
+            if not basis or basis not in approved:
+                fail("evidence request exceeds the approved phase/shared plan; review plan_basis without expanding capture scope")
 
 
 def validation_report(result: dict[str, Any], *, defects_only: bool = False) -> str:
@@ -441,7 +458,7 @@ def run_tests(repo: Path, command: str, phase: int, timeout: float, language: st
     return returncode == 0, "\n".join(lines[-80:]) or f"test command exited with code {returncode}", output_path
 
 
-def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: float, *, heading: str = "Verificação renderizada") -> dict[str, Any]:
+def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: float, *, heading: str = "Verificação renderizada", evidence_request: Path | None = None) -> dict[str, Any]:
     capture = rendered_command(phase_body, heading)
     if capture is None:
         return {"status": "not-configured", "images": [], "message": "Sem comando de captura no plano; usar evidências acessíveis existentes ou registrar bloqueio."}
@@ -456,6 +473,10 @@ def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: 
     environment["RALPH_EVIDENCE_DIR"] = str(directory.resolve())
     environment["RALPH_PHASE_NUMBER"] = str(phase)
     environment["RALPH_CAPTURE_MODE"] = "preflight" if heading == "Preflight da validação" else "validation"
+    # Never inherit a request from a previous task or from the caller's shell.
+    environment.pop("RALPH_EVIDENCE_REQUEST", None)
+    if evidence_request is not None:
+        environment["RALPH_EVIDENCE_REQUEST"] = str(evidence_request.resolve())
     report: dict[str, Any] = {"status": "failed", "directory": str(directory), "log": str(log), "images": []}
     try:
         with tempfile.TemporaryDirectory(prefix="ralph-capture-") as temporary:
@@ -548,12 +569,24 @@ def execute(arguments: argparse.Namespace) -> int:
                 continue
             if worktree_changes(repo) and state.get("current_phase") != number:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
-            resume_validation = state.get("current_phase") == number and state.get("current_gate") in {"validation", "validation-blocked"}
+            resume_validation = state.get("current_phase") == number and state.get("current_gate") in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked"}
             save_state(state_path, state, current_phase=number, current_gate="validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
             correction = str(state.get("last_failure", "")).strip()
             rendered: dict[str, Any] = {"status": "not-configured", "images": []}
             development_path = EVENTS.root.parent / f"phase-{number}-development.json"
+            evidence_request_path = EVENTS.root.parent / f"phase-{number}-evidence-request.json"
+            evidence_request = evidence_request_path if resume_validation and evidence_request_path.is_file() else None
+            previous_rendered: dict[str, Any] = {}
+            if evidence_request:
+                saved_request = redact_result(json.loads(evidence_request.read_text(encoding="utf-8")))
+                if not isinstance(saved_request, dict):
+                    fail("saved evidence request must be a JSON object; changes preserved")
+                validate_result(saved_request, "validate")
+                validate_evidence_scope(saved_request, planning.read_text(encoding="utf-8"), body)
+                previous_rendered = saved_request.get("rendered_verification", {})
+                if not isinstance(previous_rendered, dict) or not isinstance(previous_rendered.get("images", []), list):
+                    fail("saved rendered evidence report is invalid; changes preserved")
             development: dict[str, Any] = {"status": "unavailable", "message": "Relatório anterior indisponível; verificar evidências existentes e registrar lacunas."}
             if resume_validation and development_path.is_file():
                 try:
@@ -570,6 +603,7 @@ def execute(arguments: argparse.Namespace) -> int:
                 values = {"REPOSITORY": str(repo), "CONTEXT_PATHS": context, "PHASE": body, "PHASE_NUMBER": str(number), "CORRECTION_REPORT": correction,
                           "RENDERED_VERIFICATION": json.dumps(rendered, ensure_ascii=False, indent=2)}
                 if not resume_validation:
+                    previous_rendered = {}
                     started = gate_started(number, "development", attempt)
                     template = package / "prompts" / ("correct.md" if correction else "develop.md")
                     result = invoke_agent(package, repo, "develop", render(template, values), package / "schemas" / "development-result.schema.json", number, arguments.dev_timeout_minutes * 60, arguments.model)
@@ -583,24 +617,46 @@ def execute(arguments: argparse.Namespace) -> int:
 
                 save_state(state_path, state, current_gate="validation")
                 started = gate_started(number, "validation", attempt)
-                rendered = run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60)
-                values["RENDERED_VERIFICATION"] = json.dumps(rendered, ensure_ascii=False, indent=2)
-                values["DEVELOPMENT_REPORT"] = json.dumps(development, ensure_ascii=False, indent=2)
-                values["VALIDATION_PREFLIGHT"] = json.dumps(preflight, ensure_ascii=False, indent=2)
-                before = worktree_fingerprint(repo)
-                try:
-                    validation = invoke_agent(package, repo, "validate", render(package / "prompts" / "validate.md", values), package / "schemas" / "validation-result.schema.json", number, arguments.validation_timeout_minutes * 60, arguments.model)
-                    validate_result(validation, "validate")
-                except (ExecutionError, RuntimeFailure, OSError) as error:
+                for evidence_attempt in range(2):
+                    rendered = run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60, evidence_request=evidence_request)
+                    if previous_rendered:
+                        rendered["previous_reports"] = [previous_rendered]
+                        rendered["images"] = list(dict.fromkeys([*previous_rendered.get("images", []), *rendered.get("images", [])]))
+                    values["RENDERED_VERIFICATION"] = json.dumps(rendered, ensure_ascii=False, indent=2)
+                    values["DEVELOPMENT_REPORT"] = json.dumps(development, ensure_ascii=False, indent=2)
+                    values["VALIDATION_PREFLIGHT"] = json.dumps(preflight, ensure_ascii=False, indent=2)
+                    values["EVIDENCE_REQUEST"] = evidence_request.read_text(encoding="utf-8") if evidence_request else "Sem pedido anterior de capturas adicionais."
+                    before = worktree_fingerprint(repo)
+                    try:
+                        validation = invoke_agent(package, repo, "validate", render(package / "prompts" / "validate.md", values), package / "schemas" / "validation-result.schema.json", number, arguments.validation_timeout_minutes * 60, arguments.model)
+                        validate_result(validation, "validate")
+                        validate_evidence_scope(validation, planning.read_text(encoding="utf-8"), body)
+                    except (ExecutionError, RuntimeFailure, OSError) as error:
+                        if worktree_fingerprint(repo) != before:
+                            fail("Gate 2 modified the repository before failing; changes were preserved")
+                        reason = sanitize_text(str(error))
+                        save_state(state_path, state, current_gate="validation-blocked", last_failure=reason)
+                        gate_finished(number, "validation", attempt, "blocked", started, reason=reason, rendered=rendered)
+                        fail(f"Gate 2 indisponível por falha de configuração/runtime ou resultado inválido; retome após resolver o impedimento. {reason}")
                     if worktree_fingerprint(repo) != before:
-                        fail("Gate 2 modified the repository before failing; changes were preserved")
-                    reason = sanitize_text(str(error))
-                    save_state(state_path, state, current_gate="validation-blocked", last_failure=reason)
-                    gate_finished(number, "validation", attempt, "blocked", started, reason=reason, rendered=rendered)
-                    fail(f"Gate 2 indisponível por falha de configuração/runtime ou resultado inválido; retome após resolver o impedimento. {reason}")
-                if worktree_fingerprint(repo) != before:
-                    fail("Gate 2 modified the repository")
-                action = validation_action(validation)
+                        fail("Gate 2 modified the repository")
+                    action = validation_action(validation)
+                    if action != "prepare-evidence":
+                        if action in {"approved", "retry"} and evidence_request_path.exists():
+                            evidence_request_path.unlink()
+                            evidence_request = None
+                        break
+                    atomic_json(evidence_request_path, redact_result({**validation, "rendered_verification": rendered}))
+                    evidence_request = evidence_request_path
+                    if evidence_attempt or rendered_command(body) is None or rendered["status"] == "failed":
+                        save_state(state_path, state, current_gate="evidence-blocked", last_failure=validation_report(validation))
+                        gate_finished(number, "validation", attempt, "blocked", started, findings=validation.get("findings", []), evidence_request=str(evidence_request_path), rendered=rendered)
+                        fail(f"Preparação de evidências incompleta; ajuste somente a fixture/captura aprovada e retome a Validação. Pedido: {evidence_request_path}. {sanitize(validation_report(validation))}")
+                    save_state(state_path, state, current_gate="evidence-preparation")
+                    emit("evidence-preparation", phase=number, gate="validation", attempt=attempt, result="started", report_path=evidence_request_path)
+                    previous_rendered = rendered
+                    # The next pass reuses the approved capture command, never a command from agent output.
+                save_state(state_path, state, current_gate="validation")
                 if action == "approved" and rendered["status"] == "failed":
                     action = "blocked"
                 if action == "blocked":
