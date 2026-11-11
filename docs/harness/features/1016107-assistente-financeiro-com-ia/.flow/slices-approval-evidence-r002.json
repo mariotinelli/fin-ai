@@ -1,0 +1,62 @@
+{
+  "approved_by": "Mário Tinelli",
+  "approved_at": "2026-11-11T16:12:20.453641+00:00",
+  "source": "Usuário aceita estimativasDEV,determinaQA3h e autoriza publicar;total27h,sem mudança de escopo/cobertura/vínculos.",
+  "proposal_sha256": "08943b208fd4499cd0ba96eb892048ba5da3e55215864f30b8434b4f51afe257",
+  "complete_preview_sha256": "c6b9893f93d11b1c8014e064bd2a98d5427f6701b29f2a56bc84b184186b5f86",
+  "preview_path": "slices/publication-review-r002.md",
+  "external_relations": [
+    {
+      "key": "base-visual-para-conversa",
+      "action": "add",
+      "dependency_key": "base-visual-verificada",
+      "source_issue_id": 1016117,
+      "target_key": "dev-1",
+      "relation_type": "blocks",
+      "target_binding": "ID retornado para o novo DEV de conversa"
+    },
+    {
+      "key": "persistencia-para-consultas",
+      "action": "add",
+      "dependency_key": "registros-financeiros-persistidos",
+      "source_issue_id": 1016123,
+      "target_key": "dev-2",
+      "relation_type": "blocks",
+      "target_binding": "ID retornado para o novo DEV de consultas"
+    }
+  ],
+  "sequencing": {
+    "field_id": 2,
+    "feature_issue_id": 1016107,
+    "feature_value": "17",
+    "children": [
+      {
+        "key": "dev-1",
+        "value": "17"
+      },
+      {
+        "key": "dev-2",
+        "value": "18"
+      },
+      {
+        "key": "dev-3",
+        "value": "19"
+      },
+      {
+        "key": "dev-4",
+        "value": "20"
+      },
+      {
+        "key": "dev-5",
+        "value": "21"
+      },
+      {
+        "key": "qa",
+        "value": "22"
+      }
+    ],
+    "next_sequence": 23,
+    "apply_after_publication": true,
+    "policy_path": "docs/harness/scopes/2026-11-11-finai-mvp/.flow/slices-sequencing.json"
+  }
+}

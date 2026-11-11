@@ -1,0 +1,9 @@
+{
+  "status": "ready",
+  "feature_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016106-dashboard-financeiro\\feature.md",
+  "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016106-dashboard-financeiro\\.flow\\feature-state.json",
+  "issue_id": 1016106,
+  "requirement_sha256": "c7e6839399ca74ee6c27d25a269fe3e5280065a09018ea84f865615ff6f0d135",
+  "remote_snapshot_sha256": "1ae605f15cbbb1cbf49e1a6d9adee2f6379eb2f76f19341eb49a79414d19c7ca",
+  "checked_at": "2026-11-11T15:27:40.900181+00:00"
+}

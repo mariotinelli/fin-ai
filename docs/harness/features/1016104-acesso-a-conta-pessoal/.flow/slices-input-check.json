@@ -1,0 +1,9 @@
+{
+  "status": "ready",
+  "feature_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016104-acesso-a-conta-pessoal\\feature.md",
+  "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016104-acesso-a-conta-pessoal\\.flow\\feature-state.json",
+  "issue_id": 1016104,
+  "requirement_sha256": "9827a21983cb3421337ae2ad66216b4043ee5ce74c4ca8f6a559ed8d82708652",
+  "remote_snapshot_sha256": "78627e5b77917d33186dfb01261b82897e4127d5a013a591e6dab708b014f752",
+  "checked_at": "2026-11-11T13:56:17.480326+00:00"
+}

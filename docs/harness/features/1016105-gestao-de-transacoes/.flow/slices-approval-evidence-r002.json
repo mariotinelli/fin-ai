@@ -1,0 +1,19 @@
+{
+  "approved_by": "Mário Tinelli",
+  "approved_at": "2026-11-11T15:02:52.114042+00:00",
+  "source": "Usuário aprovou a revisão de três DEV2h eQA1,5h e determinou a renumeração global de Sequencing antes da próxima Feature.",
+  "proposal_sha256": "4b5834374a83155de83b81c7c85c6f58a32f6ca6870df34b021ce13941d84ae8",
+  "complete_preview_sha256": "425d763b42d87db5ae58f439823da3f19db3b972a7e39127e5b59223466d57cc",
+  "preview_path": "slices/publication-review-r002.md",
+  "external_relations": [
+    {
+      "key": "base-visual-para-cadastro",
+      "action": "add",
+      "dependency_key": "base-visual-verificada",
+      "source_issue_id": 1016117,
+      "target_key": "dev-1",
+      "relation_type": "blocks",
+      "target_binding": "ID retornado para o novo DEV de cadastro desta prévia"
+    }
+  ]
+}

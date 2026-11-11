@@ -1,0 +1,37 @@
+{
+  "approved_by": "Mário Tinelli",
+  "approved_at": "2026-11-11T14:31:32.343396+00:00",
+  "source": "Usuário nesta conversa: sim aprovado após revisão para DEV1,5h/2h/2h eQA1h.",
+  "proposal_sha256": "4a49a9cc65ee865a263909eb45154673ec3ef5327efe8a0defc20860bf47de3c",
+  "complete_preview_sha256": "f46e6e5cbf01885b87fbbdc3da23611ea0b5ab7ec23c492d22f872eeeaedcc31",
+  "preview_path": "slices/publication-review-r002.md",
+  "external_relations": [
+    {
+      "key": "base-visual-para-dev-1",
+      "action": "add",
+      "dependency_key": "base-visual-verificada",
+      "source_issue_id": 1016117,
+      "target_key": "dev-1",
+      "relation_type": "blocks",
+      "target_binding": "ID retornado na criação desta filha"
+    },
+    {
+      "key": "base-visual-para-dev-2",
+      "action": "add",
+      "dependency_key": "base-visual-verificada",
+      "source_issue_id": 1016117,
+      "target_key": "dev-2",
+      "relation_type": "blocks",
+      "target_binding": "ID retornado na criação desta filha"
+    },
+    {
+      "key": "base-visual-para-dev-3",
+      "action": "add",
+      "dependency_key": "base-visual-verificada",
+      "source_issue_id": 1016117,
+      "target_key": "dev-3",
+      "relation_type": "blocks",
+      "target_binding": "ID retornado na criação desta filha"
+    }
+  ]
+}

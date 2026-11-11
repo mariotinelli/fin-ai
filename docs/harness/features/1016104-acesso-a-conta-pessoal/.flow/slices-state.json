@@ -1,0 +1,2754 @@
+{
+  "schema_version": 3,
+  "status": "approved",
+  "current_revision": 2,
+  "revisions": [
+    {
+      "number": 1,
+      "recorded_by": "Mário Tinelli",
+      "recorded_at": "2026-11-11T14:05:29.296770+00:00",
+      "reason": "Proposta inicial após inspeção e duas avaliações independentes; reuso funcional comprovado, três adaptações e dependência da base visual verificada.",
+      "proposal_sha256": "e17d90cdd470d2d02a4cc7465dbbf79cf56a8d34baaebedc1a124d0f5a4bcbc2",
+      "proposal": {
+        "feature": {
+          "title": "[WEB] [USUARIO] Acesso à conta pessoal",
+          "artifact_path": "feature.md",
+          "state_path": ".flow/feature-state.json",
+          "issue_id": 1016104,
+          "requirement_sha256": "9827a21983cb3421337ae2ad66216b4043ee5ce74c4ca8f6a559ed8d82708652",
+          "input_check_path": ".flow/slices-input-check.json",
+          "input_check_sha256": "2755c56629d1a698af10b2d341d201ec42b367cf1c8ac6d959e4644f747909d1"
+        },
+        "inspection": [
+          {
+            "path": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx",
+            "finding": "Campos, confirmação e erros já existem; ambos usam Password::defaults(). R3 exige completar a consistência da política entre teste e uso.",
+            "classification": "adapt"
+          },
+          {
+            "path": "vendor/nunomaduro/essentials/src/Configurables/SetDefaultPassword.php; config/essentials.php",
+            "finding": "Essentials instalado v1.2.0 aplica a política forte somente em produção e desabilita essa configuração nos testes. Inspeção pontual de padrão instalado, sem credenciais.",
+            "classification": "adapt"
+          },
+          {
+            "path": "routes/web.php; app/Models/User.php",
+            "finding": "User implementa MustVerifyEmail; dashboard e várias configurações exigem verified, mas GET/PATCH de perfil estão apenas em auth. A restrição aprovada ainda não cobre tudo.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Actions/CreateUser.php; app/Http/Controllers/UserController.php; UserEmailVerificationNotificationController.php; app/Actions/CreateUserEmailVerificationNotification.php",
+            "finding": "Cadastro usa transação/evento Registered e há reenvio/saída. Não há tratamento explícito de falha de transporte com orientação e retomada exigidas.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/UserEmailVerificationController.php; vendor/laravel/framework/src/Illuminate/Foundation/Auth/EmailVerificationRequest.php; bootstrap/app.php; tests/Feature/Controllers/UserEmailVerificationTest.php",
+            "finding": "Confirmação própria e reabertura já existem; autorização compara titular/hash. Assinatura inválida é recusada, mas não há orientação específica de novo pedido. Teste encontrado espera Forbidden; foi lido, não executado.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/SessionController.php; app/Http/Requests/CreateSessionRequest.php; vendor/laravel/framework/src/Illuminate/Auth/SessionGuard.php; tests/Feature/Controllers/SessionControllerTest.php",
+            "finding": "Caminhos completos de credenciais, destino, remember, cinco falhas e saída são existentes. Logout limpa sessão/recaller e renova remember token; controller invalida sessão. Testes específicos apenas lidos.",
+            "classification": "existing"
+          },
+          {
+            "path": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php",
+            "finding": "Pedido retorna resposta genérica para conta existente/inexistente com envio disponível. Não trata falha de envio com a orientação prevista.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/UserPasswordController.php; app/Actions/CreateUserPassword.php; resources/js/pages/user-password/create.tsx",
+            "finding": "Redefinição válida troca senha e retorna ao login, sem confirmar e-mail. Erro aparece no campo, mas não há caminho de novo pedido na própria tela.",
+            "classification": "adapt"
+          },
+          {
+            "path": "config/auth.php; vendor/laravel/framework/src/Illuminate/Auth/Passwords/PasswordBrokerManager.php; PasswordBroker.php; DatabaseTokenRepository.php",
+            "finding": "expire 60 é convertido de minutos para 3600 segundos; repositório verifica expiração e broker elimina token após sucesso. A Action muda senha sem alterar email_verified_at. Nenhum teste foi executado.",
+            "classification": "existing"
+          },
+          {
+            "path": "docs/harness/features/1016101-adequacao-visual-do-finai/.flow/slices-publication.json; Redmine #1016117",
+            "finding": "Cinco DEV e QA visual foram publicados, ainda New. #1016117 é o aceite integrado do fornecedor e depende dos cinco DEV; publicação não comprova base implementada.",
+            "classification": "adapt"
+          }
+        ],
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "Cadastro aberto, sem convite ou liberação administrativa. Contas são individuais; nenhum dado financeiro é solicitado nesta jornada."
+          },
+          {
+            "id": "R2",
+            "summary": "Nome e e-mail são obrigatórios, com até 255 caracteres cada; e-mail válido e único por conta. Senha e confirmação são obrigatórias e devem coincidir. Na recuperação e redefinição, o e-mail informado deve ser válido; na redefinição, nova senha e confirmação também são obrigatórias."
+          },
+          {
+            "id": "R3",
+            "summary": "Cadastro e redefinição exigem senha de 12 a 255 caracteres, com ao menos uma maiúscula, uma minúscula, um número e um símbolo, rejeitando senhas conhecidas em vazamentos. A mesma regra vale nos ambientes de teste e uso."
+          },
+          {
+            "id": "R4",
+            "summary": "Acesso à área do sistema exige autenticação e confirmação do próprio e-mail, incluindo acesso direto às páginas protegidas. Conta não confirmada pode concluir a jornada restrita de confirmação, reenvio, recuperação e saída; não acessa as funcionalidades do produto. Receber um e-mail ou redefinir a senha não equivale a confirmar o endereço."
+          },
+          {
+            "id": "R5",
+            "summary": "O link de recuperação é válido por 60 minutos a partir da emissão e não pode ser reutilizado após sucesso. A senha anterior deixa de permitir novos logins depois da redefinição."
+          },
+          {
+            "id": "R6",
+            "summary": "Após cinco falhas consecutivas de login para o mesmo e-mail e origem, bloquear temporariamente as novas tentativas e informar a espera, preservando o comportamento atual. Após o prazo, permitir nova tentativa."
+          },
+          {
+            "id": "R7",
+            "summary": "Preservar a opção existente de lembrar acesso. Ela não dispensa confirmação do e-mail nem impede a saída explícita; sair encerra a sessão atual e exige novo login para voltar à área protegida."
+          },
+          {
+            "id": "R8",
+            "summary": "Falha de envio ou de link não deve ser apresentada como confirmação ou recuperação concluída. As alternativas de reenvio e novo pedido devem permitir retomar sem duplicar contas nem alterar senhas indevidamente."
+          },
+          {
+            "id": "R9",
+            "summary": "As telas de acesso usam a base visual FinAI da Feature de adequação visual, com tipografia, paleta, campos, botões, erros e estados coerentes, adaptação para celular, tablet e computador e manutenção dos temas claro, escuro e acompanhar o sistema. Esta Feature não redefine a identidade visual."
+          },
+          {
+            "id": "CA1",
+            "summary": "Como visitante, cadastrar nome e e-mail válidos e disponíveis, senha conforme R3 e confirmação igual; criar uma única conta, enviar o link e orientar a confirmação, sem pedir dados financeiros ou liberar a área do produto antes de confirmar."
+          },
+          {
+            "id": "CA2",
+            "summary": "No cadastro e na redefinição, quando aplicável, omitir campos obrigatórios, exceder os limites de nome/e-mail, informar e-mail inválido ou duplicado, senha fora de qualquer condição de R3 ou confirmação diferente; impedir a operação e indicar os respectivos erros sem criar contas ou alterar senhas indevidamente."
+          },
+          {
+            "id": "CA3",
+            "summary": "Com conta não confirmada, tentar a área inicial, perfil, configurações e destinos financeiros protegidos quando entregues; manter o acesso restrito à jornada de confirmação, reenvio, recuperação e saída, inclusive com lembrar acesso selecionado."
+          },
+          {
+            "id": "CA4",
+            "summary": "Como titular autenticado, abrir link válido da própria conta; confirmar o e-mail e permitir seguir à área inicial. Se iniciar sem sessão, solicitar autenticação quando necessária antes de concluir a confirmação."
+          },
+          {
+            "id": "CA5",
+            "summary": "Abrir link de confirmação inválido, expirado ou de outra conta; não confirmar endereço indevido nem liberar acesso e apresentar caminho para solicitar novo link próprio. Reabrir link ainda válido de conta já confirmada mantém a confirmação."
+          },
+          {
+            "id": "CA6",
+            "summary": "Entrar com credenciais corretas de conta confirmada; acessar a área inicial ou destino protegido solicitado. Credenciais incorretas não autenticam. Depois de cinco falhas consecutivas, a nova tentativa durante bloqueio informa espera; após o prazo, permitir nova tentativa válida."
+          },
+          {
+            "id": "CA7",
+            "summary": "Entrar e sair, com lembrar acesso marcado e desmarcado; retornar à página pública e exigir login ao tentar reabrir a área protegida."
+          },
+          {
+            "id": "CA8",
+            "summary": "Solicitar recuperação para e-mail cadastrado e inexistente, com envio disponível; apresentar a mesma resposta genérica. O titular cadastrado recebe o link, sem revelar a existência da conta ao solicitante pela resposta."
+          },
+          {
+            "id": "CA9",
+            "summary": "Com link de recuperação próprio, não usado e antes de 60 minutos, definir senha conforme R3 e confirmação igual; retornar ao login, permitir novos logins com a senha nova e recusar a anterior. Uma conta anteriormente não confirmada continua sem acesso ao sistema."
+          },
+          {
+            "id": "CA10",
+            "summary": "Tentar redefinir com link inválido, após sua expiração ou já utilizado; não alterar a senha e oferecer novo pedido. Um novo link válido permite retomar a jornada."
+          },
+          {
+            "id": "CA11",
+            "summary": "Provocar falha de envio na confirmação inicial, no reenvio e na recuperação; informar falha e nova tentativa sem sucesso fictício. Após restabelecer o envio, permitir retomar com link utilizável sem contas duplicadas e sem revelar explicitamente a existência de conta na recuperação."
+          },
+          {
+            "id": "CA12",
+            "summary": "Utilizar as telas e estados de acesso em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema; manter a linguagem visual FinAI definida pela adequação visual, controles utilizáveis e erros reconhecíveis."
+          },
+          {
+            "id": "CA11-Confirmacao",
+            "summary": "Desdobramento de CA11/R8: falhas de envio inicial e reenvio de confirmação, retomada e unicidade da conta."
+          },
+          {
+            "id": "CA11-Recuperacao",
+            "summary": "Desdobramento de CA11/R8: falha e retomada do envio de recuperação, sem falso sucesso ou revelação da conta."
+          }
+        ],
+        "slices": [
+          {
+            "number": 1,
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Cadastro e redefinição com política de senha consistente",
+            "title_suffix": "Cadastro e redefinição com política de senha consistente",
+            "api_delivery": false,
+            "estimate_hours": 2.5,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [
+              {
+                "key": "base-visual-verificada",
+                "feature_issue_id": 1016101,
+                "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                "source_slice_issue_id": 1016117,
+                "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+              }
+            ],
+            "description": {
+              "delivery": "Completar a validação de senha no cadastro público e na redefinição esquecida, aplicando a mesma regra forte em teste e uso. Os formulários e demais validações já existem; falta a consistência exigida pelo requisito.",
+              "limits": "Responsável pela política compartilhada e seus erros nos dois fluxos. Preservar campos, unicidade e jornadas existentes. Envio/confirmacão e retomada dos links pertencem às outras entregas.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Cadastro e redefinição aceitam senha de 12 a 255 caracteres com maiúscula, minúscula, número e símbolo, não reconhecida como vazada e confirmação igual, com a mesma validação em teste e uso."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nos dois formulários, menos de 12 ou mais de 255 caracteres, ausência de qualquer classe, senha conhecida em vazamentos, ausência de senha/confirmação ou confirmação diferente impedem concluir com erro no campo, sem criar conta ou alterar senha indevidamente."
+                },
+                {
+                  "kind": "success",
+                  "text": "Preservar nome/e-mail obrigatórios e até 255 caracteres, e-mail válido e único no cadastro e e-mail válido obrigatório na redefinição; não solicitar dados financeiros."
+                },
+                {
+                  "kind": "success",
+                  "text": "Cadastro válido continua criando uma única conta e seguindo à confirmação. Redefinição válida retorna ao login; nova senha funciona e a anterior deixa de permitir novos logins, sem confirmar e-mail automaticamente."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                }
+              ],
+              "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Após a liberação visual, pode avançar sem esperar os demais DEV de acesso. Para concluir a jornada integrada, usar a confirmação/restrição e a retomada de recuperação das entregas correspondentes, sem bloqueio interno de início.",
+              "traceability": [
+                "R1",
+                "R2",
+                "R3",
+                "CA1",
+                "CA2",
+                "CA9",
+                "R9",
+                "CA12"
+              ],
+              "visual_references": [
+                "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+              ]
+            }
+          },
+          {
+            "number": 2,
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Confirmação de e-mail com acesso restrito e retomada",
+            "title_suffix": "Confirmação de e-mail com acesso restrito e retomada",
+            "api_delivery": false,
+            "estimate_hours": 4,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [
+              {
+                "key": "base-visual-verificada",
+                "feature_issue_id": 1016101,
+                "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                "source_slice_issue_id": 1016117,
+                "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+              }
+            ],
+            "description": {
+              "delivery": "Completar a confirmação de e-mail, do envio inicial à retomada, e impedir que contas não confirmadas acessem perfil e demais funcionalidades. Confirmação própria e reenvio já existem; faltam restrição integral e orientação nas falhas de link/envio.",
+              "limits": "Responsável pelo envio inicial, jornada restrita de confirmação/reenvio/saída, links de confirmação e restrição da área do produto. Preservar login, lembrar e recuperação atuais. A política de senha e a retomada da recuperação são fornecidas pelas outras entregas.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Cadastro público válido cria uma única conta, envia confirmação e orienta o titular; receber o e-mail não libera o produto antes de confirmar."
+                },
+                {
+                  "kind": "success",
+                  "text": "Conta não confirmada, com sessão normal ou lembrada, não acessa diretamente área inicial, perfil, configurações ou funcionalidades do produto. Mantém confirmação, reenvio, saída e caminho de recuperação; pode sair e usar a jornada pública existente quando necessário, sem novo mecanismo autenticado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Titular com link próprio válido confirma e acessa a área inicial, autenticando-se quando necessário. Reabrir link ainda válido de conta já confirmada conserva a confirmação."
+                },
+                {
+                  "kind": "success",
+                  "text": "Links inválidos, expirados ou de outra conta não confirmam endereço indevido nem liberam o sistema; apresentar orientação e caminho para solicitar novo link próprio."
+                },
+                {
+                  "kind": "success",
+                  "text": "Falha de envio no cadastro/reenvio informa que o envio não concluiu e orienta nova tentativa, sem sucesso fictício. Após restabelecimento, retomar sem contas duplicadas nem titular sem caminho de confirmação/recuperação."
+                },
+                {
+                  "kind": "success",
+                  "text": "Preservar credenciais corretas/incorretas, destino solicitado, lembrar, bloqueio após cinco falhas e saída; contas confirmadas continuam usando operações permitidas."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                }
+              ],
+              "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Após a liberação visual, pode iniciar sem esperar os demais DEV de acesso. Para concluir a jornada integrada, usar Cadastro e redefinição com política de senha consistente e Recuperação de senha com nova tentativa.",
+              "traceability": [
+                "R1",
+                "R2",
+                "R4",
+                "R6",
+                "R7",
+                "R8",
+                "CA1",
+                "CA3",
+                "CA4",
+                "CA5",
+                "CA6",
+                "CA7",
+                "CA11",
+                "CA11-Confirmacao",
+                "R9",
+                "CA12"
+              ],
+              "visual_references": [
+                "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+              ]
+            }
+          },
+          {
+            "number": 3,
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Recuperação de senha com nova tentativa",
+            "title_suffix": "Recuperação de senha com nova tentativa",
+            "api_delivery": false,
+            "estimate_hours": 2.5,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [
+              {
+                "key": "base-visual-verificada",
+                "feature_issue_id": 1016101,
+                "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                "source_slice_issue_id": 1016117,
+                "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+              }
+            ],
+            "description": {
+              "delivery": "Completar os estados de recuperação quando o envio falhar ou o link de redefinição for inválido, expirado ou já usado. O pedido genérico e o broker já existem; falta retomada sem apresentar envio ou alteração como concluídos indevidamente.",
+              "limits": "Responsável pela solicitação/redefinição esquecida e seus novos pedidos. Preservar resposta genérica, validade de 60 minutos, uso único, retorno ao login e estado de confirmação do e-mail. Não reimplementar a política de senha nem ampliar autenticação.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Com envio disponível, pedir recuperação para conta existente ou inexistente mantém a mesma resposta genérica; o titular cadastrado recebe o link."
+                },
+                {
+                  "kind": "success",
+                  "text": "Falha no envio orienta nova tentativa sem afirmar sucesso ou revelar explicitamente existência da conta; depois de restabelecer, novo pedido permite receber link utilizável."
+                },
+                {
+                  "kind": "success",
+                  "text": "Link inválido, expirado após 60 minutos ou já utilizado não altera senha e oferece novo pedido; novo link válido permite retomar."
+                },
+                {
+                  "kind": "success",
+                  "text": "Link próprio, não usado e válido, com senha conforme a política compartilhada e confirmação igual, redefine e retorna ao login; senha nova funciona e a anterior não permite novos logins."
+                },
+                {
+                  "kind": "success",
+                  "text": "Redefinir conta não confirmada não confirma e-mail nem libera a área do produto; preservar validações e erros, sem alteração indevida."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                }
+              ],
+              "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Pode iniciar com a recuperação existente após a liberação visual. Para concluir a redefinição integrada, usar Cadastro e redefinição com política de senha consistente. Login, saída e confirmação seguem nas jornadas existentes/entrega responsável, sem bloqueio interno de início.",
+              "traceability": [
+                "R2",
+                "R3",
+                "R4",
+                "R5",
+                "R8",
+                "CA2",
+                "CA8",
+                "CA9",
+                "CA10",
+                "CA11",
+                "CA11-Recuperacao",
+                "R9",
+                "CA12"
+              ],
+              "visual_references": [
+                "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+              ]
+            }
+          }
+        ],
+        "coverage": [
+          {
+            "requirement_id": "R1",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateUserRequest/CreateUser: cadastro público com dados de conta, sem campos financeiros; preservar e verificar sua integração."
+          },
+          {
+            "requirement_id": "R2",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "Requests já impõem obrigatoriedade, limites de 255, formato/unicidade e confirmação onde aplicáveis; política forte é adaptação de R3."
+          },
+          {
+            "requirement_id": "R3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "R4",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "R5",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "config/auth expire60; gerenciador converte minutos; broker exclui token após sucesso; Action altera senha sem confirmar e-mail."
+          },
+          {
+            "requirement_id": "R6",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateSessionRequest verifica cinco falhas por e-mail/origem, informa espera e limpa limitação; testes específicos foram apenas lidos."
+          },
+          {
+            "requirement_id": "R7",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "SessionController preserva remember e destrói sessão; SessionGuard::logout limpa sessão/recaller e renova remember token. Caminho lido sem executar testes."
+          },
+          {
+            "requirement_id": "R8",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "R9",
+            "disposition": "other-feature",
+            "slice_numbers": [],
+            "evidence": "Feature visual #1016101, composição de acesso #1016114 e aceite integrado #1016117, ainda New. Os estados novos dos DEV consomem essa base sem reconstruí-la."
+          },
+          {
+            "requirement_id": "CA1",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA3",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA4",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA5",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA6",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "Credenciais, destino solicitado e limitação possuem caminhos e testes específicos; não reconstruir a capacidade."
+          },
+          {
+            "requirement_id": "CA7",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "Saída retorna à página pública, invalida sessão e descarta lembrança conforme o guard; manter e verificar em QA."
+          },
+          {
+            "requirement_id": "CA8",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "Pedido com envio disponível retorna mensagem genérica e usa o broker; falha de transporte é a adaptação específica de CA11-Recuperacao."
+          },
+          {
+            "requirement_id": "CA9",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA10",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA11",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA12",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA11-Confirmacao",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA11-Recuperacao",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          }
+        ],
+        "decisions": [
+          "Escopo vem exclusivamente do requisito aprovado #1016104, desta conversa e do código. Tasks antigas não são contexto. Filhas visuais #1016112–#1016117 foram criadas por este fluxo e são fornecedores publicados, sem capacidade pronta presumida.",
+          "Inspeção por leitura de código, testes e padrões instalados. Nenhum teste ou jornada foi executado. Leituras do broker/guard sustentam minutos, uso único e saída lembrada; nenhum valor de credencial/ambiente foi lido.",
+          "Não criar DEV para reconstruir login, saída, lembrar, limitação ou broker existentes. Cobertura existing permanece integralmente em QA. CA11-Confirmacao e CA11-Recuperacao desdobram CA11/R8 por jornada, sem requisito novo.",
+          "Avaliação independente A, estimate_visual_delivery: DEV1=2h, DEV2=3,5h, DEV3=2h e QA=3,5h. Não recebeu estimativa candidata nem números da avaliação B.",
+          "Avaliação independente B, estimate_visual_reuse: DEV1=2,5h, DEV2=4h, DEV3=2,5h e QA=4h. Não recebeu estimativa candidata nem números da avaliação A.",
+          "Estimativa final do agente responsável: 2,5h para política compartilhada com dois pontos de entrada/fronteiras; 4h para confirmação/restrição, envio inicial/reenvio/links/perfil; 2,5h para recuperação e retomada; QA4h para preparar contas/links/tempo/falhas, verificar jornadas, estados visuais, resultados e reteste delimitado. Total9h DEV+4h QA=13h. É análise de trabalho restante, não média automática ou medição.",
+          "Referência humana específica anterior: Mário Tinelli ajustou os cinco DEV visuais para2h e QA visual para1,5h. Não aplicar automaticamente esses números a acesso, que inclui titularidade/tempo de links, restrições e falhas; não há histórico medido nem premissa de desconto por IA.",
+          "Sem bloqueio interno real de início entre os três DEV, pois os mecanismos atuais já existem. Conclusão integra política/jornadas. Pela política visual-first aprovada, há bloqueio externo de início pelo aceite integrado #1016117, dependente dos cinco DEV visuais; publicação em New não equivale a liberação de implementação.",
+          "Recuperação atual usa rotas guest; a conta não confirmada autenticada pode sair e usar o caminho público existente. Não acrescentar redefinição autenticada que o requisito não exige.",
+          "Publicação: três Task DEV e uma Deliverable QA, New/Normal, pai1016104 e versãoSprint1, sem responsável/datas. Cada DEV bloqueia QA; #1016117 bloqueia cada novo DEV, com vinculação exclusiva ao ID retornado. Pai/fornecedor mantêm estados. DOCX é gerado da fonte aprovada e anexado à QA."
+        ],
+        "test_conditions": {
+          "document_format": "docx",
+          "context": "Visitante e contas confirmadas/não confirmadas; links próprios, de outra conta, inválidos, expirados e usados; controle de tempo e falhas de envio reproduzíveis. Preparar fronteiras de campos/senha e dependência controlável para senha vazada. Consumir a base visual implementada e verificada nos cenários de computador, tablet, celular e claro/escuro/sistema. Os testes existentes foram apenas lidos; registrar evidência ou impedimento de cada condição executada posteriormente.",
+          "conditions": [
+            {
+              "id": "CT-001",
+              "title": "Cadastro público e confirmação",
+              "verification": "Cadastrar nome/e-mail válidos, senha conforme R3 e confirmação igual.",
+              "expected_result": "Uma conta, sem convite/dados financeiros; enviar link e orientar confirmar, sem acesso ao produto.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "CA1"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-002",
+              "title": "Campos obrigatórios",
+              "verification": "Omitir separadamente nome/e-mail/senha/confirmação no cadastro e os campos aplicáveis na redefinição.",
+              "expected_result": "Impedir conclusão com erro; sem conta ou senha alterada indevidamente.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-003",
+              "title": "Nome e e-mail nos limites",
+              "verification": "Usar entradas válidas de255 e256caracteres; e-mail inválido e duplicado.",
+              "expected_result": "Até255aceito; excesso/formato/duplicação recusados, sem nova conta indevida.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-004",
+              "title": "Senha nos limites",
+              "verification": "Nos dois fluxos usar senhas de composição completa não-vazadas com11,12,255 e256caracteres.",
+              "expected_result": "12/255aceitas;11/256recusadas com erro; mesma regra em teste e uso.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-005",
+              "title": "Composição da senha",
+              "verification": "Nos dois fluxos omitir separadamente maiúscula, minúscula, número e símbolo, mantendo demais condições.",
+              "expected_result": "Cada falta recusada; composição completa não rejeitada por esse motivo.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-006",
+              "title": "Senha conhecida em vazamentos",
+              "verification": "Com dado controlado da verificação de senha vazada, tentar os dois fluxos com tamanho/composição válidos.",
+              "expected_result": "Recusar ambos com erro e sem persistência indevida.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-007",
+              "title": "Confirmação diferente",
+              "verification": "Informar senha válida com confirmação diferente no cadastro e redefinição.",
+              "expected_result": "Impedir e indicar erro sem criar conta ou alterar senha.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-008",
+              "title": "Visitante na área protegida",
+              "verification": "Sem sessão, abrir área inicial, perfil e configurações protegidas.",
+              "expected_result": "Exigir login sem mostrar funcionalidades do produto.",
+              "requirement_ids": [
+                "R4",
+                "CA3"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-009",
+              "title": "Conta não confirmada",
+              "verification": "Entrar sem confirmar e tentar área inicial, perfil GET/PATCH e configurações; repetir com lembrar.",
+              "expected_result": "Manter restrição, orientação, reenvio e saída; sem acesso/alteração indevida no produto.",
+              "requirement_ids": [
+                "R4",
+                "CA3"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-010",
+              "title": "Recuperar antes de confirmar",
+              "verification": "Como não-confirmado autenticado, sair e seguir ao pedido público existente.",
+              "expected_result": "Permitir a jornada sem liberar produto ou dispensar confirmação.",
+              "requirement_ids": [
+                "R4",
+                "CA3",
+                "CA9"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-011",
+              "title": "Confirmar link próprio",
+              "verification": "Abrir link próprio válido iniciando com e sem sessão.",
+              "expected_result": "Autenticar quando necessário, confirmar titular e liberar área inicial.",
+              "requirement_ids": [
+                "R4",
+                "CA4"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-012",
+              "title": "Confirmação inválida",
+              "verification": "Alterar dados/assinatura do link e abrir como titular não confirmado.",
+              "expected_result": "Não confirmar nem liberar; orientar novo link próprio.",
+              "requirement_ids": [
+                "R4",
+                "R8",
+                "CA5"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-013",
+              "title": "Confirmação expirada",
+              "verification": "Abrir link após sua validade.",
+              "expected_result": "Não confirmar/liberar; orientar e oferecer novo pedido.",
+              "requirement_ids": [
+                "R4",
+                "R8",
+                "CA5"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-014",
+              "title": "Confirmação de outra conta",
+              "verification": "Como A não confirmado, abrir link válido de B.",
+              "expected_result": "Não confirmar A/B indevidamente; caminho de novo pedido próprio de A.",
+              "requirement_ids": [
+                "R4",
+                "CA5"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-015",
+              "title": "Reabrir confirmação",
+              "verification": "Confirmar conta e reabrir o mesmo link ainda válido.",
+              "expected_result": "Manter confirmação e permitir área inicial.",
+              "requirement_ids": [
+                "R4",
+                "CA5"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-016",
+              "title": "Falha de envio inicial",
+              "verification": "Provocar falha no cadastro, restaurar envio e repetir conforme orientação.",
+              "expected_result": "Informar falha/retomada sem falso sucesso, duplicação ou titular sem caminho de confirmação/recuperação.",
+              "requirement_ids": [
+                "R8",
+                "CA11",
+                "CA11-Confirmacao"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-017",
+              "title": "Falha no reenvio",
+              "verification": "Como não-confirmado, provocar falha de reenvio, restaurar e tentar de novo.",
+              "expected_result": "Não alegar envio concluído; após retomada, receber link e confirmar.",
+              "requirement_ids": [
+                "R8",
+                "CA11",
+                "CA11-Confirmacao"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-018",
+              "title": "Login e destino",
+              "verification": "Entrar diretamente e após solicitar destino protegido; testar credenciais incorretas.",
+              "expected_result": "Corretas acessam área inicial/destino; incorretas não autenticam.",
+              "requirement_ids": [
+                "CA6"
+              ],
+              "group": "Login e saída"
+            },
+            {
+              "id": "CT-019",
+              "title": "Cinco falhas e espera",
+              "verification": "Para mesmo e-mail/origem, falhar cinco vezes e tentar durante bloqueio e após espera.",
+              "expected_result": "Informar espera sem autenticar durante bloqueio; após prazo, aceitar credenciais válidas.",
+              "requirement_ids": [
+                "R6",
+                "CA6"
+              ],
+              "group": "Login e saída"
+            },
+            {
+              "id": "CT-020",
+              "title": "Saída e lembrança",
+              "verification": "Entrar/sair e reabrir área protegida com lembrar marcado e desmarcado.",
+              "expected_result": "Retornar à página pública e exigir novo login, inclusive após lembrança.",
+              "requirement_ids": [
+                "R7",
+                "CA7"
+              ],
+              "group": "Login e saída"
+            },
+            {
+              "id": "CT-021",
+              "title": "Pedido genérico",
+              "verification": "Com envio disponível, pedir recuperação para conta existente e inexistente.",
+              "expected_result": "Mesma resposta; titular cadastrado recebe link sem revelação pela resposta.",
+              "requirement_ids": [
+                "CA8"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-022",
+              "title": "Redefinição válida",
+              "verification": "Com link próprio não usado antes de60min, informar senha conforme R3/confirmação e testar senha anterior/nova.",
+              "expected_result": "Retornar ao login; nova funciona e antiga não permite novos logins.",
+              "requirement_ids": [
+                "R3",
+                "R5",
+                "CA9"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-023",
+              "title": "Redefinir sem confirmar e-mail",
+              "verification": "Redefinir conta não confirmada e entrar com senha nova.",
+              "expected_result": "Senha muda, e-mail permanece não confirmado e produto continua restrito.",
+              "requirement_ids": [
+                "R4",
+                "CA9"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-024",
+              "title": "Recuperação inválida",
+              "verification": "Tentar redefinir com link inválido e usar novo pedido.",
+              "expected_result": "Não alterar; orientar e oferecer novo link para retomada.",
+              "requirement_ids": [
+                "R5",
+                "R8",
+                "CA10"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-025",
+              "title": "Recuperação expirada",
+              "verification": "Tentar após ultrapassar60min da emissão; solicitar outro link.",
+              "expected_result": "Recusar sem alterar e permitir retomar com novo link válido.",
+              "requirement_ids": [
+                "R5",
+                "R8",
+                "CA10"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-026",
+              "title": "Recuperação já usada",
+              "verification": "Redefinir e reutilizar o mesmo link para outra senha.",
+              "expected_result": "Não alterar de novo; recusar e oferecer novo pedido.",
+              "requirement_ids": [
+                "R5",
+                "R8",
+                "CA10"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-027",
+              "title": "Falha de envio de recuperação",
+              "verification": "Provocar falha, restaurar e solicitar de novo.",
+              "expected_result": "Orientar sem sucesso fictício/revelação explícita da conta; titular recebe link após retomada.",
+              "requirement_ids": [
+                "R8",
+                "CA11",
+                "CA11-Recuperacao"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-028",
+              "title": "Integração visual",
+              "verification": "Em computador/tablet/celular, claro/escuro/sistema, percorrer as telas e os novos estados de erro/retomada. Comparar com design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101 e o fornecedor de composição #1016114 após base verificada.",
+              "expected_result": "Identidade, campos, botões, erros e ações coerentes/usáveis, sem reconstruir a aparência fornecida.",
+              "requirement_ids": [
+                "R9",
+                "CA12"
+              ],
+              "group": "Visual"
+            }
+          ]
+        }
+      },
+      "semantic_baseline": {
+        "requirement_sha256": "9827a21983cb3421337ae2ad66216b4043ee5ce74c4ca8f6a559ed8d82708652",
+        "semantic_model_sha256": "8b2aa07bc6603acb00302f5244814face7f0fb2dc94726889565a1bcbcb6df2d",
+        "semantic_model": {
+          "requirements": [
+            {
+              "id": "R1",
+              "summary": "Cadastro aberto, sem convite ou liberação administrativa. Contas são individuais; nenhum dado financeiro é solicitado nesta jornada."
+            },
+            {
+              "id": "R2",
+              "summary": "Nome e e-mail são obrigatórios, com até 255 caracteres cada; e-mail válido e único por conta. Senha e confirmação são obrigatórias e devem coincidir. Na recuperação e redefinição, o e-mail informado deve ser válido; na redefinição, nova senha e confirmação também são obrigatórias."
+            },
+            {
+              "id": "R3",
+              "summary": "Cadastro e redefinição exigem senha de 12 a 255 caracteres, com ao menos uma maiúscula, uma minúscula, um número e um símbolo, rejeitando senhas conhecidas em vazamentos. A mesma regra vale nos ambientes de teste e uso."
+            },
+            {
+              "id": "R4",
+              "summary": "Acesso à área do sistema exige autenticação e confirmação do próprio e-mail, incluindo acesso direto às páginas protegidas. Conta não confirmada pode concluir a jornada restrita de confirmação, reenvio, recuperação e saída; não acessa as funcionalidades do produto. Receber um e-mail ou redefinir a senha não equivale a confirmar o endereço."
+            },
+            {
+              "id": "R5",
+              "summary": "O link de recuperação é válido por 60 minutos a partir da emissão e não pode ser reutilizado após sucesso. A senha anterior deixa de permitir novos logins depois da redefinição."
+            },
+            {
+              "id": "R6",
+              "summary": "Após cinco falhas consecutivas de login para o mesmo e-mail e origem, bloquear temporariamente as novas tentativas e informar a espera, preservando o comportamento atual. Após o prazo, permitir nova tentativa."
+            },
+            {
+              "id": "R7",
+              "summary": "Preservar a opção existente de lembrar acesso. Ela não dispensa confirmação do e-mail nem impede a saída explícita; sair encerra a sessão atual e exige novo login para voltar à área protegida."
+            },
+            {
+              "id": "R8",
+              "summary": "Falha de envio ou de link não deve ser apresentada como confirmação ou recuperação concluída. As alternativas de reenvio e novo pedido devem permitir retomar sem duplicar contas nem alterar senhas indevidamente."
+            },
+            {
+              "id": "R9",
+              "summary": "As telas de acesso usam a base visual FinAI da Feature de adequação visual, com tipografia, paleta, campos, botões, erros e estados coerentes, adaptação para celular, tablet e computador e manutenção dos temas claro, escuro e acompanhar o sistema. Esta Feature não redefine a identidade visual."
+            },
+            {
+              "id": "CA1",
+              "summary": "Como visitante, cadastrar nome e e-mail válidos e disponíveis, senha conforme R3 e confirmação igual; criar uma única conta, enviar o link e orientar a confirmação, sem pedir dados financeiros ou liberar a área do produto antes de confirmar."
+            },
+            {
+              "id": "CA2",
+              "summary": "No cadastro e na redefinição, quando aplicável, omitir campos obrigatórios, exceder os limites de nome/e-mail, informar e-mail inválido ou duplicado, senha fora de qualquer condição de R3 ou confirmação diferente; impedir a operação e indicar os respectivos erros sem criar contas ou alterar senhas indevidamente."
+            },
+            {
+              "id": "CA3",
+              "summary": "Com conta não confirmada, tentar a área inicial, perfil, configurações e destinos financeiros protegidos quando entregues; manter o acesso restrito à jornada de confirmação, reenvio, recuperação e saída, inclusive com lembrar acesso selecionado."
+            },
+            {
+              "id": "CA4",
+              "summary": "Como titular autenticado, abrir link válido da própria conta; confirmar o e-mail e permitir seguir à área inicial. Se iniciar sem sessão, solicitar autenticação quando necessária antes de concluir a confirmação."
+            },
+            {
+              "id": "CA5",
+              "summary": "Abrir link de confirmação inválido, expirado ou de outra conta; não confirmar endereço indevido nem liberar acesso e apresentar caminho para solicitar novo link próprio. Reabrir link ainda válido de conta já confirmada mantém a confirmação."
+            },
+            {
+              "id": "CA6",
+              "summary": "Entrar com credenciais corretas de conta confirmada; acessar a área inicial ou destino protegido solicitado. Credenciais incorretas não autenticam. Depois de cinco falhas consecutivas, a nova tentativa durante bloqueio informa espera; após o prazo, permitir nova tentativa válida."
+            },
+            {
+              "id": "CA7",
+              "summary": "Entrar e sair, com lembrar acesso marcado e desmarcado; retornar à página pública e exigir login ao tentar reabrir a área protegida."
+            },
+            {
+              "id": "CA8",
+              "summary": "Solicitar recuperação para e-mail cadastrado e inexistente, com envio disponível; apresentar a mesma resposta genérica. O titular cadastrado recebe o link, sem revelar a existência da conta ao solicitante pela resposta."
+            },
+            {
+              "id": "CA9",
+              "summary": "Com link de recuperação próprio, não usado e antes de 60 minutos, definir senha conforme R3 e confirmação igual; retornar ao login, permitir novos logins com a senha nova e recusar a anterior. Uma conta anteriormente não confirmada continua sem acesso ao sistema."
+            },
+            {
+              "id": "CA10",
+              "summary": "Tentar redefinir com link inválido, após sua expiração ou já utilizado; não alterar a senha e oferecer novo pedido. Um novo link válido permite retomar a jornada."
+            },
+            {
+              "id": "CA11",
+              "summary": "Provocar falha de envio na confirmação inicial, no reenvio e na recuperação; informar falha e nova tentativa sem sucesso fictício. Após restabelecer o envio, permitir retomar com link utilizável sem contas duplicadas e sem revelar explicitamente a existência de conta na recuperação."
+            },
+            {
+              "id": "CA12",
+              "summary": "Utilizar as telas e estados de acesso em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema; manter a linguagem visual FinAI definida pela adequação visual, controles utilizáveis e erros reconhecíveis."
+            },
+            {
+              "id": "CA11-Confirmacao",
+              "summary": "Desdobramento de CA11/R8: falhas de envio inicial e reenvio de confirmação, retomada e unicidade da conta."
+            },
+            {
+              "id": "CA11-Recuperacao",
+              "summary": "Desdobramento de CA11/R8: falha e retomada do envio de recuperação, sem falso sucesso ou revelação da conta."
+            }
+          ],
+          "slices": [
+            {
+              "number": 1,
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Cadastro e redefinição com política de senha consistente",
+              "title_suffix": "Cadastro e redefinição com política de senha consistente",
+              "api_delivery": false,
+              "estimate_hours": 2.5,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [
+                {
+                  "key": "base-visual-verificada",
+                  "feature_issue_id": 1016101,
+                  "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                  "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                  "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                  "source_slice_issue_id": 1016117,
+                  "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+                }
+              ],
+              "description": {
+                "delivery": "Completar a validação de senha no cadastro público e na redefinição esquecida, aplicando a mesma regra forte em teste e uso. Os formulários e demais validações já existem; falta a consistência exigida pelo requisito.",
+                "limits": "Responsável pela política compartilhada e seus erros nos dois fluxos. Preservar campos, unicidade e jornadas existentes. Envio/confirmacão e retomada dos links pertencem às outras entregas.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Cadastro e redefinição aceitam senha de 12 a 255 caracteres com maiúscula, minúscula, número e símbolo, não reconhecida como vazada e confirmação igual, com a mesma validação em teste e uso."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nos dois formulários, menos de 12 ou mais de 255 caracteres, ausência de qualquer classe, senha conhecida em vazamentos, ausência de senha/confirmação ou confirmação diferente impedem concluir com erro no campo, sem criar conta ou alterar senha indevidamente."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Preservar nome/e-mail obrigatórios e até 255 caracteres, e-mail válido e único no cadastro e e-mail válido obrigatório na redefinição; não solicitar dados financeiros."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Cadastro válido continua criando uma única conta e seguindo à confirmação. Redefinição válida retorna ao login; nova senha funciona e a anterior deixa de permitir novos logins, sem confirmar e-mail automaticamente."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                  }
+                ],
+                "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Após a liberação visual, pode avançar sem esperar os demais DEV de acesso. Para concluir a jornada integrada, usar a confirmação/restrição e a retomada de recuperação das entregas correspondentes, sem bloqueio interno de início.",
+                "traceability": [
+                  "R1",
+                  "R2",
+                  "R3",
+                  "CA1",
+                  "CA2",
+                  "CA9",
+                  "R9",
+                  "CA12"
+                ],
+                "visual_references": [
+                  "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                  "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+                ]
+              }
+            },
+            {
+              "number": 2,
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Confirmação de e-mail com acesso restrito e retomada",
+              "title_suffix": "Confirmação de e-mail com acesso restrito e retomada",
+              "api_delivery": false,
+              "estimate_hours": 4,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [
+                {
+                  "key": "base-visual-verificada",
+                  "feature_issue_id": 1016101,
+                  "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                  "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                  "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                  "source_slice_issue_id": 1016117,
+                  "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+                }
+              ],
+              "description": {
+                "delivery": "Completar a confirmação de e-mail, do envio inicial à retomada, e impedir que contas não confirmadas acessem perfil e demais funcionalidades. Confirmação própria e reenvio já existem; faltam restrição integral e orientação nas falhas de link/envio.",
+                "limits": "Responsável pelo envio inicial, jornada restrita de confirmação/reenvio/saída, links de confirmação e restrição da área do produto. Preservar login, lembrar e recuperação atuais. A política de senha e a retomada da recuperação são fornecidas pelas outras entregas.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Cadastro público válido cria uma única conta, envia confirmação e orienta o titular; receber o e-mail não libera o produto antes de confirmar."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Conta não confirmada, com sessão normal ou lembrada, não acessa diretamente área inicial, perfil, configurações ou funcionalidades do produto. Mantém confirmação, reenvio, saída e caminho de recuperação; pode sair e usar a jornada pública existente quando necessário, sem novo mecanismo autenticado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Titular com link próprio válido confirma e acessa a área inicial, autenticando-se quando necessário. Reabrir link ainda válido de conta já confirmada conserva a confirmação."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Links inválidos, expirados ou de outra conta não confirmam endereço indevido nem liberam o sistema; apresentar orientação e caminho para solicitar novo link próprio."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Falha de envio no cadastro/reenvio informa que o envio não concluiu e orienta nova tentativa, sem sucesso fictício. Após restabelecimento, retomar sem contas duplicadas nem titular sem caminho de confirmação/recuperação."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Preservar credenciais corretas/incorretas, destino solicitado, lembrar, bloqueio após cinco falhas e saída; contas confirmadas continuam usando operações permitidas."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                  }
+                ],
+                "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Após a liberação visual, pode iniciar sem esperar os demais DEV de acesso. Para concluir a jornada integrada, usar Cadastro e redefinição com política de senha consistente e Recuperação de senha com nova tentativa.",
+                "traceability": [
+                  "R1",
+                  "R2",
+                  "R4",
+                  "R6",
+                  "R7",
+                  "R8",
+                  "CA1",
+                  "CA3",
+                  "CA4",
+                  "CA5",
+                  "CA6",
+                  "CA7",
+                  "CA11",
+                  "CA11-Confirmacao",
+                  "R9",
+                  "CA12"
+                ],
+                "visual_references": [
+                  "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                  "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+                ]
+              }
+            },
+            {
+              "number": 3,
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Recuperação de senha com nova tentativa",
+              "title_suffix": "Recuperação de senha com nova tentativa",
+              "api_delivery": false,
+              "estimate_hours": 2.5,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [
+                {
+                  "key": "base-visual-verificada",
+                  "feature_issue_id": 1016101,
+                  "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                  "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                  "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                  "source_slice_issue_id": 1016117,
+                  "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+                }
+              ],
+              "description": {
+                "delivery": "Completar os estados de recuperação quando o envio falhar ou o link de redefinição for inválido, expirado ou já usado. O pedido genérico e o broker já existem; falta retomada sem apresentar envio ou alteração como concluídos indevidamente.",
+                "limits": "Responsável pela solicitação/redefinição esquecida e seus novos pedidos. Preservar resposta genérica, validade de 60 minutos, uso único, retorno ao login e estado de confirmação do e-mail. Não reimplementar a política de senha nem ampliar autenticação.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Com envio disponível, pedir recuperação para conta existente ou inexistente mantém a mesma resposta genérica; o titular cadastrado recebe o link."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Falha no envio orienta nova tentativa sem afirmar sucesso ou revelar explicitamente existência da conta; depois de restabelecer, novo pedido permite receber link utilizável."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Link inválido, expirado após 60 minutos ou já utilizado não altera senha e oferece novo pedido; novo link válido permite retomar."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Link próprio, não usado e válido, com senha conforme a política compartilhada e confirmação igual, redefine e retorna ao login; senha nova funciona e a anterior não permite novos logins."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Redefinir conta não confirmada não confirma e-mail nem libera a área do produto; preservar validações e erros, sem alteração indevida."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                  }
+                ],
+                "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Pode iniciar com a recuperação existente após a liberação visual. Para concluir a redefinição integrada, usar Cadastro e redefinição com política de senha consistente. Login, saída e confirmação seguem nas jornadas existentes/entrega responsável, sem bloqueio interno de início.",
+                "traceability": [
+                  "R2",
+                  "R3",
+                  "R4",
+                  "R5",
+                  "R8",
+                  "CA2",
+                  "CA8",
+                  "CA9",
+                  "CA10",
+                  "CA11",
+                  "CA11-Recuperacao",
+                  "R9",
+                  "CA12"
+                ],
+                "visual_references": [
+                  "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                  "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+                ]
+              }
+            }
+          ],
+          "coverage": [
+            {
+              "requirement_id": "R1",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateUserRequest/CreateUser: cadastro público com dados de conta, sem campos financeiros; preservar e verificar sua integração."
+            },
+            {
+              "requirement_id": "R2",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "Requests já impõem obrigatoriedade, limites de 255, formato/unicidade e confirmação onde aplicáveis; política forte é adaptação de R3."
+            },
+            {
+              "requirement_id": "R3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "R4",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "R5",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "config/auth expire60; gerenciador converte minutos; broker exclui token após sucesso; Action altera senha sem confirmar e-mail."
+            },
+            {
+              "requirement_id": "R6",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateSessionRequest verifica cinco falhas por e-mail/origem, informa espera e limpa limitação; testes específicos foram apenas lidos."
+            },
+            {
+              "requirement_id": "R7",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "SessionController preserva remember e destrói sessão; SessionGuard::logout limpa sessão/recaller e renova remember token. Caminho lido sem executar testes."
+            },
+            {
+              "requirement_id": "R8",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "R9",
+              "disposition": "other-feature",
+              "slice_numbers": [],
+              "evidence": "Feature visual #1016101, composição de acesso #1016114 e aceite integrado #1016117, ainda New. Os estados novos dos DEV consomem essa base sem reconstruí-la."
+            },
+            {
+              "requirement_id": "CA1",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA3",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA4",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA5",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA6",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "Credenciais, destino solicitado e limitação possuem caminhos e testes específicos; não reconstruir a capacidade."
+            },
+            {
+              "requirement_id": "CA7",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "Saída retorna à página pública, invalida sessão e descarta lembrança conforme o guard; manter e verificar em QA."
+            },
+            {
+              "requirement_id": "CA8",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "Pedido com envio disponível retorna mensagem genérica e usa o broker; falha de transporte é a adaptação específica de CA11-Recuperacao."
+            },
+            {
+              "requirement_id": "CA9",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA10",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA11",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA12",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA11-Confirmacao",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA11-Recuperacao",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            }
+          ],
+          "decisions": [
+            "Escopo vem exclusivamente do requisito aprovado #1016104, desta conversa e do código. Tasks antigas não são contexto. Filhas visuais #1016112–#1016117 foram criadas por este fluxo e são fornecedores publicados, sem capacidade pronta presumida.",
+            "Inspeção por leitura de código, testes e padrões instalados. Nenhum teste ou jornada foi executado. Leituras do broker/guard sustentam minutos, uso único e saída lembrada; nenhum valor de credencial/ambiente foi lido.",
+            "Não criar DEV para reconstruir login, saída, lembrar, limitação ou broker existentes. Cobertura existing permanece integralmente em QA. CA11-Confirmacao e CA11-Recuperacao desdobram CA11/R8 por jornada, sem requisito novo.",
+            "Avaliação independente A, estimate_visual_delivery: DEV1=2h, DEV2=3,5h, DEV3=2h e QA=3,5h. Não recebeu estimativa candidata nem números da avaliação B.",
+            "Avaliação independente B, estimate_visual_reuse: DEV1=2,5h, DEV2=4h, DEV3=2,5h e QA=4h. Não recebeu estimativa candidata nem números da avaliação A.",
+            "Estimativa final do agente responsável: 2,5h para política compartilhada com dois pontos de entrada/fronteiras; 4h para confirmação/restrição, envio inicial/reenvio/links/perfil; 2,5h para recuperação e retomada; QA4h para preparar contas/links/tempo/falhas, verificar jornadas, estados visuais, resultados e reteste delimitado. Total9h DEV+4h QA=13h. É análise de trabalho restante, não média automática ou medição.",
+            "Referência humana específica anterior: Mário Tinelli ajustou os cinco DEV visuais para2h e QA visual para1,5h. Não aplicar automaticamente esses números a acesso, que inclui titularidade/tempo de links, restrições e falhas; não há histórico medido nem premissa de desconto por IA.",
+            "Sem bloqueio interno real de início entre os três DEV, pois os mecanismos atuais já existem. Conclusão integra política/jornadas. Pela política visual-first aprovada, há bloqueio externo de início pelo aceite integrado #1016117, dependente dos cinco DEV visuais; publicação em New não equivale a liberação de implementação.",
+            "Recuperação atual usa rotas guest; a conta não confirmada autenticada pode sair e usar o caminho público existente. Não acrescentar redefinição autenticada que o requisito não exige.",
+            "Publicação: três Task DEV e uma Deliverable QA, New/Normal, pai1016104 e versãoSprint1, sem responsável/datas. Cada DEV bloqueia QA; #1016117 bloqueia cada novo DEV, com vinculação exclusiva ao ID retornado. Pai/fornecedor mantêm estados. DOCX é gerado da fonte aprovada e anexado à QA."
+          ],
+          "study_evidence": []
+        }
+      }
+    },
+    {
+      "number": 2,
+      "recorded_by": "Mário Tinelli",
+      "recorded_at": "2026-11-11T14:29:18.969803+00:00",
+      "reason": "Correção explícita do tech lead: DEV1=1,5h,DEV2=2h,DEV3=2h,QA=1h; escopo e cobertura preservados.",
+      "proposal_sha256": "4a49a9cc65ee865a263909eb45154673ec3ef5327efe8a0defc20860bf47de3c",
+      "proposal": {
+        "feature": {
+          "title": "[WEB] [USUARIO] Acesso à conta pessoal",
+          "artifact_path": "feature.md",
+          "state_path": ".flow/feature-state.json",
+          "issue_id": 1016104,
+          "requirement_sha256": "9827a21983cb3421337ae2ad66216b4043ee5ce74c4ca8f6a559ed8d82708652",
+          "input_check_path": ".flow/slices-input-check.json",
+          "input_check_sha256": "2755c56629d1a698af10b2d341d201ec42b367cf1c8ac6d959e4644f747909d1"
+        },
+        "inspection": [
+          {
+            "path": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx",
+            "finding": "Campos, confirmação e erros já existem; ambos usam Password::defaults(). R3 exige completar a consistência da política entre teste e uso.",
+            "classification": "adapt"
+          },
+          {
+            "path": "vendor/nunomaduro/essentials/src/Configurables/SetDefaultPassword.php; config/essentials.php",
+            "finding": "Essentials instalado v1.2.0 aplica a política forte somente em produção e desabilita essa configuração nos testes. Inspeção pontual de padrão instalado, sem credenciais.",
+            "classification": "adapt"
+          },
+          {
+            "path": "routes/web.php; app/Models/User.php",
+            "finding": "User implementa MustVerifyEmail; dashboard e várias configurações exigem verified, mas GET/PATCH de perfil estão apenas em auth. A restrição aprovada ainda não cobre tudo.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Actions/CreateUser.php; app/Http/Controllers/UserController.php; UserEmailVerificationNotificationController.php; app/Actions/CreateUserEmailVerificationNotification.php",
+            "finding": "Cadastro usa transação/evento Registered e há reenvio/saída. Não há tratamento explícito de falha de transporte com orientação e retomada exigidas.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/UserEmailVerificationController.php; vendor/laravel/framework/src/Illuminate/Foundation/Auth/EmailVerificationRequest.php; bootstrap/app.php; tests/Feature/Controllers/UserEmailVerificationTest.php",
+            "finding": "Confirmação própria e reabertura já existem; autorização compara titular/hash. Assinatura inválida é recusada, mas não há orientação específica de novo pedido. Teste encontrado espera Forbidden; foi lido, não executado.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/SessionController.php; app/Http/Requests/CreateSessionRequest.php; vendor/laravel/framework/src/Illuminate/Auth/SessionGuard.php; tests/Feature/Controllers/SessionControllerTest.php",
+            "finding": "Caminhos completos de credenciais, destino, remember, cinco falhas e saída são existentes. Logout limpa sessão/recaller e renova remember token; controller invalida sessão. Testes específicos apenas lidos.",
+            "classification": "existing"
+          },
+          {
+            "path": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php",
+            "finding": "Pedido retorna resposta genérica para conta existente/inexistente com envio disponível. Não trata falha de envio com a orientação prevista.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Http/Controllers/UserPasswordController.php; app/Actions/CreateUserPassword.php; resources/js/pages/user-password/create.tsx",
+            "finding": "Redefinição válida troca senha e retorna ao login, sem confirmar e-mail. Erro aparece no campo, mas não há caminho de novo pedido na própria tela.",
+            "classification": "adapt"
+          },
+          {
+            "path": "config/auth.php; vendor/laravel/framework/src/Illuminate/Auth/Passwords/PasswordBrokerManager.php; PasswordBroker.php; DatabaseTokenRepository.php",
+            "finding": "expire 60 é convertido de minutos para 3600 segundos; repositório verifica expiração e broker elimina token após sucesso. A Action muda senha sem alterar email_verified_at. Nenhum teste foi executado.",
+            "classification": "existing"
+          },
+          {
+            "path": "docs/harness/features/1016101-adequacao-visual-do-finai/.flow/slices-publication.json; Redmine #1016117",
+            "finding": "Cinco DEV e QA visual foram publicados, ainda New. #1016117 é o aceite integrado do fornecedor e depende dos cinco DEV; publicação não comprova base implementada.",
+            "classification": "adapt"
+          }
+        ],
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "Cadastro aberto, sem convite ou liberação administrativa. Contas são individuais; nenhum dado financeiro é solicitado nesta jornada."
+          },
+          {
+            "id": "R2",
+            "summary": "Nome e e-mail são obrigatórios, com até 255 caracteres cada; e-mail válido e único por conta. Senha e confirmação são obrigatórias e devem coincidir. Na recuperação e redefinição, o e-mail informado deve ser válido; na redefinição, nova senha e confirmação também são obrigatórias."
+          },
+          {
+            "id": "R3",
+            "summary": "Cadastro e redefinição exigem senha de 12 a 255 caracteres, com ao menos uma maiúscula, uma minúscula, um número e um símbolo, rejeitando senhas conhecidas em vazamentos. A mesma regra vale nos ambientes de teste e uso."
+          },
+          {
+            "id": "R4",
+            "summary": "Acesso à área do sistema exige autenticação e confirmação do próprio e-mail, incluindo acesso direto às páginas protegidas. Conta não confirmada pode concluir a jornada restrita de confirmação, reenvio, recuperação e saída; não acessa as funcionalidades do produto. Receber um e-mail ou redefinir a senha não equivale a confirmar o endereço."
+          },
+          {
+            "id": "R5",
+            "summary": "O link de recuperação é válido por 60 minutos a partir da emissão e não pode ser reutilizado após sucesso. A senha anterior deixa de permitir novos logins depois da redefinição."
+          },
+          {
+            "id": "R6",
+            "summary": "Após cinco falhas consecutivas de login para o mesmo e-mail e origem, bloquear temporariamente as novas tentativas e informar a espera, preservando o comportamento atual. Após o prazo, permitir nova tentativa."
+          },
+          {
+            "id": "R7",
+            "summary": "Preservar a opção existente de lembrar acesso. Ela não dispensa confirmação do e-mail nem impede a saída explícita; sair encerra a sessão atual e exige novo login para voltar à área protegida."
+          },
+          {
+            "id": "R8",
+            "summary": "Falha de envio ou de link não deve ser apresentada como confirmação ou recuperação concluída. As alternativas de reenvio e novo pedido devem permitir retomar sem duplicar contas nem alterar senhas indevidamente."
+          },
+          {
+            "id": "R9",
+            "summary": "As telas de acesso usam a base visual FinAI da Feature de adequação visual, com tipografia, paleta, campos, botões, erros e estados coerentes, adaptação para celular, tablet e computador e manutenção dos temas claro, escuro e acompanhar o sistema. Esta Feature não redefine a identidade visual."
+          },
+          {
+            "id": "CA1",
+            "summary": "Como visitante, cadastrar nome e e-mail válidos e disponíveis, senha conforme R3 e confirmação igual; criar uma única conta, enviar o link e orientar a confirmação, sem pedir dados financeiros ou liberar a área do produto antes de confirmar."
+          },
+          {
+            "id": "CA2",
+            "summary": "No cadastro e na redefinição, quando aplicável, omitir campos obrigatórios, exceder os limites de nome/e-mail, informar e-mail inválido ou duplicado, senha fora de qualquer condição de R3 ou confirmação diferente; impedir a operação e indicar os respectivos erros sem criar contas ou alterar senhas indevidamente."
+          },
+          {
+            "id": "CA3",
+            "summary": "Com conta não confirmada, tentar a área inicial, perfil, configurações e destinos financeiros protegidos quando entregues; manter o acesso restrito à jornada de confirmação, reenvio, recuperação e saída, inclusive com lembrar acesso selecionado."
+          },
+          {
+            "id": "CA4",
+            "summary": "Como titular autenticado, abrir link válido da própria conta; confirmar o e-mail e permitir seguir à área inicial. Se iniciar sem sessão, solicitar autenticação quando necessária antes de concluir a confirmação."
+          },
+          {
+            "id": "CA5",
+            "summary": "Abrir link de confirmação inválido, expirado ou de outra conta; não confirmar endereço indevido nem liberar acesso e apresentar caminho para solicitar novo link próprio. Reabrir link ainda válido de conta já confirmada mantém a confirmação."
+          },
+          {
+            "id": "CA6",
+            "summary": "Entrar com credenciais corretas de conta confirmada; acessar a área inicial ou destino protegido solicitado. Credenciais incorretas não autenticam. Depois de cinco falhas consecutivas, a nova tentativa durante bloqueio informa espera; após o prazo, permitir nova tentativa válida."
+          },
+          {
+            "id": "CA7",
+            "summary": "Entrar e sair, com lembrar acesso marcado e desmarcado; retornar à página pública e exigir login ao tentar reabrir a área protegida."
+          },
+          {
+            "id": "CA8",
+            "summary": "Solicitar recuperação para e-mail cadastrado e inexistente, com envio disponível; apresentar a mesma resposta genérica. O titular cadastrado recebe o link, sem revelar a existência da conta ao solicitante pela resposta."
+          },
+          {
+            "id": "CA9",
+            "summary": "Com link de recuperação próprio, não usado e antes de 60 minutos, definir senha conforme R3 e confirmação igual; retornar ao login, permitir novos logins com a senha nova e recusar a anterior. Uma conta anteriormente não confirmada continua sem acesso ao sistema."
+          },
+          {
+            "id": "CA10",
+            "summary": "Tentar redefinir com link inválido, após sua expiração ou já utilizado; não alterar a senha e oferecer novo pedido. Um novo link válido permite retomar a jornada."
+          },
+          {
+            "id": "CA11",
+            "summary": "Provocar falha de envio na confirmação inicial, no reenvio e na recuperação; informar falha e nova tentativa sem sucesso fictício. Após restabelecer o envio, permitir retomar com link utilizável sem contas duplicadas e sem revelar explicitamente a existência de conta na recuperação."
+          },
+          {
+            "id": "CA12",
+            "summary": "Utilizar as telas e estados de acesso em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema; manter a linguagem visual FinAI definida pela adequação visual, controles utilizáveis e erros reconhecíveis."
+          },
+          {
+            "id": "CA11-Confirmacao",
+            "summary": "Desdobramento de CA11/R8: falhas de envio inicial e reenvio de confirmação, retomada e unicidade da conta."
+          },
+          {
+            "id": "CA11-Recuperacao",
+            "summary": "Desdobramento de CA11/R8: falha e retomada do envio de recuperação, sem falso sucesso ou revelação da conta."
+          }
+        ],
+        "slices": [
+          {
+            "number": 1,
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Cadastro e redefinição com política de senha consistente",
+            "title_suffix": "Cadastro e redefinição com política de senha consistente",
+            "api_delivery": false,
+            "estimate_hours": 1.5,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [
+              {
+                "key": "base-visual-verificada",
+                "feature_issue_id": 1016101,
+                "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                "source_slice_issue_id": 1016117,
+                "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+              }
+            ],
+            "description": {
+              "delivery": "Completar a validação de senha no cadastro público e na redefinição esquecida, aplicando a mesma regra forte em teste e uso. Os formulários e demais validações já existem; falta a consistência exigida pelo requisito.",
+              "limits": "Responsável pela política compartilhada e seus erros nos dois fluxos. Preservar campos, unicidade e jornadas existentes. Envio/confirmacão e retomada dos links pertencem às outras entregas.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Cadastro e redefinição aceitam senha de 12 a 255 caracteres com maiúscula, minúscula, número e símbolo, não reconhecida como vazada e confirmação igual, com a mesma validação em teste e uso."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nos dois formulários, menos de 12 ou mais de 255 caracteres, ausência de qualquer classe, senha conhecida em vazamentos, ausência de senha/confirmação ou confirmação diferente impedem concluir com erro no campo, sem criar conta ou alterar senha indevidamente."
+                },
+                {
+                  "kind": "success",
+                  "text": "Preservar nome/e-mail obrigatórios e até 255 caracteres, e-mail válido e único no cadastro e e-mail válido obrigatório na redefinição; não solicitar dados financeiros."
+                },
+                {
+                  "kind": "success",
+                  "text": "Cadastro válido continua criando uma única conta e seguindo à confirmação. Redefinição válida retorna ao login; nova senha funciona e a anterior deixa de permitir novos logins, sem confirmar e-mail automaticamente."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                }
+              ],
+              "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Após a liberação visual, pode avançar sem esperar os demais DEV de acesso. Para concluir a jornada integrada, usar a confirmação/restrição e a retomada de recuperação das entregas correspondentes, sem bloqueio interno de início.",
+              "traceability": [
+                "R1",
+                "R2",
+                "R3",
+                "CA1",
+                "CA2",
+                "CA9",
+                "R9",
+                "CA12"
+              ],
+              "visual_references": [
+                "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+              ]
+            }
+          },
+          {
+            "number": 2,
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Confirmação de e-mail com acesso restrito e retomada",
+            "title_suffix": "Confirmação de e-mail com acesso restrito e retomada",
+            "api_delivery": false,
+            "estimate_hours": 2,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [
+              {
+                "key": "base-visual-verificada",
+                "feature_issue_id": 1016101,
+                "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                "source_slice_issue_id": 1016117,
+                "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+              }
+            ],
+            "description": {
+              "delivery": "Completar a confirmação de e-mail, do envio inicial à retomada, e impedir que contas não confirmadas acessem perfil e demais funcionalidades. Confirmação própria e reenvio já existem; faltam restrição integral e orientação nas falhas de link/envio.",
+              "limits": "Responsável pelo envio inicial, jornada restrita de confirmação/reenvio/saída, links de confirmação e restrição da área do produto. Preservar login, lembrar e recuperação atuais. A política de senha e a retomada da recuperação são fornecidas pelas outras entregas.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Cadastro público válido cria uma única conta, envia confirmação e orienta o titular; receber o e-mail não libera o produto antes de confirmar."
+                },
+                {
+                  "kind": "success",
+                  "text": "Conta não confirmada, com sessão normal ou lembrada, não acessa diretamente área inicial, perfil, configurações ou funcionalidades do produto. Mantém confirmação, reenvio, saída e caminho de recuperação; pode sair e usar a jornada pública existente quando necessário, sem novo mecanismo autenticado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Titular com link próprio válido confirma e acessa a área inicial, autenticando-se quando necessário. Reabrir link ainda válido de conta já confirmada conserva a confirmação."
+                },
+                {
+                  "kind": "success",
+                  "text": "Links inválidos, expirados ou de outra conta não confirmam endereço indevido nem liberam o sistema; apresentar orientação e caminho para solicitar novo link próprio."
+                },
+                {
+                  "kind": "success",
+                  "text": "Falha de envio no cadastro/reenvio informa que o envio não concluiu e orienta nova tentativa, sem sucesso fictício. Após restabelecimento, retomar sem contas duplicadas nem titular sem caminho de confirmação/recuperação."
+                },
+                {
+                  "kind": "success",
+                  "text": "Preservar credenciais corretas/incorretas, destino solicitado, lembrar, bloqueio após cinco falhas e saída; contas confirmadas continuam usando operações permitidas."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                }
+              ],
+              "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Após a liberação visual, pode iniciar sem esperar os demais DEV de acesso. Para concluir a jornada integrada, usar Cadastro e redefinição com política de senha consistente e Recuperação de senha com nova tentativa.",
+              "traceability": [
+                "R1",
+                "R2",
+                "R4",
+                "R6",
+                "R7",
+                "R8",
+                "CA1",
+                "CA3",
+                "CA4",
+                "CA5",
+                "CA6",
+                "CA7",
+                "CA11",
+                "CA11-Confirmacao",
+                "R9",
+                "CA12"
+              ],
+              "visual_references": [
+                "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+              ]
+            }
+          },
+          {
+            "number": 3,
+            "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Recuperação de senha com nova tentativa",
+            "title_suffix": "Recuperação de senha com nova tentativa",
+            "api_delivery": false,
+            "estimate_hours": 2,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [
+              {
+                "key": "base-visual-verificada",
+                "feature_issue_id": 1016101,
+                "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                "source_slice_issue_id": 1016117,
+                "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+              }
+            ],
+            "description": {
+              "delivery": "Completar os estados de recuperação quando o envio falhar ou o link de redefinição for inválido, expirado ou já usado. O pedido genérico e o broker já existem; falta retomada sem apresentar envio ou alteração como concluídos indevidamente.",
+              "limits": "Responsável pela solicitação/redefinição esquecida e seus novos pedidos. Preservar resposta genérica, validade de 60 minutos, uso único, retorno ao login e estado de confirmação do e-mail. Não reimplementar a política de senha nem ampliar autenticação.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Com envio disponível, pedir recuperação para conta existente ou inexistente mantém a mesma resposta genérica; o titular cadastrado recebe o link."
+                },
+                {
+                  "kind": "success",
+                  "text": "Falha no envio orienta nova tentativa sem afirmar sucesso ou revelar explicitamente existência da conta; depois de restabelecer, novo pedido permite receber link utilizável."
+                },
+                {
+                  "kind": "success",
+                  "text": "Link inválido, expirado após 60 minutos ou já utilizado não altera senha e oferece novo pedido; novo link válido permite retomar."
+                },
+                {
+                  "kind": "success",
+                  "text": "Link próprio, não usado e válido, com senha conforme a política compartilhada e confirmação igual, redefine e retorna ao login; senha nova funciona e a anterior não permite novos logins."
+                },
+                {
+                  "kind": "success",
+                  "text": "Redefinir conta não confirmada não confirma e-mail nem libera a área do produto; preservar validações e erros, sem alteração indevida."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                }
+              ],
+              "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Pode iniciar com a recuperação existente após a liberação visual. Para concluir a redefinição integrada, usar Cadastro e redefinição com política de senha consistente. Login, saída e confirmação seguem nas jornadas existentes/entrega responsável, sem bloqueio interno de início.",
+              "traceability": [
+                "R2",
+                "R3",
+                "R4",
+                "R5",
+                "R8",
+                "CA2",
+                "CA8",
+                "CA9",
+                "CA10",
+                "CA11",
+                "CA11-Recuperacao",
+                "R9",
+                "CA12"
+              ],
+              "visual_references": [
+                "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+              ]
+            }
+          }
+        ],
+        "coverage": [
+          {
+            "requirement_id": "R1",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateUserRequest/CreateUser: cadastro público com dados de conta, sem campos financeiros; preservar e verificar sua integração."
+          },
+          {
+            "requirement_id": "R2",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "Requests já impõem obrigatoriedade, limites de 255, formato/unicidade e confirmação onde aplicáveis; política forte é adaptação de R3."
+          },
+          {
+            "requirement_id": "R3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "R4",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "R5",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "config/auth expire60; gerenciador converte minutos; broker exclui token após sucesso; Action altera senha sem confirmar e-mail."
+          },
+          {
+            "requirement_id": "R6",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "CreateSessionRequest verifica cinco falhas por e-mail/origem, informa espera e limpa limitação; testes específicos foram apenas lidos."
+          },
+          {
+            "requirement_id": "R7",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "SessionController preserva remember e destrói sessão; SessionGuard::logout limpa sessão/recaller e renova remember token. Caminho lido sem executar testes."
+          },
+          {
+            "requirement_id": "R8",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "R9",
+            "disposition": "other-feature",
+            "slice_numbers": [],
+            "evidence": "Feature visual #1016101, composição de acesso #1016114 e aceite integrado #1016117, ainda New. Os estados novos dos DEV consomem essa base sem reconstruí-la."
+          },
+          {
+            "requirement_id": "CA1",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA3",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA4",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA5",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA6",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "Credenciais, destino solicitado e limitação possuem caminhos e testes específicos; não reconstruir a capacidade."
+          },
+          {
+            "requirement_id": "CA7",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "Saída retorna à página pública, invalida sessão e descarta lembrança conforme o guard; manter e verificar em QA."
+          },
+          {
+            "requirement_id": "CA8",
+            "disposition": "existing",
+            "slice_numbers": [],
+            "evidence": "Pedido com envio disponível retorna mensagem genérica e usa o broker; falha de transporte é a adaptação específica de CA11-Recuperacao."
+          },
+          {
+            "requirement_id": "CA9",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA10",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA11",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA12",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA11-Confirmacao",
+            "disposition": "slice",
+            "slice_numbers": [
+              2
+            ],
+            "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          },
+          {
+            "requirement_id": "CA11-Recuperacao",
+            "disposition": "slice",
+            "slice_numbers": [
+              3
+            ],
+            "evidence": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+          }
+        ],
+        "decisions": [
+          "Escopo vem exclusivamente do requisito aprovado #1016104, desta conversa e do código. Tasks antigas não são contexto. Filhas visuais #1016112–#1016117 foram criadas por este fluxo e são fornecedores publicados, sem capacidade pronta presumida.",
+          "Inspeção por leitura de código, testes e padrões instalados. Nenhum teste ou jornada foi executado. Leituras do broker/guard sustentam minutos, uso único e saída lembrada; nenhum valor de credencial/ambiente foi lido.",
+          "Não criar DEV para reconstruir login, saída, lembrar, limitação ou broker existentes. Cobertura existing permanece integralmente em QA. CA11-Confirmacao e CA11-Recuperacao desdobram CA11/R8 por jornada, sem requisito novo.",
+          "Avaliação independente A, estimate_visual_delivery: DEV1=2h, DEV2=3,5h, DEV3=2h e QA=3,5h. Não recebeu estimativa candidata nem números da avaliação B.",
+          "Avaliação independente B, estimate_visual_reuse: DEV1=2,5h, DEV2=4h, DEV3=2,5h e QA=4h. Não recebeu estimativa candidata nem números da avaliação A.",
+          "Histórico da primeira proposta — estimativa do agente responsável: 2,5h para política compartilhada com dois pontos de entrada/fronteiras; 4h para confirmação/restrição, envio inicial/reenvio/links/perfil; 2,5h para recuperação e retomada; QA4h para preparar contas/links/tempo/falhas, verificar jornadas, estados visuais, resultados e reteste delimitado. Total9h DEV+4h QA=13h. É análise de trabalho restante, não média automática ou medição.",
+          "Referência humana específica anterior: Mário Tinelli ajustou os cinco DEV visuais para2h e QA visual para1,5h. Não aplicar automaticamente esses números a acesso, que inclui titularidade/tempo de links, restrições e falhas; não há histórico medido nem premissa de desconto por IA.",
+          "Sem bloqueio interno real de início entre os três DEV, pois os mecanismos atuais já existem. Conclusão integra política/jornadas. Pela política visual-first aprovada, há bloqueio externo de início pelo aceite integrado #1016117, dependente dos cinco DEV visuais; publicação em New não equivale a liberação de implementação.",
+          "Recuperação atual usa rotas guest; a conta não confirmada autenticada pode sair e usar o caminho público existente. Não acrescentar redefinição autenticada que o requisito não exige.",
+          "Publicação: três Task DEV e uma Deliverable QA, New/Normal, pai1016104 e versãoSprint1, sem responsável/datas. Cada DEV bloqueia QA; #1016117 bloqueia cada novo DEV, com vinculação exclusiva ao ID retornado. Pai/fornecedor mantêm estados. DOCX é gerado da fonte aprovada e anexado à QA.",
+          "Correção explícita de Mário Tinelli nesta conversa: “estimativas na sequencia: 1.5h, 2h, 2h, 1h”. Estimativas atuais: política de senha1,5h,confirmação/restrição2h,recuperação2h eQA1h. Total5,5h DEV+1h QA=6,5h. Substitui os valores2,5h/4h/2,5h/4h da revisão001; é calibração humana,não nova avaliação independente nem medição de execução. Conteúdo,cobertura,condições e dependências preservados."
+        ],
+        "test_conditions": {
+          "document_format": "docx",
+          "context": "Visitante e contas confirmadas/não confirmadas; links próprios, de outra conta, inválidos, expirados e usados; controle de tempo e falhas de envio reproduzíveis. Preparar fronteiras de campos/senha e dependência controlável para senha vazada. Consumir a base visual implementada e verificada nos cenários de computador, tablet, celular e claro/escuro/sistema. Os testes existentes foram apenas lidos; registrar evidência ou impedimento de cada condição executada posteriormente.",
+          "conditions": [
+            {
+              "id": "CT-001",
+              "title": "Cadastro público e confirmação",
+              "verification": "Cadastrar nome/e-mail válidos, senha conforme R3 e confirmação igual.",
+              "expected_result": "Uma conta, sem convite/dados financeiros; enviar link e orientar confirmar, sem acesso ao produto.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "CA1"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-002",
+              "title": "Campos obrigatórios",
+              "verification": "Omitir separadamente nome/e-mail/senha/confirmação no cadastro e os campos aplicáveis na redefinição.",
+              "expected_result": "Impedir conclusão com erro; sem conta ou senha alterada indevidamente.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-003",
+              "title": "Nome e e-mail nos limites",
+              "verification": "Usar entradas válidas de255 e256caracteres; e-mail inválido e duplicado.",
+              "expected_result": "Até255aceito; excesso/formato/duplicação recusados, sem nova conta indevida.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-004",
+              "title": "Senha nos limites",
+              "verification": "Nos dois fluxos usar senhas de composição completa não-vazadas com11,12,255 e256caracteres.",
+              "expected_result": "12/255aceitas;11/256recusadas com erro; mesma regra em teste e uso.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-005",
+              "title": "Composição da senha",
+              "verification": "Nos dois fluxos omitir separadamente maiúscula, minúscula, número e símbolo, mantendo demais condições.",
+              "expected_result": "Cada falta recusada; composição completa não rejeitada por esse motivo.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-006",
+              "title": "Senha conhecida em vazamentos",
+              "verification": "Com dado controlado da verificação de senha vazada, tentar os dois fluxos com tamanho/composição válidos.",
+              "expected_result": "Recusar ambos com erro e sem persistência indevida.",
+              "requirement_ids": [
+                "R3",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-007",
+              "title": "Confirmação diferente",
+              "verification": "Informar senha válida com confirmação diferente no cadastro e redefinição.",
+              "expected_result": "Impedir e indicar erro sem criar conta ou alterar senha.",
+              "requirement_ids": [
+                "R2",
+                "CA2"
+              ],
+              "group": "Cadastro"
+            },
+            {
+              "id": "CT-008",
+              "title": "Visitante na área protegida",
+              "verification": "Sem sessão, abrir área inicial, perfil e configurações protegidas.",
+              "expected_result": "Exigir login sem mostrar funcionalidades do produto.",
+              "requirement_ids": [
+                "R4",
+                "CA3"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-009",
+              "title": "Conta não confirmada",
+              "verification": "Entrar sem confirmar e tentar área inicial, perfil GET/PATCH e configurações; repetir com lembrar.",
+              "expected_result": "Manter restrição, orientação, reenvio e saída; sem acesso/alteração indevida no produto.",
+              "requirement_ids": [
+                "R4",
+                "CA3"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-010",
+              "title": "Recuperar antes de confirmar",
+              "verification": "Como não-confirmado autenticado, sair e seguir ao pedido público existente.",
+              "expected_result": "Permitir a jornada sem liberar produto ou dispensar confirmação.",
+              "requirement_ids": [
+                "R4",
+                "CA3",
+                "CA9"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-011",
+              "title": "Confirmar link próprio",
+              "verification": "Abrir link próprio válido iniciando com e sem sessão.",
+              "expected_result": "Autenticar quando necessário, confirmar titular e liberar área inicial.",
+              "requirement_ids": [
+                "R4",
+                "CA4"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-012",
+              "title": "Confirmação inválida",
+              "verification": "Alterar dados/assinatura do link e abrir como titular não confirmado.",
+              "expected_result": "Não confirmar nem liberar; orientar novo link próprio.",
+              "requirement_ids": [
+                "R4",
+                "R8",
+                "CA5"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-013",
+              "title": "Confirmação expirada",
+              "verification": "Abrir link após sua validade.",
+              "expected_result": "Não confirmar/liberar; orientar e oferecer novo pedido.",
+              "requirement_ids": [
+                "R4",
+                "R8",
+                "CA5"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-014",
+              "title": "Confirmação de outra conta",
+              "verification": "Como A não confirmado, abrir link válido de B.",
+              "expected_result": "Não confirmar A/B indevidamente; caminho de novo pedido próprio de A.",
+              "requirement_ids": [
+                "R4",
+                "CA5"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-015",
+              "title": "Reabrir confirmação",
+              "verification": "Confirmar conta e reabrir o mesmo link ainda válido.",
+              "expected_result": "Manter confirmação e permitir área inicial.",
+              "requirement_ids": [
+                "R4",
+                "CA5"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-016",
+              "title": "Falha de envio inicial",
+              "verification": "Provocar falha no cadastro, restaurar envio e repetir conforme orientação.",
+              "expected_result": "Informar falha/retomada sem falso sucesso, duplicação ou titular sem caminho de confirmação/recuperação.",
+              "requirement_ids": [
+                "R8",
+                "CA11",
+                "CA11-Confirmacao"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-017",
+              "title": "Falha no reenvio",
+              "verification": "Como não-confirmado, provocar falha de reenvio, restaurar e tentar de novo.",
+              "expected_result": "Não alegar envio concluído; após retomada, receber link e confirmar.",
+              "requirement_ids": [
+                "R8",
+                "CA11",
+                "CA11-Confirmacao"
+              ],
+              "group": "Confirmação"
+            },
+            {
+              "id": "CT-018",
+              "title": "Login e destino",
+              "verification": "Entrar diretamente e após solicitar destino protegido; testar credenciais incorretas.",
+              "expected_result": "Corretas acessam área inicial/destino; incorretas não autenticam.",
+              "requirement_ids": [
+                "CA6"
+              ],
+              "group": "Login e saída"
+            },
+            {
+              "id": "CT-019",
+              "title": "Cinco falhas e espera",
+              "verification": "Para mesmo e-mail/origem, falhar cinco vezes e tentar durante bloqueio e após espera.",
+              "expected_result": "Informar espera sem autenticar durante bloqueio; após prazo, aceitar credenciais válidas.",
+              "requirement_ids": [
+                "R6",
+                "CA6"
+              ],
+              "group": "Login e saída"
+            },
+            {
+              "id": "CT-020",
+              "title": "Saída e lembrança",
+              "verification": "Entrar/sair e reabrir área protegida com lembrar marcado e desmarcado.",
+              "expected_result": "Retornar à página pública e exigir novo login, inclusive após lembrança.",
+              "requirement_ids": [
+                "R7",
+                "CA7"
+              ],
+              "group": "Login e saída"
+            },
+            {
+              "id": "CT-021",
+              "title": "Pedido genérico",
+              "verification": "Com envio disponível, pedir recuperação para conta existente e inexistente.",
+              "expected_result": "Mesma resposta; titular cadastrado recebe link sem revelação pela resposta.",
+              "requirement_ids": [
+                "CA8"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-022",
+              "title": "Redefinição válida",
+              "verification": "Com link próprio não usado antes de60min, informar senha conforme R3/confirmação e testar senha anterior/nova.",
+              "expected_result": "Retornar ao login; nova funciona e antiga não permite novos logins.",
+              "requirement_ids": [
+                "R3",
+                "R5",
+                "CA9"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-023",
+              "title": "Redefinir sem confirmar e-mail",
+              "verification": "Redefinir conta não confirmada e entrar com senha nova.",
+              "expected_result": "Senha muda, e-mail permanece não confirmado e produto continua restrito.",
+              "requirement_ids": [
+                "R4",
+                "CA9"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-024",
+              "title": "Recuperação inválida",
+              "verification": "Tentar redefinir com link inválido e usar novo pedido.",
+              "expected_result": "Não alterar; orientar e oferecer novo link para retomada.",
+              "requirement_ids": [
+                "R5",
+                "R8",
+                "CA10"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-025",
+              "title": "Recuperação expirada",
+              "verification": "Tentar após ultrapassar60min da emissão; solicitar outro link.",
+              "expected_result": "Recusar sem alterar e permitir retomar com novo link válido.",
+              "requirement_ids": [
+                "R5",
+                "R8",
+                "CA10"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-026",
+              "title": "Recuperação já usada",
+              "verification": "Redefinir e reutilizar o mesmo link para outra senha.",
+              "expected_result": "Não alterar de novo; recusar e oferecer novo pedido.",
+              "requirement_ids": [
+                "R5",
+                "R8",
+                "CA10"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-027",
+              "title": "Falha de envio de recuperação",
+              "verification": "Provocar falha, restaurar e solicitar de novo.",
+              "expected_result": "Orientar sem sucesso fictício/revelação explícita da conta; titular recebe link após retomada.",
+              "requirement_ids": [
+                "R8",
+                "CA11",
+                "CA11-Recuperacao"
+              ],
+              "group": "Recuperação"
+            },
+            {
+              "id": "CT-028",
+              "title": "Integração visual",
+              "verification": "Em computador/tablet/celular, claro/escuro/sistema, percorrer as telas e os novos estados de erro/retomada. Comparar com design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101 e o fornecedor de composição #1016114 após base verificada.",
+              "expected_result": "Identidade, campos, botões, erros e ações coerentes/usáveis, sem reconstruir a aparência fornecida.",
+              "requirement_ids": [
+                "R9",
+                "CA12"
+              ],
+              "group": "Visual"
+            }
+          ]
+        }
+      },
+      "semantic_baseline": {
+        "requirement_sha256": "9827a21983cb3421337ae2ad66216b4043ee5ce74c4ca8f6a559ed8d82708652",
+        "semantic_model_sha256": "0278f67630cc01a02b0241ee3eadaaa5911a7136a5e1c3b70345e4d56bd790b3",
+        "semantic_model": {
+          "requirements": [
+            {
+              "id": "R1",
+              "summary": "Cadastro aberto, sem convite ou liberação administrativa. Contas são individuais; nenhum dado financeiro é solicitado nesta jornada."
+            },
+            {
+              "id": "R2",
+              "summary": "Nome e e-mail são obrigatórios, com até 255 caracteres cada; e-mail válido e único por conta. Senha e confirmação são obrigatórias e devem coincidir. Na recuperação e redefinição, o e-mail informado deve ser válido; na redefinição, nova senha e confirmação também são obrigatórias."
+            },
+            {
+              "id": "R3",
+              "summary": "Cadastro e redefinição exigem senha de 12 a 255 caracteres, com ao menos uma maiúscula, uma minúscula, um número e um símbolo, rejeitando senhas conhecidas em vazamentos. A mesma regra vale nos ambientes de teste e uso."
+            },
+            {
+              "id": "R4",
+              "summary": "Acesso à área do sistema exige autenticação e confirmação do próprio e-mail, incluindo acesso direto às páginas protegidas. Conta não confirmada pode concluir a jornada restrita de confirmação, reenvio, recuperação e saída; não acessa as funcionalidades do produto. Receber um e-mail ou redefinir a senha não equivale a confirmar o endereço."
+            },
+            {
+              "id": "R5",
+              "summary": "O link de recuperação é válido por 60 minutos a partir da emissão e não pode ser reutilizado após sucesso. A senha anterior deixa de permitir novos logins depois da redefinição."
+            },
+            {
+              "id": "R6",
+              "summary": "Após cinco falhas consecutivas de login para o mesmo e-mail e origem, bloquear temporariamente as novas tentativas e informar a espera, preservando o comportamento atual. Após o prazo, permitir nova tentativa."
+            },
+            {
+              "id": "R7",
+              "summary": "Preservar a opção existente de lembrar acesso. Ela não dispensa confirmação do e-mail nem impede a saída explícita; sair encerra a sessão atual e exige novo login para voltar à área protegida."
+            },
+            {
+              "id": "R8",
+              "summary": "Falha de envio ou de link não deve ser apresentada como confirmação ou recuperação concluída. As alternativas de reenvio e novo pedido devem permitir retomar sem duplicar contas nem alterar senhas indevidamente."
+            },
+            {
+              "id": "R9",
+              "summary": "As telas de acesso usam a base visual FinAI da Feature de adequação visual, com tipografia, paleta, campos, botões, erros e estados coerentes, adaptação para celular, tablet e computador e manutenção dos temas claro, escuro e acompanhar o sistema. Esta Feature não redefine a identidade visual."
+            },
+            {
+              "id": "CA1",
+              "summary": "Como visitante, cadastrar nome e e-mail válidos e disponíveis, senha conforme R3 e confirmação igual; criar uma única conta, enviar o link e orientar a confirmação, sem pedir dados financeiros ou liberar a área do produto antes de confirmar."
+            },
+            {
+              "id": "CA2",
+              "summary": "No cadastro e na redefinição, quando aplicável, omitir campos obrigatórios, exceder os limites de nome/e-mail, informar e-mail inválido ou duplicado, senha fora de qualquer condição de R3 ou confirmação diferente; impedir a operação e indicar os respectivos erros sem criar contas ou alterar senhas indevidamente."
+            },
+            {
+              "id": "CA3",
+              "summary": "Com conta não confirmada, tentar a área inicial, perfil, configurações e destinos financeiros protegidos quando entregues; manter o acesso restrito à jornada de confirmação, reenvio, recuperação e saída, inclusive com lembrar acesso selecionado."
+            },
+            {
+              "id": "CA4",
+              "summary": "Como titular autenticado, abrir link válido da própria conta; confirmar o e-mail e permitir seguir à área inicial. Se iniciar sem sessão, solicitar autenticação quando necessária antes de concluir a confirmação."
+            },
+            {
+              "id": "CA5",
+              "summary": "Abrir link de confirmação inválido, expirado ou de outra conta; não confirmar endereço indevido nem liberar acesso e apresentar caminho para solicitar novo link próprio. Reabrir link ainda válido de conta já confirmada mantém a confirmação."
+            },
+            {
+              "id": "CA6",
+              "summary": "Entrar com credenciais corretas de conta confirmada; acessar a área inicial ou destino protegido solicitado. Credenciais incorretas não autenticam. Depois de cinco falhas consecutivas, a nova tentativa durante bloqueio informa espera; após o prazo, permitir nova tentativa válida."
+            },
+            {
+              "id": "CA7",
+              "summary": "Entrar e sair, com lembrar acesso marcado e desmarcado; retornar à página pública e exigir login ao tentar reabrir a área protegida."
+            },
+            {
+              "id": "CA8",
+              "summary": "Solicitar recuperação para e-mail cadastrado e inexistente, com envio disponível; apresentar a mesma resposta genérica. O titular cadastrado recebe o link, sem revelar a existência da conta ao solicitante pela resposta."
+            },
+            {
+              "id": "CA9",
+              "summary": "Com link de recuperação próprio, não usado e antes de 60 minutos, definir senha conforme R3 e confirmação igual; retornar ao login, permitir novos logins com a senha nova e recusar a anterior. Uma conta anteriormente não confirmada continua sem acesso ao sistema."
+            },
+            {
+              "id": "CA10",
+              "summary": "Tentar redefinir com link inválido, após sua expiração ou já utilizado; não alterar a senha e oferecer novo pedido. Um novo link válido permite retomar a jornada."
+            },
+            {
+              "id": "CA11",
+              "summary": "Provocar falha de envio na confirmação inicial, no reenvio e na recuperação; informar falha e nova tentativa sem sucesso fictício. Após restabelecer o envio, permitir retomar com link utilizável sem contas duplicadas e sem revelar explicitamente a existência de conta na recuperação."
+            },
+            {
+              "id": "CA12",
+              "summary": "Utilizar as telas e estados de acesso em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema; manter a linguagem visual FinAI definida pela adequação visual, controles utilizáveis e erros reconhecíveis."
+            },
+            {
+              "id": "CA11-Confirmacao",
+              "summary": "Desdobramento de CA11/R8: falhas de envio inicial e reenvio de confirmação, retomada e unicidade da conta."
+            },
+            {
+              "id": "CA11-Recuperacao",
+              "summary": "Desdobramento de CA11/R8: falha e retomada do envio de recuperação, sem falso sucesso ou revelação da conta."
+            }
+          ],
+          "slices": [
+            {
+              "number": 1,
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Cadastro e redefinição com política de senha consistente",
+              "title_suffix": "Cadastro e redefinição com política de senha consistente",
+              "api_delivery": false,
+              "estimate_hours": 1.5,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [
+                {
+                  "key": "base-visual-verificada",
+                  "feature_issue_id": 1016101,
+                  "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                  "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                  "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                  "source_slice_issue_id": 1016117,
+                  "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+                }
+              ],
+              "description": {
+                "delivery": "Completar a validação de senha no cadastro público e na redefinição esquecida, aplicando a mesma regra forte em teste e uso. Os formulários e demais validações já existem; falta a consistência exigida pelo requisito.",
+                "limits": "Responsável pela política compartilhada e seus erros nos dois fluxos. Preservar campos, unicidade e jornadas existentes. Envio/confirmacão e retomada dos links pertencem às outras entregas.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Cadastro e redefinição aceitam senha de 12 a 255 caracteres com maiúscula, minúscula, número e símbolo, não reconhecida como vazada e confirmação igual, com a mesma validação em teste e uso."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nos dois formulários, menos de 12 ou mais de 255 caracteres, ausência de qualquer classe, senha conhecida em vazamentos, ausência de senha/confirmação ou confirmação diferente impedem concluir com erro no campo, sem criar conta ou alterar senha indevidamente."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Preservar nome/e-mail obrigatórios e até 255 caracteres, e-mail válido e único no cadastro e e-mail válido obrigatório na redefinição; não solicitar dados financeiros."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Cadastro válido continua criando uma única conta e seguindo à confirmação. Redefinição válida retorna ao login; nova senha funciona e a anterior deixa de permitir novos logins, sem confirmar e-mail automaticamente."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                  }
+                ],
+                "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Após a liberação visual, pode avançar sem esperar os demais DEV de acesso. Para concluir a jornada integrada, usar a confirmação/restrição e a retomada de recuperação das entregas correspondentes, sem bloqueio interno de início.",
+                "traceability": [
+                  "R1",
+                  "R2",
+                  "R3",
+                  "CA1",
+                  "CA2",
+                  "CA9",
+                  "R9",
+                  "CA12"
+                ],
+                "visual_references": [
+                  "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                  "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+                ]
+              }
+            },
+            {
+              "number": 2,
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Confirmação de e-mail com acesso restrito e retomada",
+              "title_suffix": "Confirmação de e-mail com acesso restrito e retomada",
+              "api_delivery": false,
+              "estimate_hours": 2,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [
+                {
+                  "key": "base-visual-verificada",
+                  "feature_issue_id": 1016101,
+                  "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                  "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                  "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                  "source_slice_issue_id": 1016117,
+                  "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+                }
+              ],
+              "description": {
+                "delivery": "Completar a confirmação de e-mail, do envio inicial à retomada, e impedir que contas não confirmadas acessem perfil e demais funcionalidades. Confirmação própria e reenvio já existem; faltam restrição integral e orientação nas falhas de link/envio.",
+                "limits": "Responsável pelo envio inicial, jornada restrita de confirmação/reenvio/saída, links de confirmação e restrição da área do produto. Preservar login, lembrar e recuperação atuais. A política de senha e a retomada da recuperação são fornecidas pelas outras entregas.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Cadastro público válido cria uma única conta, envia confirmação e orienta o titular; receber o e-mail não libera o produto antes de confirmar."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Conta não confirmada, com sessão normal ou lembrada, não acessa diretamente área inicial, perfil, configurações ou funcionalidades do produto. Mantém confirmação, reenvio, saída e caminho de recuperação; pode sair e usar a jornada pública existente quando necessário, sem novo mecanismo autenticado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Titular com link próprio válido confirma e acessa a área inicial, autenticando-se quando necessário. Reabrir link ainda válido de conta já confirmada conserva a confirmação."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Links inválidos, expirados ou de outra conta não confirmam endereço indevido nem liberam o sistema; apresentar orientação e caminho para solicitar novo link próprio."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Falha de envio no cadastro/reenvio informa que o envio não concluiu e orienta nova tentativa, sem sucesso fictício. Após restabelecimento, retomar sem contas duplicadas nem titular sem caminho de confirmação/recuperação."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Preservar credenciais corretas/incorretas, destino solicitado, lembrar, bloqueio após cinco falhas e saída; contas confirmadas continuam usando operações permitidas."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                  }
+                ],
+                "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Após a liberação visual, pode iniciar sem esperar os demais DEV de acesso. Para concluir a jornada integrada, usar Cadastro e redefinição com política de senha consistente e Recuperação de senha com nova tentativa.",
+                "traceability": [
+                  "R1",
+                  "R2",
+                  "R4",
+                  "R6",
+                  "R7",
+                  "R8",
+                  "CA1",
+                  "CA3",
+                  "CA4",
+                  "CA5",
+                  "CA6",
+                  "CA7",
+                  "CA11",
+                  "CA11-Confirmacao",
+                  "R9",
+                  "CA12"
+                ],
+                "visual_references": [
+                  "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                  "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+                ]
+              }
+            },
+            {
+              "number": 3,
+              "title": "[DEV] [WEB] [USUARIO] Acesso à conta pessoal - Recuperação de senha com nova tentativa",
+              "title_suffix": "Recuperação de senha com nova tentativa",
+              "api_delivery": false,
+              "estimate_hours": 2,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [
+                {
+                  "key": "base-visual-verificada",
+                  "feature_issue_id": 1016101,
+                  "feature_title": "[WEB] [USUARIO] Adequação visual do FinAI",
+                  "capability": "Base visual das telas atuais implementada e verificada no aceite integrado da Feature visual",
+                  "blocking_reason": "O catálogo e o requisito exigem a base visual antes da implementação de negócio. A QA #1016117 verifica os cinco DEV fornecedores; o início aguarda essa capacidade de fato concluída, e não sua mera publicação em New.",
+                  "source_slice_issue_id": 1016117,
+                  "source_slice_title": "[QA] [WEB] [USUARIO] Adequação visual do FinAI"
+                }
+              ],
+              "description": {
+                "delivery": "Completar os estados de recuperação quando o envio falhar ou o link de redefinição for inválido, expirado ou já usado. O pedido genérico e o broker já existem; falta retomada sem apresentar envio ou alteração como concluídos indevidamente.",
+                "limits": "Responsável pela solicitação/redefinição esquecida e seus novos pedidos. Preservar resposta genérica, validade de 60 minutos, uso único, retorno ao login e estado de confirmação do e-mail. Não reimplementar a política de senha nem ampliar autenticação.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Com envio disponível, pedir recuperação para conta existente ou inexistente mantém a mesma resposta genérica; o titular cadastrado recebe o link."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Falha no envio orienta nova tentativa sem afirmar sucesso ou revelar explicitamente existência da conta; depois de restabelecer, novo pedido permite receber link utilizável."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Link inválido, expirado após 60 minutos ou já utilizado não altera senha e oferece novo pedido; novo link válido permite retomar."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Link próprio, não usado e válido, com senha conforme a política compartilhada e confirmação igual, redefine e retorna ao login; senha nova funciona e a anterior não permite novos logins."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Redefinir conta não confirmada não confirma e-mail nem libera a área do produto; preservar validações e erros, sem alteração indevida."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nas telas e estados alterados, consumir marca, tipografia, paleta, campos, botões, erros e feedback da base FinAI em computador, tablet e celular, nos temas claro, escuro e acompanhar o sistema, sem reconstruir identidade ou layouts do fornecedor."
+                  }
+                ],
+                "dependencies": "Início bloqueado pelo aceite integrado [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117), dependente dos cinco DEV visuais e representante da base implementada e verificada. Pode iniciar com a recuperação existente após a liberação visual. Para concluir a redefinição integrada, usar Cadastro e redefinição com política de senha consistente. Login, saída e confirmação seguem nas jornadas existentes/entrega responsável, sem bloqueio interno de início.",
+                "traceability": [
+                  "R2",
+                  "R3",
+                  "R4",
+                  "R5",
+                  "R8",
+                  "CA2",
+                  "CA8",
+                  "CA9",
+                  "CA10",
+                  "CA11",
+                  "CA11-Recuperacao",
+                  "R9",
+                  "CA12"
+                ],
+                "visual_references": [
+                  "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; referência clara e adaptações aprovadas na Feature visual #1016101; linguagem de formulários, mensagens e ações de retomada. Não há composição própria de acesso no ZIP.",
+                  "Fornecedor de composição: [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Página inicial e jornadas de acesso (#1016114); aceite integrado: [QA] [WEB] [USUARIO] Adequação visual do FinAI (#1016117)."
+                ]
+              }
+            }
+          ],
+          "coverage": [
+            {
+              "requirement_id": "R1",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateUserRequest/CreateUser: cadastro público com dados de conta, sem campos financeiros; preservar e verificar sua integração."
+            },
+            {
+              "requirement_id": "R2",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "Requests já impõem obrigatoriedade, limites de 255, formato/unicidade e confirmação onde aplicáveis; política forte é adaptação de R3."
+            },
+            {
+              "requirement_id": "R3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "R4",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "R5",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "config/auth expire60; gerenciador converte minutos; broker exclui token após sucesso; Action altera senha sem confirmar e-mail."
+            },
+            {
+              "requirement_id": "R6",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "CreateSessionRequest verifica cinco falhas por e-mail/origem, informa espera e limpa limitação; testes específicos foram apenas lidos."
+            },
+            {
+              "requirement_id": "R7",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "SessionController preserva remember e destrói sessão; SessionGuard::logout limpa sessão/recaller e renova remember token. Caminho lido sem executar testes."
+            },
+            {
+              "requirement_id": "R8",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "R9",
+              "disposition": "other-feature",
+              "slice_numbers": [],
+              "evidence": "Feature visual #1016101, composição de acesso #1016114 e aceite integrado #1016117, ainda New. Os estados novos dos DEV consomem essa base sem reconstruí-la."
+            },
+            {
+              "requirement_id": "CA1",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA3",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA4",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA5",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA6",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "Credenciais, destino solicitado e limitação possuem caminhos e testes específicos; não reconstruir a capacidade."
+            },
+            {
+              "requirement_id": "CA7",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "Saída retorna à página pública, invalida sessão e descarta lembrança conforme o guard; manter e verificar em QA."
+            },
+            {
+              "requirement_id": "CA8",
+              "disposition": "existing",
+              "slice_numbers": [],
+              "evidence": "Pedido com envio disponível retorna mensagem genérica e usa o broker; falha de transporte é a adaptação específica de CA11-Recuperacao."
+            },
+            {
+              "requirement_id": "CA9",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "app/Http/Requests/CreateUserRequest.php; CreateUserPasswordRequest.php; resources/js/pages/user/create.tsx; user-password/create.tsx. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA10",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA11",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA12",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA11-Confirmacao",
+              "disposition": "slice",
+              "slice_numbers": [
+                2
+              ],
+              "evidence": "routes/web.php; app/Models/User.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            },
+            {
+              "requirement_id": "CA11-Recuperacao",
+              "disposition": "slice",
+              "slice_numbers": [
+                3
+              ],
+              "evidence": "app/Http/Controllers/UserEmailResetNotificationController.php; app/Actions/CreateUserEmailResetNotification.php; tests/Feature/Controllers/UserEmailResetNotificationTest.php. Adaptação parcial identificada. CA11 é também desdobrada em confirmação/recuperação para explicitar a responsabilidade de cada jornada."
+            }
+          ],
+          "decisions": [
+            "Escopo vem exclusivamente do requisito aprovado #1016104, desta conversa e do código. Tasks antigas não são contexto. Filhas visuais #1016112–#1016117 foram criadas por este fluxo e são fornecedores publicados, sem capacidade pronta presumida.",
+            "Inspeção por leitura de código, testes e padrões instalados. Nenhum teste ou jornada foi executado. Leituras do broker/guard sustentam minutos, uso único e saída lembrada; nenhum valor de credencial/ambiente foi lido.",
+            "Não criar DEV para reconstruir login, saída, lembrar, limitação ou broker existentes. Cobertura existing permanece integralmente em QA. CA11-Confirmacao e CA11-Recuperacao desdobram CA11/R8 por jornada, sem requisito novo.",
+            "Avaliação independente A, estimate_visual_delivery: DEV1=2h, DEV2=3,5h, DEV3=2h e QA=3,5h. Não recebeu estimativa candidata nem números da avaliação B.",
+            "Avaliação independente B, estimate_visual_reuse: DEV1=2,5h, DEV2=4h, DEV3=2,5h e QA=4h. Não recebeu estimativa candidata nem números da avaliação A.",
+            "Histórico da primeira proposta — estimativa do agente responsável: 2,5h para política compartilhada com dois pontos de entrada/fronteiras; 4h para confirmação/restrição, envio inicial/reenvio/links/perfil; 2,5h para recuperação e retomada; QA4h para preparar contas/links/tempo/falhas, verificar jornadas, estados visuais, resultados e reteste delimitado. Total9h DEV+4h QA=13h. É análise de trabalho restante, não média automática ou medição.",
+            "Referência humana específica anterior: Mário Tinelli ajustou os cinco DEV visuais para2h e QA visual para1,5h. Não aplicar automaticamente esses números a acesso, que inclui titularidade/tempo de links, restrições e falhas; não há histórico medido nem premissa de desconto por IA.",
+            "Sem bloqueio interno real de início entre os três DEV, pois os mecanismos atuais já existem. Conclusão integra política/jornadas. Pela política visual-first aprovada, há bloqueio externo de início pelo aceite integrado #1016117, dependente dos cinco DEV visuais; publicação em New não equivale a liberação de implementação.",
+            "Recuperação atual usa rotas guest; a conta não confirmada autenticada pode sair e usar o caminho público existente. Não acrescentar redefinição autenticada que o requisito não exige.",
+            "Publicação: três Task DEV e uma Deliverable QA, New/Normal, pai1016104 e versãoSprint1, sem responsável/datas. Cada DEV bloqueia QA; #1016117 bloqueia cada novo DEV, com vinculação exclusiva ao ID retornado. Pai/fornecedor mantêm estados. DOCX é gerado da fonte aprovada e anexado à QA.",
+            "Correção explícita de Mário Tinelli nesta conversa: “estimativas na sequencia: 1.5h, 2h, 2h, 1h”. Estimativas atuais: política de senha1,5h,confirmação/restrição2h,recuperação2h eQA1h. Total5,5h DEV+1h QA=6,5h. Substitui os valores2,5h/4h/2,5h/4h da revisão001; é calibração humana,não nova avaliação independente nem medição de execução. Conteúdo,cobertura,condições e dependências preservados."
+          ],
+          "study_evidence": []
+        }
+      }
+    }
+  ],
+  "approvals": [
+    {
+      "revision": 2,
+      "proposal_sha256": "4a49a9cc65ee865a263909eb45154673ec3ef5327efe8a0defc20860bf47de3c",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T14:31:32.343396+00:00",
+      "status": "valid"
+    }
+  ]
+}

@@ -766,6 +766,36 @@ Run do item visual: 3e8baa5a-37ce-4543-a114-d102e55b5830. Destino definitivo: do
 
 Fechamento confirmado por Mário Tinelli nesta conversa com a resposta “confirmo”, em 2026-11-11T13:21:20.145136+00:00. Aprovação registrada no estado local sob 7ca363b6-ce28-456c-bf4b-003d038d3117. O resumo final aprovado foi preservado integralmente; hash SHA-256 d2a86ccfcbc8ae65eb17d07db234cf37c1cd1a64bb0322dfbc55acfd51ababc1. As cinco issues permanecem New, sem implementação executada.
 
+## Fatiamento DEV e QA concluído
+
+As cinco Features foram fatiadas e publicadas no projeto FinAi, Sprint 1: 17 tarefas DEV e 5 QA, totalizando 59,5h estimadas (50h DEV e 9,5h QA). Todas permanecem em New, aguardando implementação. As tasks antigas foram desconsideradas e preservadas.
+
+| Feature | DEV | QA | Estimativa total |
+| --- | --- | --- | --- |
+| Adequação visual | #1016112 a #1016116 | #1016117 | 11,5h |
+| Acesso à conta pessoal | #1016119 a #1016121 | #1016122 | 6,5h |
+| Gestão de transações | #1016123 a #1016125 | #1016126 | 7,5h |
+| Dashboard financeiro | #1016127 | #1016128 | 7h |
+| Assistente financeiro com IA | #1016129 a #1016133 | #1016134 | 27h |
+
+A QA do Assistente foi publicada com 3h, conforme correção aprovada. Os cinco documentos Word de condições de teste estão anexados às respectivas QAs e foram conferidos. Bloqueios internos e dependências externas foram publicados e verificados. A sequência vigente consta abaixo; o resumo final posterior registra o fechamento histórico dos requisitos, anterior ao fatiamento.
+
+Os estados locais de decomposição, publicação, dependências e escopo passaram nos validadores. Esta entrega conclui o planejamento e a publicação das tarefas; não representa implementação nem execução dos testes do produto.
+
+## Sequenciamento atual do fatiamento
+
+Política solicitada por Mário Tinelli: a mãe e a primeira filha compartilham o número; demais filhas incrementam, incluindo QA; a próxima mãe inicia após a última filha anterior. Features sem filhas permanecem sem Sequencing até sua publicação. Esta regra substitui a numeração operacional anterior; aprovações e evidências históricas permanecem preservadas.
+
+| Feature | Sequencing da mãe | Filhas |
+| --- | --- | --- |
+| [WEB] [USUARIO] Adequação visual do FinAI (#1016101) | 1 | 1–6 |
+| [WEB] [USUARIO] Acesso à conta pessoal (#1016104) | 7 | 7–10 |
+| [WEB] [USUARIO] Gestão de transações (#1016105) | 11 | 11–14 |
+| [WEB] [USUARIO] Dashboard financeiro (#1016106) | 15 | 15–16 |
+| [WEB] [USUARIO] Assistente financeiro com IA (#1016107) | 17 | 17–22 |
+
+Próximo número disponível: 23. Recalcular após cada nova Feature fatiada, antes de avançar à seguinte. Conferência atual de 27 issues; somente custom field Sequencing foi atualizado, com demais campos verificados.
+
 ## Resumo final
 
 ### Issues

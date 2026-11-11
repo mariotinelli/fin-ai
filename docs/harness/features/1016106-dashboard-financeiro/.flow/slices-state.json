@@ -1,0 +1,1003 @@
+{
+  "schema_version": 3,
+  "status": "approved",
+  "current_revision": 1,
+  "revisions": [
+    {
+      "number": 1,
+      "recorded_by": "Mário Tinelli",
+      "recorded_at": "2026-11-11T15:32:21.482957+00:00",
+      "reason": "Uma entrega vertical completa após inspeção e duas avaliações independentes; reuso de fornecedores e política de Sequencing atual.",
+      "proposal_sha256": "486081fbbaaa823701b529e782098bea54e6160881f6950310039a6721abb300",
+      "proposal": {
+        "feature": {
+          "title": "[WEB] [USUARIO] Dashboard financeiro",
+          "artifact_path": "feature.md",
+          "state_path": ".flow/feature-state.json",
+          "issue_id": 1016106,
+          "requirement_sha256": "c7e6839399ca74ee6c27d25a269fe3e5280065a09018ea84f865615ff6f0d135",
+          "input_check_path": ".flow/slices-input-check.json",
+          "input_check_sha256": "70387f638ddc420eb4302224fb604cba971b160edc1b074d809695d200e428df"
+        },
+        "inspection": [
+          {
+            "path": "resources/js/pages/dashboard.tsx; routes/web.php",
+            "finding": "A rota atual já renderiza a área autenticada/confirmada, mas a página contém somente placeholders. Adaptar a tela e criar suas consultas financeiras, sem tratar o mecanismo de renderização como dashboard pronto.",
+            "classification": "adapt"
+          },
+          {
+            "path": "app/Models; app/Actions; app/Http/Controllers; resources/js/pages",
+            "finding": "Não há implementação financeira no código atual. Cadastro/persistência, histórico e manutenção têm fornecedores fatiados e ainda New, sem presumir capacidade pronta ou reconstruí-la no dashboard.",
+            "classification": "create"
+          },
+          {
+            "path": "docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md: #overview,render,sorted,list",
+            "finding": "O protótipo define saldo/recentes de todo o histórico, somas/contagens e duas barras do mês, resultado, estados vazios, até cinco recentes e ações. Fonte financeira local do protótipo deve ser substituída por dados reais do titular.",
+            "classification": "create"
+          },
+          {
+            "path": "resources/js/components/ui/card.tsx; resources/js/components/ui/button.tsx; resources/js/layouts/app/app-sidebar-layout.tsx",
+            "finding": "Primitivas e estrutura podem ser reutilizadas, consumindo a identidade visual entregue pela Feature visual. A nova composição de cartões, balanço e recentes ainda precisa ser criada.",
+            "classification": "adapt"
+          },
+          {
+            "path": "docs/harness/features/1016105-gestao-de-transacoes/.flow/slices-publication.json; Redmine #1016123, #1016124 e #1016125",
+            "finding": "Fornecedores específicos publicados: cadastro/persistência/detalhes #1016123, histórico #1016124 e manutenção #1016125, todos New. Primeiro fornece a capacidade que permite iniciar; os demais são necessários à conclusão integrada de Ver todas e atualização após manutenção.",
+            "classification": "create"
+          },
+          {
+            "path": "docs/harness/scopes/2026-11-11-finai-mvp/.flow/slices-sequencing.json",
+            "finding": "Política explícita do usuário substitui a sequência anterior: mãe e primeira filha compartilham número, demais filhas incrementam incluindo QA, próximo bloco após última filha, Features sem filhas vazias. Conferência atual19issues concluída; próximo número15.",
+            "classification": "existing"
+          },
+          {
+            "path": "config/app.php:timezone; requisito de transações R3; tests/Feature e tests/Browser",
+            "finding": "O calendário deve ser o mesmo local do fornecedor de transações, sem presumir equivalência com UTC. Estrutura de testes existe, mas nenhuma cobertura financeira foi encontrada ou executada nesta inspeção.",
+            "classification": "create"
+          }
+        ],
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "Saldo geral = soma de todas as receitas do titular menos soma de todas as despesas do titular em todo o histórico persistido. Não há saldo inicial manual, conciliação bancária ou saldo por múltiplas contas nesta entrega. O seletor de mês não altera o saldo geral."
+          },
+          {
+            "id": "R2",
+            "summary": "Receitas e despesas do mês são as somas por tipo das transações cuja data pertence ao mês e ano selecionados. Contagens correspondem à quantidade de transações de cada tipo no período. Resultado do mês = receitas do mês menos despesas do mês."
+          },
+          {
+            "id": "R3",
+            "summary": "Iniciar no mês corrente e permitir escolher outro mês e ano. As datas e o mês corrente seguem o mesmo calendário local da gestão de transações. O dashboard não altera datas nem cria registros; somente movimentações realizadas são persistidas conforme a Feature responsável."
+          },
+          {
+            "id": "R4",
+            "summary": "O balanço compara receitas e despesas do mês em duas barras, com legenda e valores. A maior soma positiva ocupa a extensão de referência e a outra é proporcional; total zero não causa cálculo inválido. Sem transações no mês, apresentar estado vazio próprio em vez de barras fictícias."
+          },
+          {
+            "id": "R5",
+            "summary": "Recentes apresenta os cinco registros mais recentes de todo o histórico, ordenados por data decrescente e depois pelo cadastro mais recente, como na gestão de transações. Com menos de cinco, mostrar somente os existentes. Trocar o mês não filtra essa lista."
+          },
+          {
+            "id": "R6",
+            "summary": "Consultas, contagens e totais usam somente transações persistidas do titular. Ao acessar ou atualizar a Visão geral, buscar o estado salvo no sistema. Após concluir operações financeiras iniciadas no dashboard, atualizar seus valores e lista. Esta entrega não define atualização automática contínua entre sessões."
+          },
+          {
+            "id": "R7",
+            "summary": "Apresentar valores em reais e datas em formato brasileiro. Distinguir receitas e despesas por identificação, sinal e aparência, mantendo a linguagem visual FinAI. Não usar números de demonstração ou resultados derivados de outro titular."
+          },
+          {
+            "id": "R8",
+            "summary": "Preservar a composição #overview do design: cabeçalho, mês, ação Nova transação, três cartões de resumo com destaque no saldo geral, balanço do mês, convite do assistente e últimas movimentações com Ver todas. Usar a base visual aprovada, incluindo claro, escuro e acompanhar o sistema; no celular, adaptar grade, navegação e lista compacta sem perder acesso aos detalhes."
+          },
+          {
+            "id": "CA1",
+            "summary": "Com receitas e despesas em meses diferentes, abrir Visão geral; o saldo geral corresponde à diferença de todo o histórico e os totais/contagens mensais correspondem somente ao mês corrente."
+          },
+          {
+            "id": "CA2",
+            "summary": "Selecionar outro mês e ano; atualizar receitas, despesas, contagens, barras e resultado do período, mantendo saldo geral e recentes independentes do filtro mensal."
+          },
+          {
+            "id": "CA3",
+            "summary": "Consultar cenário com despesas superiores às receitas; apresentar saldo geral e/ou resultado mensal negativos corretamente. Com valores iguais e positivos, mostrar resultado zero com os registros e barras correspondentes."
+          },
+          {
+            "id": "CA4",
+            "summary": "Sem registros, apresentar zeros e orientação de início, sem valores fictícios. Em um mês sem movimento, mas com histórico em outros meses, apresentar somente os indicadores mensais vazios, preservando saldo e recentes do histórico."
+          },
+          {
+            "id": "CA5",
+            "summary": "Comparar o gráfico com os totais mensais; legenda, valores e proporções das duas barras correspondem às somas. Um tipo com soma zero e outro positivo continua apresentável; ausência completa de movimentos usa o estado vazio."
+          },
+          {
+            "id": "CA6",
+            "summary": "Com mais de cinco registros e datas empatadas, conferir os cinco recentes conforme R5. Com menos registros, não completar a lista com exemplos. Abrir detalhes e Ver todas leva aos dados próprios usando a gestão de transações."
+          },
+          {
+            "id": "CA7",
+            "summary": "Cadastrar, editar e excluir uma transação pelas ações disponíveis no dashboard; após cada sucesso, saldo, totais, contagens, barras, resultado e recentes refletem os registros salvos segundo seus respectivos recortes. Cancelamento ou falha não aplica alteração fictícia."
+          },
+          {
+            "id": "CA8",
+            "summary": "Provocar falha de consulta; apresentar indisponibilidade e nova tentativa sem afirmar saldo zero ou ausência de registros. Restabelecer a consulta e tentar novamente recupera os valores reais."
+          },
+          {
+            "id": "CA9",
+            "summary": "Usar contas com dados distintos; cada uma visualiza somente seus próprios totais, contagens, gráfico e recentes. Visitantes e contas sem confirmação não acessam o dashboard conforme a Feature de acesso."
+          },
+          {
+            "id": "CA10",
+            "summary": "Conferir a composição da Visão geral em computador, tablet e celular nos temas claro, escuro e acompanhar o sistema; manter hierarquia, destaque do saldo, cartões, balanço e lista do design. O convite do assistente não simula uma funcionalidade antes da entrega responsável."
+          }
+        ],
+        "slices": [
+          {
+            "number": 1,
+            "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Visão geral com saldo, balanço mensal e recentes",
+            "title_suffix": "Visão geral com saldo, balanço mensal e recentes",
+            "api_delivery": false,
+            "estimate_hours": 4.5,
+            "estimate_exception": null,
+            "blocked_by": [],
+            "external_blockers": [
+              {
+                "key": "registros-financeiros-persistidos",
+                "feature_issue_id": 1016105,
+                "feature_title": "[WEB] [USUARIO] Gestão de transações",
+                "capability": "Transações próprias persistidas e consultáveis, com cadastro, categorias e detalhes reais",
+                "blocking_reason": "O código atual não possui domínio financeiro; a consulta real precisa do primeiro cadastro persistido e da titularidade fornecidos por #1016123. Sua publicação em New não comprova disponibilidade.",
+                "source_slice_issue_id": 1016123,
+                "source_slice_title": "[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro de receitas e despesas com conferência do registro"
+              }
+            ],
+            "description": {
+              "delivery": "Transformar o dashboard placeholder em uma Visão geral financeira real do titular, integrando saldo acumulado, indicadores/balanço mensais, cinco recentes e ações fornecidas por Transações numa tela completa e verificável.",
+              "limits": "Responsável pelas consultas, composição e atualização dos indicadores da Visão geral. Reutilizar persistência, cadastro, detalhes, histórico e manutenção dos fornecedores, sem reimplementar suas regras. Não criar gráfico temporal, relatório novo, saldo inicial ou chat/IA.",
+              "criteria": [
+                {
+                  "kind": "success",
+                  "text": "Ao abrir Visão geral, apresentar saldo geral de todas as receitas menos todas as despesas do titular e totais/contagens do mês corrente local; valores em reais e datas brasileiras, sem dados fictícios ou de outra conta."
+                },
+                {
+                  "kind": "success",
+                  "text": "Selecionar outro mês/ano atualiza apenas receitas,despesas,contagens,duas barras e resultado daquele período. Saldo geral e até cinco recentes continuam considerando todo o histórico."
+                },
+                {
+                  "kind": "success",
+                  "text": "Balanço mostra legenda e valores de Receitas/Despesas, maior soma positiva na extensão de referência e outra proporcional; tipo zerado não causa cálculo inválido. Resultado mensal é receitas menos despesas, incluindo negativo ou zero com movimentos."
+                },
+                {
+                  "kind": "success",
+                  "text": "Sem registros, apresentar zeros e orientação para primeiro cadastro; com histórico fora do mês escolhido, zerar somente indicadores mensais e preservar saldo/recentes. Mês sem movimento usa estado vazio do gráfico; receitas/despesas iguais e positivas conservam barras e contagens."
+                },
+                {
+                  "kind": "success",
+                  "text": "Recentes traz no máximo cinco registros reais por data decrescente e depois cadastro mais recente, com descrição,categoria,data,valor e tipo/sinal, sem completar com exemplos; abrir detalhes e Ver todas usa as jornadas próprias de transações."
+                },
+                {
+                  "kind": "success",
+                  "text": "Nova transação reutiliza o cadastro fornecido; edição/exclusão reutilizam a manutenção dos detalhes. Após cada sucesso, atualizar todos os indicadores e recentes conforme seus recortes. Falha/cancelamento não antecipa valores como se salvos; acessar/atualizar a página consulta o estado atual do sistema, sem definir polling contínuo entre sessões."
+                },
+                {
+                  "kind": "success",
+                  "text": "Falha da consulta informa indisponibilidade e nova tentativa, sem saldo zero ou histórico vazio como sucesso; restaurada a consulta, recuperar os valores reais."
+                },
+                {
+                  "kind": "success",
+                  "text": "Toda consulta,contagem,total,gráfico e lista é do titular; visitantes e não-confirmados não acessam. Não introduzir saldo inicial manual, múltiplas contas ou relatório avançado."
+                },
+                {
+                  "kind": "success",
+                  "text": "Preservar #overview da referência: cabeçalho/mês/Nova transação,três cartões com destaque no saldo,balanço,convite do assistente e recentes/Ver todas. Consumir identidade FinAI em claro/escuro/sistema e adaptar para computador/tablet/celular com lista compacta e dados completos nos detalhes."
+                },
+                {
+                  "kind": "success",
+                  "text": "Convite visual do assistente permanece com ação indisponível antes da entrega responsável, sem simular chat nem criar dependência de implementação do assistente."
+                }
+              ],
+              "dependencies": "Início bloqueado por [DEV] [WEB] [USUARIO] Gestão de transações - Cadastro de receitas e despesas com conferência do registro (#1016123). Para concluir Ver todas, integrar Histórico, filtros e paginação (#1016124); para concluir atualização após edição/exclusão, integrar Edição e exclusão confirmada (#1016125). Estes dois não impedem iniciar agregados e composição depois do primeiro fornecedor. A base visual verificada é transitiva via #1016123; não repetir aresta direta. Assistente financeiro não é bloqueador; sua ação fica indisponível até estar entregue.",
+              "traceability": [
+                "R1",
+                "R2",
+                "R3",
+                "R4",
+                "R5",
+                "R6",
+                "R7",
+                "R8",
+                "CA1",
+                "CA2",
+                "CA3",
+                "CA4",
+                "CA5",
+                "CA6",
+                "CA7",
+                "CA8",
+                "CA9",
+                "CA10"
+              ],
+              "visual_references": [
+                "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; #overview,#balance,#income,#expense,#graph,#month-result,#recent,#month,#open-chat; render,sorted,list e estilos .stats/.overview-grid/.assistant-teaser/media queries.",
+                "Adaptações aprovadas: dados do sistema em vez de localStorage; base clara/escura/sistema; convite sem simulação de IA; sem composição financeira antecipada pela Feature visual."
+              ]
+            }
+          }
+        ],
+        "coverage": [
+          {
+            "requirement_id": "R1",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "R2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "R3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "R4",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "R5",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "R6",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "R7",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "R8",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA1",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA2",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA3",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA4",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA5",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA6",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA7",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA8",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA9",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          },
+          {
+            "requirement_id": "CA10",
+            "disposition": "slice",
+            "slice_numbers": [
+              1
+            ],
+            "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+          }
+        ],
+        "decisions": [
+          "Fonte de escopo: requisito canônico #1016106, design normalizado e decisões anteriores; nenhuma task antiga é contexto ou prova de implementação.",
+          "Inspeção por leitura do código, do protótipo e dos fornecedores publicados. Nenhum teste ou jornada foi executado. A rota/layout existente não comprova dashboard financeiro; fornecedores New não são capacidade pronta.",
+          "Uma única entrega DEV é vertical e cobre a Visão geral completa em menos de6h. Não separar por consulta, gráfico ou frontend/backend: cartões,balanço e recentes formam uma mesma tela verificável. Reutilizar formulários/manutenção e duas barras simples, sem biblioteca analítica ou nova persistência.",
+          "Avaliação independente A, estimate_visual_delivery:DEV3,5h eQA2h; destacou composição demonstrada, consultas próprias e reuso de transações. Avaliação B, estimate_visual_reuse:DEV4,5h eQA2,5h; destacou recortes distintos, estados e integração. Não receberam número candidato nem resultado da outra avaliação.",
+          "Estimativa final do agente responsável:DEV4,5h para consultas próprias, composição responsiva, recortes e integração de cadastro/manutenção com estados;QA2,5h para preparar resultados conhecidos, conferir recortes/recentes, operações/falhas/titularidade/visual e registrar reteste delimitado. Total7h. É análise de trabalho restante, sem média automática ou tempo executado.",
+          "Calibrações humanas anteriores foram consideradas como referências específicas: visualDEV2h/QA1,5h; acessoDEV1,5h/2h/2h eQA1h; transaçõesDEV2h cada/QA1,5h. Não são tempos medidos ou padrão universal; nenhum desconto por IA foi presumido.",
+          "Bloqueio externo real: primeira capacidade persistida #1016123, sem criar provisório no pai porque existe fornecedor específico. Histórico #1016124 e manutenção #1016125 são integrações de conclusão, sem impedirem iniciar o restante; o DEV não pode ser declarado concluído sem seus critérios integrados. QA depende desse DEV completo. Não duplicar o marco visual transitivo nem criar bloqueio pelo Assistente.",
+          "Política atual do usuário: Sequencing contínuo em ordem de catálogo, mãe/primeira filha com mesmo número, QA também incrementa, Features sem filhas vazias. Próximo número15: planejar mãeDashboard15,DEV15,QA16 e próximo17, mantendo o pai vazio até publicar filhas e reaplicar a regra ao conjunto. Não reescrever aprovações anteriores ou a sequência de criações histórica.",
+          "Publicação proposta: uma Task DEV e uma Deliverable QA,New/Normal,pai1016106,versãoSprint1,sem responsável/datas; um vínculo DEV→QA e um #1016123→DEV, com IDs exclusivamente retornados nesta publicação. Gerar/anexar DOCX aprovado à QA; aplicar Sequencing em operação separada conforme política já autorizada, preservando outros campos."
+        ],
+        "test_conditions": {
+          "document_format": "docx",
+          "context": "Titulares A/B com transações próprias em meses/anos distintos e totais conhecidos, saldo/resultado negativo, valores iguais positivos, um tipo zerado, mês vazio com histórico fora dele e conta totalmente vazia. Usar mais de cinco registros com datas empatadas e ordem de cadastro conhecida. Fornecedores de transações e base visual devem estar implementados para executar o aceite integrado. Preparar falha de consulta e operações canceladas/com falha; conferir computador/tablet/celular e claro/escuro/sistema. Nenhum teste foi executado nesta preparação; registrar evidência ou impedimento posterior.",
+          "conditions": [
+            {
+              "id": "CT-001",
+              "title": "Acumulado e mês corrente",
+              "verification": "Usar receitas/despesas em meses distintos com somas conhecidas e abrir a página.",
+              "expected_result": "Saldo de todo o histórico; totais/contagens somente do mês corrente local.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "R3",
+                "CA1"
+              ],
+              "group": "Cálculos e períodos"
+            },
+            {
+              "id": "CT-002",
+              "title": "Troca de mês e ano",
+              "verification": "Selecionar outro mês/ano mantendo massa conhecida.",
+              "expected_result": "Atualizar totais/contagens,barras e resultado do período; não alterar saldo geral ou recentes de todo o histórico.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "R3",
+                "R5",
+                "CA2"
+              ],
+              "group": "Cálculos e períodos"
+            },
+            {
+              "id": "CT-003",
+              "title": "Calendário local",
+              "verification": "Em contexto de fronteira de mês local diferente deUTC,abrir e consultar os períodos.",
+              "expected_result": "Mês corrente e recorte coerentes com o calendário local do fornecedor de transações.",
+              "requirement_ids": [
+                "R3",
+                "CA1",
+                "CA2"
+              ],
+              "group": "Cálculos e períodos"
+            },
+            {
+              "id": "CT-004",
+              "title": "Negativo",
+              "verification": "Usar despesas superiores às receitas no histórico e/ou no mês.",
+              "expected_result": "Saldo/resultado negativos com sinal e valor corretos,sem limitar a zero.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "R7",
+                "CA3"
+              ],
+              "group": "Cálculos e períodos"
+            },
+            {
+              "id": "CT-005",
+              "title": "Zero com movimentos",
+              "verification": "Usar receitas e despesas iguais e positivas no mês.",
+              "expected_result": "Resultado zero com contagens/barras correspondentes,não estado sem movimento.",
+              "requirement_ids": [
+                "R2",
+                "R4",
+                "CA3",
+                "CA5"
+              ],
+              "group": "Cálculos e períodos"
+            },
+            {
+              "id": "CT-006",
+              "title": "Reais e centavos",
+              "verification": "Consultar transações com centavos e soma conhecida.",
+              "expected_result": "Valores em reais e precisão/apresentação corretas;datas em formato brasileiro,tipos/sinais distinguíveis.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "R7",
+                "CA1"
+              ],
+              "group": "Cálculos e períodos"
+            },
+            {
+              "id": "CT-007",
+              "title": "Histórico totalmente vazio",
+              "verification": "Abrir com conta sem registros.",
+              "expected_result": "Saldo/totais/resultados zero,contagens vazias,orientação de primeiro cadastro e gráfico em estado inicial,sem exemplos.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "R4",
+                "CA4"
+              ],
+              "group": "Estados e gráfico"
+            },
+            {
+              "id": "CT-008",
+              "title": "Mês vazio com histórico",
+              "verification": "Selecionar mês sem transações numa conta que tenha registros em outros meses.",
+              "expected_result": "Indicadores mensais zerados/gráfico vazio;saldo e recentes continuam usando todo o histórico.",
+              "requirement_ids": [
+                "R1",
+                "R2",
+                "R4",
+                "R5",
+                "CA4"
+              ],
+              "group": "Estados e gráfico"
+            },
+            {
+              "id": "CT-009",
+              "title": "Proporções das barras",
+              "verification": "Usar somas diferentes positivas e comparar legenda,valores e extensões.",
+              "expected_result": "Maior soma ocupa referência e outra proporcional,com duas barras identificadas corretamente.",
+              "requirement_ids": [
+                "R4",
+                "CA5"
+              ],
+              "group": "Estados e gráfico"
+            },
+            {
+              "id": "CT-010",
+              "title": "Um tipo zerado",
+              "verification": "Usar um tipo sem soma e outro positivo no período.",
+              "expected_result": "Gráfico e valores apresentáveis,sem divisão/cálculo inválido. Ausência completa de transações usa estado vazio.",
+              "requirement_ids": [
+                "R4",
+                "CA5"
+              ],
+              "group": "Estados e gráfico"
+            },
+            {
+              "id": "CT-011",
+              "title": "Cinco recentes e empate",
+              "verification": "Usar mais de cinco registros com datas empatadas e cadastros em ordem conhecida.",
+              "expected_result": "No máximo os cinco mais recentes por data e cadastro; mês selecionado não filtra a lista.",
+              "requirement_ids": [
+                "R5",
+                "CA6"
+              ],
+              "group": "Recentes e integração"
+            },
+            {
+              "id": "CT-012",
+              "title": "Menos de cinco",
+              "verification": "Abrir com menos de cinco registros reais.",
+              "expected_result": "Mostrar somente existentes,sem completar com exemplos.",
+              "requirement_ids": [
+                "R5",
+                "CA6"
+              ],
+              "group": "Recentes e integração"
+            },
+            {
+              "id": "CT-013",
+              "title": "Detalhes e histórico",
+              "verification": "Abrir detalhes de um recente e acionar Ver todas.",
+              "expected_result": "Levar aos dados próprios e ao histórico do fornecedor,com todos os campos acessíveis no detalhe.",
+              "requirement_ids": [
+                "R5",
+                "R6",
+                "CA6"
+              ],
+              "group": "Recentes e integração"
+            },
+            {
+              "id": "CT-014",
+              "title": "Cadastro pelo dashboard",
+              "verification": "Salvar nova transação usando a ação da página e comparar antes/depois.",
+              "expected_result": "Atualizar saldo,indicadores mensais,barras,resultado e recentes conforme os recortes aplicáveis e o estado salvo.",
+              "requirement_ids": [
+                "R6",
+                "CA7"
+              ],
+              "group": "Recentes e integração"
+            },
+            {
+              "id": "CT-015",
+              "title": "Edição pelo detalhe",
+              "verification": "Editar transação pelos detalhes acessíveis a partir da página,incluindo mudança de mês/tipo/data aplicável.",
+              "expected_result": "Recalcular os indicadores e posição nos recentes segundo dados persistidos,sem duplicação ou recortes incorretos.",
+              "requirement_ids": [
+                "R6",
+                "CA7"
+              ],
+              "group": "Recentes e integração"
+            },
+            {
+              "id": "CT-016",
+              "title": "Exclusão pelo detalhe",
+              "verification": "Excluir transação pela jornada fornecida e comparar números/lista.",
+              "expected_result": "Refletir remoção persistida em todos os indicadores aplicáveis e recentes.",
+              "requirement_ids": [
+                "R6",
+                "CA7"
+              ],
+              "group": "Recentes e integração"
+            },
+            {
+              "id": "CT-017",
+              "title": "Cancelamento e falha de operação",
+              "verification": "Cancelar ou provocar falha de cadastro/edição/exclusão nas jornadas reutilizadas.",
+              "expected_result": "Não antecipar valores ou lista como se a alteração tivesse sido salva.",
+              "requirement_ids": [
+                "R6",
+                "CA7"
+              ],
+              "group": "Recentes e integração"
+            },
+            {
+              "id": "CT-018",
+              "title": "Falha de consulta e retomada",
+              "verification": "Provocar falha de consulta,restabelecer e tentar novamente.",
+              "expected_result": "Indicar indisponibilidade/nova tentativa,sem zero ou vazio como sucesso;após retomada,exibir valores reais.",
+              "requirement_ids": [
+                "R6",
+                "CA8"
+              ],
+              "group": "Permissões e apresentação"
+            },
+            {
+              "id": "CT-019",
+              "title": "Titulares distintos",
+              "verification": "Abrir e consultar sob duas contas com dados diferentes,inclusive acesso direto aos dados consultados.",
+              "expected_result": "Totais,contagens,gráfico e recentes somente do titular;nenhum dado alheio influencia os números.",
+              "requirement_ids": [
+                "R6",
+                "R7",
+                "CA9"
+              ],
+              "group": "Permissões e apresentação"
+            },
+            {
+              "id": "CT-020",
+              "title": "Visitante e não-confirmado",
+              "verification": "Tentar abrir o dashboard sem sessão e com conta não confirmada.",
+              "expected_result": "Restringir conforme a Feature de acesso,sem apresentar finanças.",
+              "requirement_ids": [
+                "CA9"
+              ],
+              "group": "Permissões e apresentação"
+            },
+            {
+              "id": "CT-021",
+              "title": "Composição responsiva e temas",
+              "verification": "Comparar com design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md (#overview,.stats,.overview-grid,.assistant-teaser e lista) em computador/tablet/celular e claro/escuro/sistema,incluindo estados vazios/falhas.",
+              "expected_result": "Preservar cabeçalho/mês/ação,três cartões/saldo destacado,balanço,convite e recentes;lista compacta no celular mantém detalhes acessíveis e identidade FinAI.",
+              "requirement_ids": [
+                "R8",
+                "CA10"
+              ],
+              "group": "Permissões e apresentação"
+            },
+            {
+              "id": "CT-022",
+              "title": "Convite do assistente",
+              "verification": "Abrir a página antes da entrega do Assistente e observar sua ação.",
+              "expected_result": "Convite visual permanece indisponível para uso,sem chat/IA simulados nem bloqueio do aceite do dashboard.",
+              "requirement_ids": [
+                "R8",
+                "CA10"
+              ],
+              "group": "Permissões e apresentação"
+            },
+            {
+              "id": "CT-023",
+              "title": "Atualizar dados salvos",
+              "verification": "Alterar registros no sistema e acessar/atualizar novamente Visão geral.",
+              "expected_result": "Buscar o estado persistido atual;respeitar recortes e não usar dados locais como fonte financeira;não exigir polling contínuo entre sessões.",
+              "requirement_ids": [
+                "R6",
+                "CA7"
+              ],
+              "group": "Permissões e apresentação"
+            }
+          ]
+        }
+      },
+      "semantic_baseline": {
+        "requirement_sha256": "c7e6839399ca74ee6c27d25a269fe3e5280065a09018ea84f865615ff6f0d135",
+        "semantic_model_sha256": "315dc950b80f7e2c091e4304ca69ed2b9f3a5f91a7e4d6a63f94de2d8c557717",
+        "semantic_model": {
+          "requirements": [
+            {
+              "id": "R1",
+              "summary": "Saldo geral = soma de todas as receitas do titular menos soma de todas as despesas do titular em todo o histórico persistido. Não há saldo inicial manual, conciliação bancária ou saldo por múltiplas contas nesta entrega. O seletor de mês não altera o saldo geral."
+            },
+            {
+              "id": "R2",
+              "summary": "Receitas e despesas do mês são as somas por tipo das transações cuja data pertence ao mês e ano selecionados. Contagens correspondem à quantidade de transações de cada tipo no período. Resultado do mês = receitas do mês menos despesas do mês."
+            },
+            {
+              "id": "R3",
+              "summary": "Iniciar no mês corrente e permitir escolher outro mês e ano. As datas e o mês corrente seguem o mesmo calendário local da gestão de transações. O dashboard não altera datas nem cria registros; somente movimentações realizadas são persistidas conforme a Feature responsável."
+            },
+            {
+              "id": "R4",
+              "summary": "O balanço compara receitas e despesas do mês em duas barras, com legenda e valores. A maior soma positiva ocupa a extensão de referência e a outra é proporcional; total zero não causa cálculo inválido. Sem transações no mês, apresentar estado vazio próprio em vez de barras fictícias."
+            },
+            {
+              "id": "R5",
+              "summary": "Recentes apresenta os cinco registros mais recentes de todo o histórico, ordenados por data decrescente e depois pelo cadastro mais recente, como na gestão de transações. Com menos de cinco, mostrar somente os existentes. Trocar o mês não filtra essa lista."
+            },
+            {
+              "id": "R6",
+              "summary": "Consultas, contagens e totais usam somente transações persistidas do titular. Ao acessar ou atualizar a Visão geral, buscar o estado salvo no sistema. Após concluir operações financeiras iniciadas no dashboard, atualizar seus valores e lista. Esta entrega não define atualização automática contínua entre sessões."
+            },
+            {
+              "id": "R7",
+              "summary": "Apresentar valores em reais e datas em formato brasileiro. Distinguir receitas e despesas por identificação, sinal e aparência, mantendo a linguagem visual FinAI. Não usar números de demonstração ou resultados derivados de outro titular."
+            },
+            {
+              "id": "R8",
+              "summary": "Preservar a composição #overview do design: cabeçalho, mês, ação Nova transação, três cartões de resumo com destaque no saldo geral, balanço do mês, convite do assistente e últimas movimentações com Ver todas. Usar a base visual aprovada, incluindo claro, escuro e acompanhar o sistema; no celular, adaptar grade, navegação e lista compacta sem perder acesso aos detalhes."
+            },
+            {
+              "id": "CA1",
+              "summary": "Com receitas e despesas em meses diferentes, abrir Visão geral; o saldo geral corresponde à diferença de todo o histórico e os totais/contagens mensais correspondem somente ao mês corrente."
+            },
+            {
+              "id": "CA2",
+              "summary": "Selecionar outro mês e ano; atualizar receitas, despesas, contagens, barras e resultado do período, mantendo saldo geral e recentes independentes do filtro mensal."
+            },
+            {
+              "id": "CA3",
+              "summary": "Consultar cenário com despesas superiores às receitas; apresentar saldo geral e/ou resultado mensal negativos corretamente. Com valores iguais e positivos, mostrar resultado zero com os registros e barras correspondentes."
+            },
+            {
+              "id": "CA4",
+              "summary": "Sem registros, apresentar zeros e orientação de início, sem valores fictícios. Em um mês sem movimento, mas com histórico em outros meses, apresentar somente os indicadores mensais vazios, preservando saldo e recentes do histórico."
+            },
+            {
+              "id": "CA5",
+              "summary": "Comparar o gráfico com os totais mensais; legenda, valores e proporções das duas barras correspondem às somas. Um tipo com soma zero e outro positivo continua apresentável; ausência completa de movimentos usa o estado vazio."
+            },
+            {
+              "id": "CA6",
+              "summary": "Com mais de cinco registros e datas empatadas, conferir os cinco recentes conforme R5. Com menos registros, não completar a lista com exemplos. Abrir detalhes e Ver todas leva aos dados próprios usando a gestão de transações."
+            },
+            {
+              "id": "CA7",
+              "summary": "Cadastrar, editar e excluir uma transação pelas ações disponíveis no dashboard; após cada sucesso, saldo, totais, contagens, barras, resultado e recentes refletem os registros salvos segundo seus respectivos recortes. Cancelamento ou falha não aplica alteração fictícia."
+            },
+            {
+              "id": "CA8",
+              "summary": "Provocar falha de consulta; apresentar indisponibilidade e nova tentativa sem afirmar saldo zero ou ausência de registros. Restabelecer a consulta e tentar novamente recupera os valores reais."
+            },
+            {
+              "id": "CA9",
+              "summary": "Usar contas com dados distintos; cada uma visualiza somente seus próprios totais, contagens, gráfico e recentes. Visitantes e contas sem confirmação não acessam o dashboard conforme a Feature de acesso."
+            },
+            {
+              "id": "CA10",
+              "summary": "Conferir a composição da Visão geral em computador, tablet e celular nos temas claro, escuro e acompanhar o sistema; manter hierarquia, destaque do saldo, cartões, balanço e lista do design. O convite do assistente não simula uma funcionalidade antes da entrega responsável."
+            }
+          ],
+          "slices": [
+            {
+              "number": 1,
+              "title": "[DEV] [WEB] [USUARIO] Dashboard financeiro - Visão geral com saldo, balanço mensal e recentes",
+              "title_suffix": "Visão geral com saldo, balanço mensal e recentes",
+              "api_delivery": false,
+              "estimate_hours": 4.5,
+              "estimate_exception": null,
+              "blocked_by": [],
+              "external_blockers": [
+                {
+                  "key": "registros-financeiros-persistidos",
+                  "feature_issue_id": 1016105,
+                  "feature_title": "[WEB] [USUARIO] Gestão de transações",
+                  "capability": "Transações próprias persistidas e consultáveis, com cadastro, categorias e detalhes reais",
+                  "blocking_reason": "O código atual não possui domínio financeiro; a consulta real precisa do primeiro cadastro persistido e da titularidade fornecidos por #1016123. Sua publicação em New não comprova disponibilidade.",
+                  "source_slice_issue_id": 1016123,
+                  "source_slice_title": "[DEV] [WEB] [USUARIO] Gestão de transações - Cadastro de receitas e despesas com conferência do registro"
+                }
+              ],
+              "description": {
+                "delivery": "Transformar o dashboard placeholder em uma Visão geral financeira real do titular, integrando saldo acumulado, indicadores/balanço mensais, cinco recentes e ações fornecidas por Transações numa tela completa e verificável.",
+                "limits": "Responsável pelas consultas, composição e atualização dos indicadores da Visão geral. Reutilizar persistência, cadastro, detalhes, histórico e manutenção dos fornecedores, sem reimplementar suas regras. Não criar gráfico temporal, relatório novo, saldo inicial ou chat/IA.",
+                "criteria": [
+                  {
+                    "kind": "success",
+                    "text": "Ao abrir Visão geral, apresentar saldo geral de todas as receitas menos todas as despesas do titular e totais/contagens do mês corrente local; valores em reais e datas brasileiras, sem dados fictícios ou de outra conta."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Selecionar outro mês/ano atualiza apenas receitas,despesas,contagens,duas barras e resultado daquele período. Saldo geral e até cinco recentes continuam considerando todo o histórico."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Balanço mostra legenda e valores de Receitas/Despesas, maior soma positiva na extensão de referência e outra proporcional; tipo zerado não causa cálculo inválido. Resultado mensal é receitas menos despesas, incluindo negativo ou zero com movimentos."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Sem registros, apresentar zeros e orientação para primeiro cadastro; com histórico fora do mês escolhido, zerar somente indicadores mensais e preservar saldo/recentes. Mês sem movimento usa estado vazio do gráfico; receitas/despesas iguais e positivas conservam barras e contagens."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Recentes traz no máximo cinco registros reais por data decrescente e depois cadastro mais recente, com descrição,categoria,data,valor e tipo/sinal, sem completar com exemplos; abrir detalhes e Ver todas usa as jornadas próprias de transações."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Nova transação reutiliza o cadastro fornecido; edição/exclusão reutilizam a manutenção dos detalhes. Após cada sucesso, atualizar todos os indicadores e recentes conforme seus recortes. Falha/cancelamento não antecipa valores como se salvos; acessar/atualizar a página consulta o estado atual do sistema, sem definir polling contínuo entre sessões."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Falha da consulta informa indisponibilidade e nova tentativa, sem saldo zero ou histórico vazio como sucesso; restaurada a consulta, recuperar os valores reais."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Toda consulta,contagem,total,gráfico e lista é do titular; visitantes e não-confirmados não acessam. Não introduzir saldo inicial manual, múltiplas contas ou relatório avançado."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Preservar #overview da referência: cabeçalho/mês/Nova transação,três cartões com destaque no saldo,balanço,convite do assistente e recentes/Ver todas. Consumir identidade FinAI em claro/escuro/sistema e adaptar para computador/tablet/celular com lista compacta e dados completos nos detalhes."
+                  },
+                  {
+                    "kind": "success",
+                    "text": "Convite visual do assistente permanece com ação indisponível antes da entrega responsável, sem simular chat nem criar dependência de implementação do assistente."
+                  }
+                ],
+                "dependencies": "Início bloqueado por [DEV] [WEB] [USUARIO] Gestão de transações - Cadastro de receitas e despesas com conferência do registro (#1016123). Para concluir Ver todas, integrar Histórico, filtros e paginação (#1016124); para concluir atualização após edição/exclusão, integrar Edição e exclusão confirmada (#1016125). Estes dois não impedem iniciar agregados e composição depois do primeiro fornecedor. A base visual verificada é transitiva via #1016123; não repetir aresta direta. Assistente financeiro não é bloqueador; sua ação fica indisponível até estar entregue.",
+                "traceability": [
+                  "R1",
+                  "R2",
+                  "R3",
+                  "R4",
+                  "R5",
+                  "R6",
+                  "R7",
+                  "R8",
+                  "CA1",
+                  "CA2",
+                  "CA3",
+                  "CA4",
+                  "CA5",
+                  "CA6",
+                  "CA7",
+                  "CA8",
+                  "CA9",
+                  "CA10"
+                ],
+                "visual_references": [
+                  "design-input-001 — docs/harness/scopes/2026-11-11-finai-mvp/sources/design-input-001.md; #overview,#balance,#income,#expense,#graph,#month-result,#recent,#month,#open-chat; render,sorted,list e estilos .stats/.overview-grid/.assistant-teaser/media queries.",
+                  "Adaptações aprovadas: dados do sistema em vez de localStorage; base clara/escura/sistema; convite sem simulação de IA; sem composição financeira antecipada pela Feature visual."
+                ]
+              }
+            }
+          ],
+          "coverage": [
+            {
+              "requirement_id": "R1",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "R2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "R3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "R4",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "R5",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "R6",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "R7",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "R8",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA1",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA2",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA3",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA4",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA5",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA6",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA7",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA8",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA9",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            },
+            {
+              "requirement_id": "CA10",
+              "disposition": "slice",
+              "slice_numbers": [
+                1
+              ],
+              "evidence": "resources/js/pages/dashboard.tsx é placeholder; design #overview/render demonstra a composição e as regras; a entrega única cria as consultas e a integração, consumindo os fornecedores #1016123–#1016125 sem duplicá-los."
+            }
+          ],
+          "decisions": [
+            "Fonte de escopo: requisito canônico #1016106, design normalizado e decisões anteriores; nenhuma task antiga é contexto ou prova de implementação.",
+            "Inspeção por leitura do código, do protótipo e dos fornecedores publicados. Nenhum teste ou jornada foi executado. A rota/layout existente não comprova dashboard financeiro; fornecedores New não são capacidade pronta.",
+            "Uma única entrega DEV é vertical e cobre a Visão geral completa em menos de6h. Não separar por consulta, gráfico ou frontend/backend: cartões,balanço e recentes formam uma mesma tela verificável. Reutilizar formulários/manutenção e duas barras simples, sem biblioteca analítica ou nova persistência.",
+            "Avaliação independente A, estimate_visual_delivery:DEV3,5h eQA2h; destacou composição demonstrada, consultas próprias e reuso de transações. Avaliação B, estimate_visual_reuse:DEV4,5h eQA2,5h; destacou recortes distintos, estados e integração. Não receberam número candidato nem resultado da outra avaliação.",
+            "Estimativa final do agente responsável:DEV4,5h para consultas próprias, composição responsiva, recortes e integração de cadastro/manutenção com estados;QA2,5h para preparar resultados conhecidos, conferir recortes/recentes, operações/falhas/titularidade/visual e registrar reteste delimitado. Total7h. É análise de trabalho restante, sem média automática ou tempo executado.",
+            "Calibrações humanas anteriores foram consideradas como referências específicas: visualDEV2h/QA1,5h; acessoDEV1,5h/2h/2h eQA1h; transaçõesDEV2h cada/QA1,5h. Não são tempos medidos ou padrão universal; nenhum desconto por IA foi presumido.",
+            "Bloqueio externo real: primeira capacidade persistida #1016123, sem criar provisório no pai porque existe fornecedor específico. Histórico #1016124 e manutenção #1016125 são integrações de conclusão, sem impedirem iniciar o restante; o DEV não pode ser declarado concluído sem seus critérios integrados. QA depende desse DEV completo. Não duplicar o marco visual transitivo nem criar bloqueio pelo Assistente.",
+            "Política atual do usuário: Sequencing contínuo em ordem de catálogo, mãe/primeira filha com mesmo número, QA também incrementa, Features sem filhas vazias. Próximo número15: planejar mãeDashboard15,DEV15,QA16 e próximo17, mantendo o pai vazio até publicar filhas e reaplicar a regra ao conjunto. Não reescrever aprovações anteriores ou a sequência de criações histórica.",
+            "Publicação proposta: uma Task DEV e uma Deliverable QA,New/Normal,pai1016106,versãoSprint1,sem responsável/datas; um vínculo DEV→QA e um #1016123→DEV, com IDs exclusivamente retornados nesta publicação. Gerar/anexar DOCX aprovado à QA; aplicar Sequencing em operação separada conforme política já autorizada, preservando outros campos."
+          ],
+          "study_evidence": []
+        }
+      }
+    }
+  ],
+  "approvals": [
+    {
+      "revision": 1,
+      "proposal_sha256": "486081fbbaaa823701b529e782098bea54e6160881f6950310039a6721abb300",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-11T15:40:54.140914+00:00",
+      "status": "valid"
+    }
+  ]
+}

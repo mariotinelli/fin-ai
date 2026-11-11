@@ -1,0 +1,38 @@
+{
+  "approved_by": "Mário Tinelli",
+  "approved_at": "2026-11-11T15:40:54.140914+00:00",
+  "source": "Usuário nesta conversa: aprovado à prévia completa do Dashboard comDEV4,5h/QA2,5h eSequencing mãe15/DEV15/QA16.",
+  "proposal_sha256": "486081fbbaaa823701b529e782098bea54e6160881f6950310039a6721abb300",
+  "complete_preview_sha256": "cedcc3fc5fe965493f6328ade8dd12a127ae5f7f9d8c886c518c75d27d197ead",
+  "preview_path": "slices/publication-review-r001.md",
+  "external_relations": [
+    {
+      "key": "persistencia-para-dashboard",
+      "action": "add",
+      "dependency_key": "registros-financeiros-persistidos",
+      "source_issue_id": 1016123,
+      "target_key": "dev-1",
+      "relation_type": "blocks",
+      "target_binding": "ID retornado para o único DEV de Dashboard desta prévia"
+    }
+  ],
+  "sequencing": {
+    "field_id": 2,
+    "feature_issue_id": 1016106,
+    "feature_value": "15",
+    "children": [
+      {
+        "key": "dev-1",
+        "value": "15"
+      },
+      {
+        "key": "qa",
+        "value": "16"
+      }
+    ],
+    "next_sequence": 17,
+    "apply_after_publication": true,
+    "policy_path": "docs/harness/scopes/2026-11-11-finai-mvp/.flow/slices-sequencing.json",
+    "unsliced_assistant_value": ""
+  }
+}
