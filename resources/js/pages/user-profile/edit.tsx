@@ -1,11 +1,10 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import UserProfileController from '@/actions/App/Http/Controllers/UserProfileController';
 import DeleteUser from '@/components/delete-user';
-import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
+import FormField from '@/components/form-field';
+import SettingsSection from '@/components/settings-section';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { edit } from '@/routes/user-profile';
@@ -26,15 +25,10 @@ export default function Edit({ status }: { status?: string }) {
         <>
             <Head title="Profile settings" />
 
-            <h1 className="sr-only">Profile settings</h1>
-
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Profile information"
-                    description="Update your name and email address"
-                />
-
+            <SettingsSection
+                title="Profile information"
+                description="Update your name and email address"
+            >
                 <Form
                     {...UserProfileController.update.form()}
                     options={{
@@ -44,48 +38,42 @@ export default function Edit({ status }: { status?: string }) {
                 >
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
-
+                            <FormField
+                                id="name"
+                                label="Name"
+                                error={errors.name}
+                            >
                                 <Input
                                     id="name"
-                                    className="mt-1 block w-full"
+                                    className="block w-full"
                                     defaultValue={auth.user.name}
                                     name="name"
                                     required
                                     autoComplete="name"
                                     placeholder="Full name"
                                 />
+                            </FormField>
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.name}
-                                />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-
+                            <FormField
+                                id="email"
+                                label="Email address"
+                                error={errors.email}
+                            >
                                 <Input
                                     id="email"
                                     type="email"
-                                    className="mt-1 block w-full"
+                                    className="block w-full"
                                     defaultValue={auth.user.email}
                                     name="email"
                                     required
                                     autoComplete="username"
                                     placeholder="Email address"
                                 />
-
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.email}
-                                />
-                            </div>
+                            </FormField>
 
                             {auth.user.email_verified_at === null && (
-                                <div>
-                                    <p className="-mt-4 text-sm text-muted-foreground">
+                                <div className="space-y-2 rounded-lg border bg-accent p-4">
+                                    <p className="text-sm text-muted-foreground">
                                         Your email address is unverified.{' '}
                                         <Link
                                             href={send()}
@@ -106,7 +94,7 @@ export default function Edit({ status }: { status?: string }) {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-4 border-t pt-6">
                                 <Button
                                     disabled={processing}
                                     data-test="update-profile-button"
@@ -117,11 +105,14 @@ export default function Edit({ status }: { status?: string }) {
                         </>
                     )}
                 </Form>
-            </div>
+            </SettingsSection>
 
             <DeleteUser />
         </>
     );
 }
 
-Edit.layout = [[AppLayout, { breadcrumbs }], SettingsLayout];
+Edit.layout = [
+    [AppLayout, { breadcrumbs }],
+    [SettingsLayout, { finai: true }],
+];

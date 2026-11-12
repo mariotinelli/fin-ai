@@ -1,9 +1,9 @@
 import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
 import UserController from '@/actions/App/Http/Controllers/UserController';
-import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
+import FormField from '@/components/form-field';
 import PasswordInput from '@/components/password-input';
+import SettingsSection from '@/components/settings-section';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -14,19 +14,16 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 
 export default function DeleteUser() {
     const passwordInput = useRef<HTMLInputElement>(null);
 
     return (
-        <div className="space-y-6">
-            <Heading
-                variant="small"
-                title="Delete account"
-                description="Delete your account and all of its resources"
-            />
-            <div className="space-y-4 rounded-lg border border-destructive bg-card p-4">
+        <SettingsSection
+            title="Delete account"
+            description="Delete your account and all of its resources"
+        >
+            <div className="space-y-4 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
                 <div className="relative space-y-0.5 text-destructive">
                     <p className="font-medium">Warning</p>
                     <p className="text-sm">
@@ -43,7 +40,7 @@ export default function DeleteUser() {
                             Delete account
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="gap-6 rounded-2xl p-6 sm:p-8">
                         <DialogTitle>
                             Are you sure you want to delete your account?
                         </DialogTitle>
@@ -65,14 +62,12 @@ export default function DeleteUser() {
                         >
                             {({ resetAndClearErrors, processing, errors }) => (
                                 <>
-                                    <div className="grid gap-2">
-                                        <Label
-                                            htmlFor="password"
-                                            className="sr-only"
-                                        >
-                                            Password
-                                        </Label>
-
+                                    <FormField
+                                        id="password"
+                                        label="Password"
+                                        error={errors.password}
+                                        hideLabel
+                                    >
                                         <PasswordInput
                                             id="password"
                                             name="password"
@@ -80,9 +75,7 @@ export default function DeleteUser() {
                                             placeholder="Password"
                                             autoComplete="current-password"
                                         />
-
-                                        <InputError message={errors.password} />
-                                    </div>
+                                    </FormField>
 
                                     <DialogFooter className="gap-2">
                                         <DialogClose asChild>
@@ -115,6 +108,6 @@ export default function DeleteUser() {
                     </DialogContent>
                 </Dialog>
             </div>
-        </div>
+        </SettingsSection>
     );
 }
