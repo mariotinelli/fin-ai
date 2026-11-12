@@ -22,6 +22,7 @@ from typing import Any
 
 sys.dont_write_bytecode = True
 from ralph_runtime import EventSink, ProgressBuffer, RuntimeFailure, TaskLock, atomic_json, popen_group, sanitize, sanitize_text, SECRET_KEYS, terminate_process_tree
+from verification_workspace import VerificationWorkspace, declared_artifacts
 
 
 class ExecutionError(RuntimeError):
@@ -100,6 +101,7 @@ def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
         rendered_command(body)
         rendered_command(body, "Preflight da validação")
         rendered_command(body, "Verificação no host")
+        declared_artifacts(body)
     numbers = [phase[0] for phase in phases]
     if numbers != sorted(set(numbers)):
         fail("phase numbers must be unique and increasing")
@@ -503,6 +505,86 @@ def run_tests(repo: Path, command: str, phase: int, timeout: float, language: st
     return returncode == 0, "\n".join(lines[-80:]) or f"test command exited with code {returncode}", output_path
 
 
+def changed_paths(repo: Path) -> set[str]:
+    paths: set[str] = set()
+    for arguments in (("diff", "--name-only", "-z"), ("diff", "--cached", "--name-only", "-z"), ("ls-files", "--others", "--exclude-standard", "-z")):
+        result = run(["git", *arguments], repo)
+        if result.returncode:
+            fail("cannot inspect verification source paths")
+        paths.update(filter(None, result.stdout.split("\0")))
+    return paths
+
+
+def run_verification(repo: Path, command: str, phase_body: str, phase: int, timeout: float, language: str = "bash", *, environment: dict[str, str] | None = None, output_path: Path | None = None, label: str = "Gate 3") -> dict[str, Any]:
+    """Share output ownership and source protection across all parent verifiers."""
+    if EVENTS is None:
+        fail("runtime log is unavailable")
+    directory = EVENTS.root / f"phase-{phase}-artifacts-{uuid.uuid4()}"
+    directory.mkdir(mode=0o700)
+    log = output_path or EVENTS.private_file(f"phase-{phase}-verification-{uuid.uuid4()}.log")
+    report: dict[str, Any] = {"status": "failed", "command_status": "not-started", "command_message": "", "message": "", "diagnosable": False,
+                              "source_modified": False, "source_guard": "not-started", "source_changes": [], "artifacts": [], "directory": str(directory), "log": str(log)}
+    workspace = VerificationWorkspace(repo, declared_artifacts(phase_body), directory)
+    before = None
+    paths_before: set[str] = set()
+    guard_error = ""
+    attempted = False
+    try:
+        workspace.prepare()
+        before = worktree_fingerprint(repo)
+        paths_before = changed_paths(repo)
+        child_environment = (os.environ if environment is None else environment).copy()
+        child_environment["RALPH_ARTIFACTS_DIR"] = str(workspace.generated)
+        attempted = True
+        passed, message, _ = run_tests(repo, command, phase, timeout, language, environment=child_environment, output_path=log, label=label)
+        report.update(status="completed" if passed else "failed", command_status="completed" if passed else "failed",
+                      command_message=message, message=message, diagnosable=not passed)
+    except (ExecutionError, RuntimeFailure, OSError) as error:
+        if attempted:
+            report["command_status"] = "unavailable"
+        report["command_message"] = report["message"] = sanitize_text(str(error))
+    finally:
+        try:
+            workspace.finish()
+        except (RuntimeFailure, OSError) as error:
+            guard_error = "Artifact collection failed: " + sanitize_text(str(error))
+        report["artifacts"] = workspace.artifacts
+        if before is not None:
+            try:
+                report["source_guard"] = "preserved"
+                if worktree_fingerprint(repo) != before:
+                    paths_after = changed_paths(repo)
+                    report["source_modified"] = True
+                    report["source_guard"] = "modified"
+                    report["source_changes"] = sorted(paths_before.symmetric_difference(paths_after) or paths_after)
+                    guard_error = "verification modified repository source outside declared artifact directories; changes preserved. Paths: " + ", ".join(report["source_changes"]) + ("\n" + guard_error if guard_error else "")
+            except (ExecutionError, OSError) as error:
+                report["source_guard"] = "unavailable"
+                guard_error += "\nSource inspection failed: " + sanitize_text(str(error))
+        if guard_error:
+            report.update(status="failed", diagnosable=False, message=guard_error + "\nOriginal command result: " + report["command_status"] + "\n" + report["command_message"])
+        atomic_json(directory / "report.json", redact_result(report))
+    if CANCELLED:
+        fail(f"execution cancelled; verification outputs preserved: {directory / 'report.json'}")
+    return report
+
+
+def preserve_prior_artifacts(repo: Path, phase_body: str, phase: int) -> list[dict[str, str]]:
+    roots = declared_artifacts(phase_body)
+    if not roots:
+        return []
+    if EVENTS is None:
+        fail("runtime log is unavailable")
+    directory = EVENTS.root / f"phase-{phase}-prior-artifacts-{uuid.uuid4()}"
+    directory.mkdir(mode=0o700)
+    workspace = VerificationWorkspace(repo, roots, directory)
+    try:
+        workspace.prepare()
+        return workspace.finish()
+    finally:
+        atomic_json(directory / "report.json", {"artifacts": workspace.artifacts})
+
+
 def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: float, *, heading: str = "Verificação renderizada", evidence_request: Path | None = None) -> dict[str, Any]:
     capture = rendered_command(phase_body, heading)
     if capture is None:
@@ -513,7 +595,6 @@ def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: 
     directory.mkdir(mode=0o700)
     canonical = directory.resolve()
     log = directory / "capture.log"
-    before = worktree_fingerprint(repo)
     environment = os.environ.copy()
     environment["RALPH_EVIDENCE_DIR"] = str(directory.resolve())
     environment["RALPH_PHASE_NUMBER"] = str(phase)
@@ -526,9 +607,11 @@ def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: 
     try:
         with tempfile.TemporaryDirectory(prefix="ralph-capture-") as temporary:
             environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
-            passed, output, _ = run_tests(repo, capture[0], phase, timeout, capture[1], environment=environment, output_path=log, label=heading)
-        report["message"] = output
-        report["diagnosable"] = not passed
+            outcome = run_verification(repo, capture[0], phase_body, phase, timeout, capture[1], environment=environment, output_path=log, label=heading)
+        report["verification"] = outcome
+        report["artifacts"] = outcome["artifacts"]
+        report["message"] = outcome["message"]
+        report["diagnosable"] = outcome["diagnosable"]
         if directory.is_symlink() or directory.resolve() != canonical:
             fail("capture directory was redirected")
         for path in directory.rglob("*"):
@@ -536,18 +619,18 @@ def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: 
                 fail("rendered evidence contains an unsafe path")
             if path.is_file() and path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}:
                 report["images"].append(str(path.resolve()))
-        if passed and report["images"]:
+        if outcome["status"] == "completed" and report["images"]:
             report["status"] = "completed"
-        elif passed:
+        elif outcome["status"] == "completed":
             report["message"] = "O comando terminou sem capturas renderizadas no RALPH_EVIDENCE_DIR."
     except (ExecutionError, OSError) as error:
         if CANCELLED:
             raise
         report["diagnosable"] = False
         report["message"] = sanitize_text(str(error))
-    if worktree_fingerprint(repo) != before:
-        fail(f"rendered verification modified repository source; changes preserved. Diagnóstico: {log}")
     atomic_json(directory / "report.json", report)
+    if report.get("verification", {}).get("source_modified"):
+        fail(f"rendered verification modified repository source; changes preserved. Diagnóstico: {directory / 'report.json'}")
     return report
 
 
@@ -565,21 +648,16 @@ def run_host_checks(repo: Path, phase_body: str, phase: int, timeout: float, pen
             fail("pending rendered check requires an approved Verificação renderizada command in planning.md")
         if host is not None:
             log = EVENTS.private_file(f"phase-{phase}-host-checks-{uuid.uuid4()}.log")
-            before = worktree_fingerprint(repo)
-            try:
-                environment = os.environ.copy()
-                for name in ("RALPH_CAPTURE_MODE", "RALPH_EVIDENCE_DIR", "RALPH_EVIDENCE_REQUEST"):
-                    environment.pop(name, None)
-                with tempfile.TemporaryDirectory(prefix="ralph-host-check-") as temporary:
-                    environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
-                    passed, message, _ = run_tests(repo, host[0], phase, timeout, host[1], environment=environment, output_path=log, label="Verificação no host")
-            finally:
-                if worktree_fingerprint(repo) != before:
-                    fail(f"host verification modified repository source; changes preserved. Diagnóstico: {log}")
-            report["checks"].append({"check": "host", "status": "completed" if passed else "failed", "message": message, "log": str(log)})
-            if not passed:
-                report["diagnosable"] = True
-                fail(f"Verificação no host falhou; diagnostique ambiente ou defeito antes de corrigir código. Diagnóstico: {log}. {message}")
+            environment = os.environ.copy()
+            for name in ("RALPH_CAPTURE_MODE", "RALPH_EVIDENCE_DIR", "RALPH_EVIDENCE_REQUEST"):
+                environment.pop(name, None)
+            with tempfile.TemporaryDirectory(prefix="ralph-host-check-") as temporary:
+                environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
+                outcome = run_verification(repo, host[0], phase_body, phase, timeout, host[1], environment=environment, output_path=log, label="Verificação no host")
+            report["checks"].append({"check": "host", **outcome})
+            if outcome["status"] != "completed":
+                report["diagnosable"] = outcome["diagnosable"]
+                fail(f"Verificação no host falhou. Diagnóstico: {outcome['directory']}/report.json. {outcome['message']}")
         if "rendered" in pending:
             rendered = run_rendered_verification(repo, phase_body, phase, timeout)
             report["rendered"] = rendered
@@ -674,6 +752,7 @@ def execute(arguments: argparse.Namespace) -> int:
         for number, title, body in phases:
             if number in state["completed_phases"]:
                 continue
+            prior_artifacts = preserve_prior_artifacts(repo, body, number)
             if state.get("current_phase") == number and state.get("current_gate") == "commit" and not worktree_changes(repo):
                 state["completed_phases"].append(number)
                 state["phase_commits"][str(number)] = git(repo, "rev-parse", "HEAD")
@@ -751,6 +830,9 @@ def execute(arguments: argparse.Namespace) -> int:
                     started = gate_started(number, "host-checks", attempt)
                     host_report = run_host_checks(repo, body, number, arguments.host_timeout_minutes * 60, development.get("pending_checks", []))
                     diagnostic = EVENTS.root.parent / f"phase-{number}-host-checks.json"
+                    if prior_artifacts:
+                        host_report["prior_artifacts"] = prior_artifacts
+                        atomic_json(diagnostic, host_report)
                     if host_report["status"] != "completed":
                         reason = str(host_report.get("message", "Verificações no host incompletas"))
                         if host_report.get("diagnosable"):
@@ -856,7 +938,10 @@ def execute(arguments: argparse.Namespace) -> int:
 
                 save_state(state_path, state, current_gate="tests")
                 started = gate_started(number, "tests", attempt)
-                passed, report, report_path = run_tests(repo, suite, number, arguments.tests_timeout_minutes * 60, suite_shell)
+                outcome = run_verification(repo, suite, body, number, arguments.tests_timeout_minutes * 60, suite_shell)
+                passed, report, report_path = outcome["status"] == "completed", outcome["message"], Path(outcome["log"])
+                if not passed and not outcome["diagnosable"]:
+                    fail(f"Gate 3 verification blocked; source and artifacts preserved. {sanitize(report)} Diagnóstico: {outcome['directory']}/report.json")
                 if not passed:
                     correction = f"A suíte completa falhou. Corrija estas falhas:\n\n{report}"
                     save_state(state_path, state, current_gate="development", last_failure=correction)
@@ -868,7 +953,10 @@ def execute(arguments: argparse.Namespace) -> int:
 
                 save_state(state_path, state, current_gate="commit")
                 started = gate_started(number, "commit", attempt)
-                staged = run(["git", "add", "--all"], repo)
+                exclusions = [(":(exclude,literal,icase)" if os.name == "nt" else ":(exclude,literal)") + path for path in declared_artifacts(body)]
+                staged = run(["git", "add", "--update", "--", "."], repo)
+                if not staged.returncode:
+                    staged = run(["git", "add", "--all", "--", ".", *exclusions], repo)
                 if staged.returncode:
                     fail("Gate 4 could not stage phase changes")
                 if not git(repo, "diff", "--cached", "--name-only"):

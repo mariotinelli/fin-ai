@@ -36,6 +36,8 @@ Preflight captures demonstrate environment readiness before development; phase a
 
 {{HOST_VERIFICATION}}
 
+Verification artifacts may be archived outside the workspace. Consult each command's `artifacts` mapping and use its runtime `path`, distinguishing preserved earlier outputs from current outputs. Failure screenshots, traces and coverage reports support diagnosis; visual acceptance still requires the applicable current rendered comparison. A source-guard or archival error does not erase the underlying command result recorded separately.
+
 Development may report `ready-for-host-checks`: implementation is ready, with explicit sandbox-limited checks completed by the parent using approved commands. Inspect those logs and results together with the code and rendered evidence; this status alone is not incomplete implementation or approval. A passed host check is input to this independent review, not a replacement for it. Gate 3 still owns the complete suite.
 
 ## Parent-side rendered verification
