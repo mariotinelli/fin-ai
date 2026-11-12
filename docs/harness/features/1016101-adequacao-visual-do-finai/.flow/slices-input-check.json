@@ -3,7 +3,7 @@
   "feature_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\feature.md",
   "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\feature-state.json",
   "issue_id": 1016101,
-  "requirement_sha256": "2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34",
-  "remote_snapshot_sha256": "cf350c9bafffcab502ccaf2410ea74afa7993b32fe5a32a7d77c24a4a5e08666",
-  "checked_at": "2026-11-12T12:45:00Z"
+  "requirement_sha256": "fbc39ec093a7b15a06640cf4e0aff731dfcfb32ff235c196c022b7c8893fcaff",
+  "remote_snapshot_sha256": "656a367dfe23917056a0365b920699fc0d576d23da39974963e693758df2df4c",
+  "checked_at": "2026-11-12T14:25:14.1210919Z"
 }

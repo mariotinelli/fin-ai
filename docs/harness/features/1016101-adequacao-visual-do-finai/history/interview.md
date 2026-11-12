@@ -130,3 +130,34 @@ Condições vigentes: revisão003, 27 condições (22 preservadas,2 atualizadas,
 Leitura final completa das28 issues após criação confirmou a numeração e as preservações. A revisão de aplicação e a revisão de condições estão completed; os validadores do requisito, alinhamento, impacto, aplicação e condições passaram. A comparação da QA considerou equivalência exclusiva de CRLF/LF; evidências brutas e recibo em .flow/transport-normalization/qa-description-crlf-lf.json preservam essa distinção, sem nova operação remota. A projeção do novo filho conserva os IDs nativos e os valores de campos personalizados sem os rótulos da resposta; o retorno bruto permanece retido.
 
 Artefatos canônicos do novo DEV e da QA foram materializados pelo helper com Sequencing6/7 e as estimativas aprovadas. Nenhuma operação remota ou decisão permanece pendente. Os candidatos e snapshots ainda referenciados pelos registros de publicação foram mantidos para recuperação.
+
+
+## Nova revisão proposta — português e URLs
+
+Fonte conversation-input-003 em sources/conversation-input-003.md. Usuário pediu tradução integral, pausou durante a indisponibilidade e retomou incluindoURLs. Decisão explícita: /login permanece; todos os demais endereços próprios anteriores continuam funcionais, inclusive e-mails já enviados. Contexto Redmine voltou a ser verificado para FinAi/Sprint1. Locale/fallback efetivos pt_BR não traduzem os textos fixos React.
+
+Proposta ainda sem aprovação: esclarecerR2, acrescentarR8–R11 eCA12–CA16; duasDEV de5,5h por jornadas, QAexistente de2,25h para4,75h. Sequencing proposto7/8, QA9, deslocamento das posições8–23 para10–25;21 alvos New sem início verificados. Preservar as duasClosed e todas as entregas anteriores. Prévia em .work/translation-preview.md; requisito candidato em .work/translation-feature-proposed.md; contexto/lock/retomada em .work/translation-intake.json. Nenhuma novaissue, relação, edição de descrição ou numeração foi publicada.
+
+Próximo passo: decisão sobre a correção exata do requisito e escopo proposto. A revisão anterior de layout e seus estados concluídos permanecem inalterados.
+
+
+## Correção de estimativas e cobertura de configurações
+
+Mário Tinelli solicitou: “troque a estimativa, deixa as 3 com 2h”. As duas DEV e a QA passam a2h cada na proposta, total6h. Preservadas no histórico as propostas anteriores de5,5h por DEV e QA4,75h, assim como as avaliações independentes. A QA hoje publicada ainda registra2,25h; o novo valor2h só será enviado em publicação autorizada. Critérios, escopo e Sequencing7/8/9 permanecem iguais.
+
+O usuário perguntou se configurações também serão traduzidas. Foi confirmado que perfil, senha, aparência, exclusão da conta, confirmação de senha,2FA e chaves de acesso já estão incluídos, com menus, diálogos, mensagens, acessibilidade e URLs. Fonte conversation-input-004 em sources/conversation-input-004.md. Nenhuma mutação no Redmine neste ajuste; a proposta permanece aguardando decisão sobre o requisito e a divisão.
+
+
+## Tradução e URLs — publicação concluída em 12/11/2026
+
+Mário Tinelli aprovou a proposta integral depois de corrigir as duas DEV e a QA para2h cada. A aprovação incluiu configuração/perfil/senha/aparência/exclusão/2FA/chaves de acesso, textos próprios e acessíveis, mensagens/e-mails, URLs em português, exceção /login e continuidade de todos os caminhos anteriores, inclusive e-mails já enviados. Fonte e estimativas anteriores foram preservadas. Nenhuma implementação da aplicação ou commit foi feita nesta publicação.
+
+A nova versão do requisito foi registrada com aprovação e plano próprios, preservando a versão anterior e seus registros concluídos. Alinhamento validado: .flow/publications/08f60712-22bd-4254-a5c0-1c6d53675a09/publication-alignment-08f60712-22bd-4254-a5c0-1c6d53675a09.json. A descrição remota corresponde ao conteúdo aprovado; status e relações do pai foram preservados. O alinhamento de layout anterior permanece histórico; a verificação da versão corrente usa o registro posterior validado e prova a ligação com o documento e a aprovação anteriores. Utilitário local retido: run_current_revision.py no mesmo diretório da nova publicação.
+
+Criadas e conferidas na Sprint1: #1016231 — [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Acesso e navegação inicial em português (2h, Sequencing7) e #1016232 — [DEV] [WEB] [USUARIO] Adequação visual do FinAI - Conta e segurança em português (2h, Sequencing8). Ambas Task, New e Normal, filhas de #1016101. QA #1016117 permanece New, agora com2h e Sequencing9. Relações nativas #874 e #875 bloqueiam a QA pelas novas DEV; relações anteriores preservadas.
+
+A expansão de numeração foi calculada pelo helper com snapshot completo e históricos. As21 issues deslocadas estavam New sem início; posições1–6 ficaram intactas. QA passou7→9 e antigas posições8–23 passaram10–25, incluindo os pais espelhados. As duas tarefas Closed foram preservadas. Todas as30 issues da versão foram relidas ao final.
+
+Documento vigente da QA: revisão004, anexo3317,35 condições (27 anteriores preservadas e8 novas). Nota91127 identifica a versão atual. Anexos3257/r002 e3305/r003 permanecem. Markdown e Word em slices/condicoes-teste-r004.md e slices/condicoes-teste-r004.docx. Os validadores do requisito v5, do alinhamento, da revisão de impacto, da aplicação e das condições passaram; aplicação revisão2 e condições revisão4 estão completed. A normalização de transporte na comparação da QA se limita a CRLF/LF, com evidências brutas preservadas em .flow/transport-normalization/qa-translation-r004.json.
+
+Os task.md das novas DEV e da QA foram materializados pelo helper após a leitura final, com estimativas e Sequencing aprovados. Não há decisão ou operação remota pendente desta demanda. Candidatos e snapshots ainda referenciados por evidências de publicação foram mantidos para recuperação.

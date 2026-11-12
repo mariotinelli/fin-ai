@@ -41,7 +41,7 @@ Visitantes utilizam as telas públicas já disponíveis. Usuários autenticados 
 
 R1. A entrega abrange a página inicial atual, cadastro, login, recuperação e redefinição de senha, confirmação de senha, verificação de e-mail, desafio de dois fatores, dashboard atual, perfil, alteração de senha, aparência, configuração de dois fatores e passkeys, incluindo seus estados e componentes existentes. Essa lista é inventário do código, não comprovação de aceite funcional anterior.
 
-R2. Adequar aparência preserva os campos, validações, mensagens funcionais, operações, permissões, destinos e preferências existentes. Não acrescentar regras de autenticação ou financeiras nesta entrega.
+R2. Adequar aparência e idioma preserva campos, validações, significado das mensagens funcionais, operações, permissões, destinos e preferências existentes. Traduzir a apresentação dos textos para português brasileiro sem alterar seus efeitos. Os novos endereços seguem R9 e os antigos continuam funcionais conforme R10. Não acrescentar regras de autenticação ou financeiras nesta entrega.
 
 R3. A referência clara usa fundo #F5F7F8, superfícies brancas, texto #172622, texto secundário #52615C, verde principal #145C46, verde positivo #146345, vermelho negativo #A12B36, bordas #D6DFDB e destaque suave #E4F0E9. Preservar a hierarquia do design: títulos de destaque em Georgia e corpo em system-ui; controles com raio de 8px e painéis com 16px; espaçamento, bordas, sombras, estados e proporções conforme o pacote.
 
@@ -52,6 +52,50 @@ R5. Preservar claro, escuro e acompanhar o sistema. A variante escura é uma ada
 R6. A marca FinAI substitui a identidade visual genérica do starter nas superfícies atuais. Não apresentar rótulos do protótipo que afirmem armazenamento apenas no navegador ou assistente simulado; persistência e IA real serão tratadas pelas Features responsáveis.
 
 R7. A base visual é aceita sobre as telas atuais. Não criar páginas de Transações ou Assistente, formulários financeiros, números demonstrativos ou operações simuladas nesta Feature. As novas telas e suas composições específicas seguem a base nas próximas Features.
+
+R8. Apresentar em português brasileiro todos os textos controlados pela aplicação nas superfícies atuais de R1: página pública, navegação, títulos e breadcrumbs, formulários, botões, placeholders, avisos, feedback, estados vazios/carregamento/erro, validações, diálogos, textos de ajuda, tooltips e nomes/instruções acessíveis. Abranger os e-mails e notificações já enviados pela aplicação, inclusive recuperação e verificação de e-mail; preservar as mensagens que já estejam corretamente traduzidas. O idioma padrão e o fallback não devem reintroduzir inglês em conteúdo próprio exibido ao usuário.
+
+R9. Usar caminhos em português, sem acentos e conforme o mapa de URLs desta regra, para as jornadas e operações próprias existentes, incluindo links, formulários, notificações, redirecionamentos e retomada após autenticação. /login permanece /login por decisão expressa do usuário; a página inicial permanece /. Preservar métodos HTTP, parâmetros, valores, tokens, assinaturas, expiração, restrições de acesso e mecanismos de segurança. Identificadores internos de rotas, classes e campos não precisam ser traduzidos. Endpoints padronizados de protocolo e infraestrutura, como /.well-known/passkey-endpoints, não recebem tradução que viole seu contrato.
+
+| Endereço atual | Endereço principal em português |
+| --- | --- |
+| `/` | `/` |
+| `/login` | `/login` |
+| `/dashboard` | `/painel` |
+| `/register` | `/cadastro` |
+| `/logout` | `/sair` |
+| `/forgot-password` | `/recuperar-senha` |
+| `/reset-password` | `/redefinir-senha` |
+| `/reset-password/{token}` | `/redefinir-senha/{token}` |
+| `/verify-email` | `/verificar-email` |
+| `/verify-email/{id}/{hash}` | `/verificar-email/{id}/{hash}` |
+| `/email/verification-notification` | `/email/notificacao-de-verificacao` |
+| `/settings` | `/configuracoes` |
+| `/settings/profile` | `/configuracoes/perfil` |
+| `/settings/password` | `/configuracoes/senha` |
+| `/settings/appearance` | `/configuracoes/aparencia` |
+| `/settings/two-factor` | `/configuracoes/autenticacao-de-dois-fatores` |
+| `/settings/passkeys` | `/configuracoes/chaves-de-acesso` |
+| `/two-factor-challenge` | `/desafio-de-dois-fatores` |
+| `/user` | `/usuario` |
+| `/user/confirm-password` | `/usuario/confirmar-senha` |
+| `/user/confirmed-password-status` | `/usuario/status-de-confirmacao-de-senha` |
+| `/user/confirmed-two-factor-authentication` | `/usuario/confirmacao-de-autenticacao-de-dois-fatores` |
+| `/user/two-factor-authentication` | `/usuario/autenticacao-de-dois-fatores` |
+| `/user/two-factor-qr-code` | `/usuario/autenticacao-de-dois-fatores/codigo-qr` |
+| `/user/two-factor-secret-key` | `/usuario/autenticacao-de-dois-fatores/chave-secreta` |
+| `/user/two-factor-recovery-codes` | `/usuario/autenticacao-de-dois-fatores/codigos-de-recuperacao` |
+| `/user/passkeys` | `/usuario/chaves-de-acesso` |
+| `/user/passkeys/options` | `/usuario/chaves-de-acesso/opcoes` |
+| `/user/passkeys/{passkey}` | `/usuario/chaves-de-acesso/{passkey}` |
+| `/passkeys/login` | `/chaves-de-acesso/entrar` |
+| `/passkeys/login/options` | `/chaves-de-acesso/entrar/opcoes` |
+| `/passkeys/confirm` | `/chaves-de-acesso/confirmar` |
+| `/passkeys/confirm/options` | `/chaves-de-acesso/confirmar/opcoes` |
+
+R10. Todos os endereços próprios anteriores continuam funcionando para seus mesmos destinos e operações, inclusive favoritos, formulários abertos e links de recuperação/verificação já enviados por e-mail. As navegações e comunicações novas passam a usar os caminhos principais em português, com /login preservado. Links antigos válidos mantêm o efeito e o prazo originais; links inválidos, expirados ou adulterados continuam recusados. Compatibilidade não reduz proteção nem repete operações.
+
+R11. A tradução preserva a identidade, temas claro/escuro/sistema, composição responsiva e finalidade de cada tela. Não traduzir conteúdo informado pelos usuários, nomes próprios, marcas, endereços de terceiros nem valores técnicos que precisem permanecer exatos. Textos nativos do navegador, sistema operacional ou autenticador seguem o idioma desses ambientes; os textos controlados pelo FinAI permanecem em português. Esta revisão não cria seletor de idioma ou novas telas financeiras.
 
 ## Dados percebidos pelo usuário
 
@@ -81,6 +125,16 @@ CA10. Em largura de até 767px, reconhecer a marca no topo e a navegação princ
 
 CA11. De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis.
 
+CA12. Percorrer todas as telas atuais de R1, menus e estados existentes, como visitante e usuário autenticado: títulos, textos, campos, ações, mensagens e conteúdo acessível próprio estão em português brasileiro, sem rótulos ingleses remanescentes da aplicação. Dados informados pelo usuário e marcas mantêm seu conteúdo original.
+
+CA13. Executar ações atuais válidas e inválidas, incluindo acesso, recuperação/verificação de e-mail, perfil, senha, exclusão, 2FA e chaves de acesso: feedback, validação e e-mails controlados pela aplicação estão em português, com os mesmos efeitos e restrições. Inglês não reaparece no conteúdo próprio por fallback.
+
+CA14. Abrir e utilizar cada caminho próprio do mapa aprovado, por links, formulários e comunicação nova; as URLs principais estão em português. /login continua atendendo acesso e envio do login no mesmo endereço, e / permanece como início. Preservar destinos, parâmetros e métodos, inclusive nas operações que não abrem uma página própria.
+
+CA15. Acessar todos os caminhos anteriores, incluindo favoritos, envio de formulários antigos e e-mails de recuperação/verificação gerados antes da mudança: os acessos válidos continuam realizando somente as operações esperadas. Testar token, assinatura ou prazo inválidos e acesso sem permissão: manter a recusa original com mensagens próprias em português, sem ampliar validade, contornar proteção ou duplicar efeitos.
+
+CA16. Nos temas e larguras já exigidos por CA3–CA7, os textos traduzidos e nomes acessíveis permanecem legíveis e utilizáveis, sem sobreposição, corte de ações ou rolagem horizontal da página. Navegação, retornos após autenticação e acesso a configurações e saída continuam disponíveis, consumindo a composição já aprovada.
+
 ## Dependências
 
 Sem dependência de outra Feature do catálogo. O pacote de design informado é a referência visual. A implementação das próximas Features deve usar esta base; seus próprios campos, fluxos, dados e composições de tela serão aceitos nos respectivos requisitos. A conclusão deste requisito não significa que a adequação visual já foi implementada.
@@ -97,7 +151,12 @@ Comparação com o código: resources/js/components/app-sidebar.tsx, nav-main.ts
 
 Adaptações preservadas: claro, escuro e acompanhar o sistema; todas as telas atuais recebem a linguagem visual, novas telas financeiras pertencem às próximas Features; persistência no sistema e IA real prevalecem sobre textos demonstrativos do protótipo. A mudança visual preserva o acesso atual à conta, configurações, links e saída mesmo quando o protótipo esconde .sidebar-bottom. Composições financeiras novas e seletor de mês/ação de nova transação não são antecipados nesta Feature. As tarefas encerradas de identidade e estrutura mantêm seu histórico e critérios originais; a nova referência será atendida por complemento.
 
+
+Nova evidência textual: conversation-input-003, sources/conversation-input-003.md — tradução integral, pausa/retomada, inclusão de URLs, manutenção dos caminhos antigos e exceção /login. Inspeção: locale e fallback efetivos pt_BR; lang/pt_BR.json e lang/pt_BR existentes; textos React ainda ingleses em páginas, menus, componentes de segurança e hooks. Inventário de caminhos obtido de php artisan route:list, incluindo rotas próprias e de segurança. O design e suas adaptações anteriores permanecem preservados. O mapa funcional consta integralmente em R9 e define os caminhos desta revisão.
+
 ## Dentro do escopo
+
+Esta revisão acrescenta tradução integral dos textos próprios e dos endereços funcionais existentes, com compatibilidade dos endereços anteriores e exceção expressa de /login, conforme R8–R11 e CA12–CA16.
 
 Adequação visual de todas as telas, componentes, estados e navegação atuais; identidade FinAI; responsividade; temas claro e escuro com preferência acompanhar o sistema; preservação do comportamento existente. Critérios visuais aplicáveis à base compartilhada, sem antecipar as composições específicas das Features financeiras.
 

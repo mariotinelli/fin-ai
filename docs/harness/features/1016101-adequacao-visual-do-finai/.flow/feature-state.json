@@ -181,8 +181,10 @@
       "subject_sha256": "2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34",
       "approved_by": "Mário Tinelli",
       "approved_at": "2026-11-12T12:36:15Z",
-      "status": "valid",
-      "document_path": ".flow/publications/b686e511-07b5-404f-b610-0f6383e7af50/feature-snapshot.md"
+      "status": "invalidated",
+      "document_path": ".flow/publications/b686e511-07b5-404f-b610-0f6383e7af50/feature-snapshot.md",
+      "invalidated_at": "2026-11-12T14:22:09.593038+00:00",
+      "invalidated_reason": "Mário Tinelli aprovou nesta conversa a revisão de idioma/URLs e a proposta corrigida de 2h para cada DEV e QA, preservando /login, endereços antigos e configurações."
     },
     {
       "id": "9da34d44-06ef-40da-a52e-edbb809dbe7a",
@@ -190,8 +192,28 @@
       "subject_sha256": "697e19a84262a01001834e868dd5b9c02ca3d22baaa14775ac786987980bfd63",
       "approved_by": "Mário Tinelli",
       "approved_at": "2026-11-12T12:36:15Z",
+      "status": "invalidated",
+      "plan_path": ".flow/publications/b686e511-07b5-404f-b610-0f6383e7af50/plan.json",
+      "invalidated_at": "2026-11-12T14:22:09.593038+00:00",
+      "invalidated_reason": "Mário Tinelli aprovou nesta conversa a revisão de idioma/URLs e a proposta corrigida de 2h para cada DEV e QA, preservando /login, endereços antigos e configurações."
+    },
+    {
+      "id": "498023b9-e252-49cc-b18d-81a0b4855475",
+      "kind": "requirement",
+      "subject_sha256": "fbc39ec093a7b15a06640cf4e0aff731dfcfb32ff235c196c022b7c8893fcaff",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-12T14:22:09.593038+00:00",
       "status": "valid",
-      "plan_path": ".flow/publications/b686e511-07b5-404f-b610-0f6383e7af50/plan.json"
+      "document_path": ".flow/publications/08f60712-22bd-4254-a5c0-1c6d53675a09/feature-snapshot.md"
+    },
+    {
+      "id": "6e4eb597-edac-43e7-8a67-d6c92c8161d8",
+      "kind": "publication-plan",
+      "subject_sha256": "e90fbc514282c3eed57624f86c43b138940c319a4d783e5f7ded26798dbcc3f9",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-12T14:22:09.593038+00:00",
+      "status": "valid",
+      "plan_path": ".flow/publications/08f60712-22bd-4254-a5c0-1c6d53675a09/plan.json"
     }
   ],
   "deferred_questions": [],
