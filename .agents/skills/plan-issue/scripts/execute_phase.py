@@ -215,6 +215,14 @@ def development_revision(repo: Path, body: str) -> str:
     return worktree_fingerprint(repo, output_roots=declared_artifacts(body))
 
 
+def development_changes(repo: Path, body: str) -> bool:
+    normalize = str.casefold if os.name == "nt" else lambda value: value
+    roots = [normalize(root) + "/" for root in declared_artifacts(body)]
+    return bool(git(repo, "diff", "HEAD", "--name-only")) or any(
+        not any(normalize(path).startswith(root) for root in roots) for path in changed_paths(repo)
+    )
+
+
 def render(template: Path, values: dict[str, str]) -> str:
     text = template.read_text(encoding="utf-8")
     for key, value in values.items():
@@ -982,6 +990,7 @@ def execute(arguments: argparse.Namespace) -> int:
                     started = time.monotonic()
                     template = package / "prompts" / {"implementation": "develop.md", "correction": "correct.md", "investigation": "investigate-development.md"}[work_kind]
                     report_available = False
+                    handoff_accepted = False
                     intervention = None
                     revision_before = development_revision(repo, body)
                     try:
@@ -994,25 +1003,29 @@ def execute(arguments: argparse.Namespace) -> int:
                         development = redact_result(result)
                         atomic_json(development_path, development)
                         report_available = True
-                        worker_artifacts = preserve_prior_artifacts(repo, body, number)
-                        if worker_artifacts:
-                            development["artifacts"] = redact_result(worker_artifacts)
-                            atomic_json(development_path, development)
                         validate_result(development, "develop")
                         LEDGER.finish(intervention, development, development_revision(repo, body))
                         if development["status"] == "blocked":
                             fail(f"Desenvolvimento bloqueado: {development_report(development)}")
-                        if work_kind != "investigation" and not worktree_changes(repo):
+                        if work_kind != "investigation" and not development_changes(repo, body):
                             fail(f"Gate 1 finished without repository changes. {development_report(development)}")
+                        handoff_accepted = True
+                        save_state(state_path, state, current_gate="host-checks")
+                        gate_finished(number, work_gate, attempt, "pending" if development["status"] == "ready-for-host-checks" else "completed", started)
+                        worker_artifacts = preserve_prior_artifacts(repo, body, number)
+                        if worker_artifacts:
+                            development["artifacts"] = redact_result(worker_artifacts)
+                            atomic_json(development_path, development)
+                            LEDGER.data.setdefault("prior_artifacts", []).extend(redact_result(worker_artifacts))
+                            LEDGER.save()
                     except (ExecutionError, RuntimeFailure, OSError) as error:
                         reason = sanitize_text(str(error))
                         diagnostic = development_path if report_available else EVENTS.events_path
                         if intervention and LEDGER.data["interventions"][-1]["status"] == "started":
                             LEDGER.finish(intervention, {"status": "blocked", "summary": reason}, development_revision(repo, body))
-                        save_state(state_path, state, current_gate="development-investigation-blocked" if work_kind == "investigation" else "development-blocked", last_failure=reason)
-                        gate_finished(number, work_gate, attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
+                        save_state(state_path, state, current_gate="host-checks-blocked" if handoff_accepted else "development-investigation-blocked" if work_kind == "investigation" else "development-blocked", last_failure=reason)
+                        gate_finished(number, "host-checks" if handoff_accepted else work_gate, attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
                         fail(f"{sanitize(reason)} Diagnóstico: {diagnostic}. Corrija o impedimento e retome o mesmo comando; trabalho preservado.")
-                    gate_finished(number, work_gate, attempt, "pending" if development["status"] == "ready-for-host-checks" else "completed", started)
                     if work_kind == "investigation" and development_revision(repo, body) == revision_before:
                         observation = LEDGER.data["failures"][work_ids[0]]["observations"][-1]
                         original = LEDGER.report(observation)

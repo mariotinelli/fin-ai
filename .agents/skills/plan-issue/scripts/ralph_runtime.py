@@ -410,4 +410,7 @@ def popen_group(command: list[str] | str, **kwargs: Any) -> subprocess.Popen[Any
         kwargs["start_new_session"] = True
     elif os.name == "nt":
         kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+        if not isinstance(command, list):
+            raise RuntimeFailure("Windows process launch requires an argument array")
+        command = [sys.executable, "-X", "utf8", str(Path(__file__).with_name("windows_process.py")), *command]
     return subprocess.Popen(command, **kwargs)
