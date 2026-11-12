@@ -18,4 +18,4 @@ else
   exit 127
 fi
 shift
-exec "$python_bin" "$script_dir/scripts/execute_phase.py" "$@"
+exec "$python_bin" -X utf8 "$script_dir/scripts/execute_phase.py" "$@"

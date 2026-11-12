@@ -75,6 +75,8 @@ The `.flow` directory must be Git-ignored. There are no hashes, fingerprints, ma
 
 ## Output
 
+The Bash launcher starts Python with `-X utf8`, giving stdout/stderr a UTF-8 default even when redirected on Windows. Unicode diagnostics such as Rector's `✓` must remain printable through rejection and focused correction. This is process-local initialization; it does not change system encoding, gate criteria or saved progress.
+
 By default, the terminal shows only human-readable Portuguese messages:
 
 ```text
