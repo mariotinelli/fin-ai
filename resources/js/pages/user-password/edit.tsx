@@ -1,10 +1,10 @@
 import { Form, Head } from '@inertiajs/react';
 import { useRef } from 'react';
 import UserPasswordController from '@/actions/App/Http/Controllers/UserPasswordController';
-import InputError from '@/components/input-error';
+import FormField from '@/components/form-field';
 import PasswordInput from '@/components/password-input';
+import SettingsSection from '@/components/settings-section';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { edit } from '@/routes/password';
@@ -29,15 +29,10 @@ export default function Password({ passwordRules }: Props) {
         <>
             <Head title="Password settings" />
 
-            <div className="space-y-6 rounded-2xl border bg-card p-4 text-card-foreground sm:p-6">
-                <header className="space-y-1">
-                    <h2 className="text-xl font-semibold">Update password</h2>
-                    <p className="text-sm text-muted-foreground">
-                        Ensure your account is using a long, random password to
-                        stay secure
-                    </p>
-                </header>
-
+            <SettingsSection
+                title="Update password"
+                description="Ensure your account is using a long, random password to stay secure"
+            >
                 <Form
                     {...UserPasswordController.update.form()}
                     options={{
@@ -62,11 +57,11 @@ export default function Password({ passwordRules }: Props) {
                 >
                     {({ errors, processing }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="current_password">
-                                    Current password
-                                </Label>
-
+                            <FormField
+                                id="current_password"
+                                label="Current password"
+                                error={errors.current_password}
+                            >
                                 <PasswordInput
                                     id="current_password"
                                     ref={currentPasswordInput}
@@ -75,13 +70,13 @@ export default function Password({ passwordRules }: Props) {
                                     autoComplete="current-password"
                                     placeholder="Current password"
                                 />
+                            </FormField>
 
-                                <InputError message={errors.current_password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
-
+                            <FormField
+                                id="password"
+                                label="New password"
+                                error={errors.password}
+                            >
                                 <PasswordInput
                                     id="password"
                                     ref={passwordInput}
@@ -91,15 +86,13 @@ export default function Password({ passwordRules }: Props) {
                                     autoComplete="new-password"
                                     placeholder="New password"
                                 />
+                            </FormField>
 
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-
+                            <FormField
+                                id="password_confirmation"
+                                label="Confirm password"
+                                error={errors.password_confirmation}
+                            >
                                 <PasswordInput
                                     id="password_confirmation"
                                     name="password_confirmation"
@@ -108,11 +101,7 @@ export default function Password({ passwordRules }: Props) {
                                     autoComplete="new-password"
                                     placeholder="Confirm password"
                                 />
-
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
+                            </FormField>
 
                             <div className="flex flex-wrap items-center gap-4 border-t pt-6">
                                 <Button
@@ -125,7 +114,7 @@ export default function Password({ passwordRules }: Props) {
                         </>
                     )}
                 </Form>
-            </div>
+            </SettingsSection>
         </>
     );
 }

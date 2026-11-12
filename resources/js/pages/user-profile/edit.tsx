@@ -1,10 +1,10 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import UserProfileController from '@/actions/App/Http/Controllers/UserProfileController';
 import DeleteUser from '@/components/delete-user';
-import InputError from '@/components/input-error';
+import FormField from '@/components/form-field';
+import SettingsSection from '@/components/settings-section';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { edit } from '@/routes/user-profile';
@@ -25,16 +25,10 @@ export default function Edit({ status }: { status?: string }) {
         <>
             <Head title="Profile settings" />
 
-            <div className="space-y-6 rounded-2xl border bg-card p-4 text-card-foreground sm:p-6">
-                <header className="space-y-1">
-                    <h2 className="text-xl font-semibold">
-                        Profile information
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Update your name and email address
-                    </p>
-                </header>
-
+            <SettingsSection
+                title="Profile information"
+                description="Update your name and email address"
+            >
                 <Form
                     {...UserProfileController.update.form()}
                     options={{
@@ -44,9 +38,11 @@ export default function Edit({ status }: { status?: string }) {
                 >
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
-
+                            <FormField
+                                id="name"
+                                label="Name"
+                                error={errors.name}
+                            >
                                 <Input
                                     id="name"
                                     className="block w-full"
@@ -56,13 +52,13 @@ export default function Edit({ status }: { status?: string }) {
                                     autoComplete="name"
                                     placeholder="Full name"
                                 />
+                            </FormField>
 
-                                <InputError message={errors.name} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-
+                            <FormField
+                                id="email"
+                                label="Email address"
+                                error={errors.email}
+                            >
                                 <Input
                                     id="email"
                                     type="email"
@@ -73,9 +69,7 @@ export default function Edit({ status }: { status?: string }) {
                                     autoComplete="username"
                                     placeholder="Email address"
                                 />
-
-                                <InputError message={errors.email} />
-                            </div>
+                            </FormField>
 
                             {auth.user.email_verified_at === null && (
                                 <div className="space-y-2 rounded-lg border bg-accent p-4">
@@ -111,7 +105,7 @@ export default function Edit({ status }: { status?: string }) {
                         </>
                     )}
                 </Form>
-            </div>
+            </SettingsSection>
 
             <DeleteUser />
         </>
