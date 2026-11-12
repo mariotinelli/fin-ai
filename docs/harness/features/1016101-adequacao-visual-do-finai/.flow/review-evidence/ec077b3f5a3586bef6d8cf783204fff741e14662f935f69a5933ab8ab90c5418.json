@@ -1,0 +1,2495 @@
+{
+  "authorizations": [
+    {
+      "revision": 3,
+      "review_sha256": "c45d623d1d604562cbf782d40089d17185ad695169c9da7171e3ddeca4a2f63c",
+      "affected_task_keys": [
+        "dev-2",
+        "qa"
+      ],
+      "authorized_at": "2026-11-12T12:52:12.8596830Z"
+    },
+    {
+      "revision": 4,
+      "review_sha256": "1223d205919faaa1c0b7b47343616f4b700c4b6d440e8b1c01926f80243f3e01",
+      "affected_task_keys": [
+        "dev-1",
+        "dev-2",
+        "dev-3",
+        "dev-4",
+        "dev-5",
+        "qa"
+      ],
+      "authorized_at": "2026-11-12T14:29:26.3113308Z"
+    }
+  ],
+  "decisions": [
+    {
+      "revision": 3,
+      "review_sha256": "c45d623d1d604562cbf782d40089d17185ad695169c9da7171e3ddeca4a2f63c",
+      "decision": "approved",
+      "decided_by": "Mário Tinelli",
+      "decided_at": "2026-11-12T12:52:12.8596830Z",
+      "reason": "Usuário aprovou a publicação da prévia completa e o Sequencing 6 para a DEV, QA 7 e deslocamento das posições seguintes, preservando as tarefas encerradas."
+    },
+    {
+      "revision": 4,
+      "review_sha256": "1223d205919faaa1c0b7b47343616f4b700c4b6d440e8b1c01926f80243f3e01",
+      "decision": "approved",
+      "decided_by": "Mário Tinelli",
+      "decided_at": "2026-11-12T14:29:26.3113308Z",
+      "reason": "Usuário aprovou a proposta integral e corrigiu expressamente as três estimativas para2h nesta conversa."
+    }
+  ],
+  "review_id": "07befc4f02fc3d7310e6414f6caa69249e1b47884983e17b33d1174e43f7b32d",
+  "revisions": [
+    {
+      "baseline": {
+        "publication_approval_sha256": "f2d3976260e2610dac0185c62d0654ae32b88084b611d2e842a0cc10098599bc",
+        "publication_revision": 1,
+        "publication_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-publication.json",
+        "publication_state_sha256": "87604081fb91e8dfe88bee2efb7df600a91d60c2fd1619343caca77622f04d5c",
+        "requirement_sha256": "e391a2f8233ae6ed90d8ef2258020d3ac9559d18e92e15defa82fdafe8a0a183",
+        "semantic_model_sha256": "0096906f0f443e604d55cdf8cc8827f110982a36157c278c40ce1a0d1c8730f8",
+        "slices_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-state.json",
+        "slices_state_sha256": "cae0ec3b8c8b382d9931f3e18eb4dc08d8a9e32b0f10d9e5516faaefe36ff0ba",
+        "slicing_approval_sha256": "a55ebd7ccb479c4dcd966bb25eef19ea28fd946d7377a5d757460a8b60251aa9",
+        "slicing_revision": 2
+      },
+      "changes": [
+        {
+          "after": "Aplicar a revisão design-input-002 à estrutura autenticada compartilhada: até 767px, marca no topo e navegação principal fixa no rodapé, de largura total, com base de 56px acrescida da área segura inferior e ícones de 24px, alvos de pelo menos 44px, sem legendas visíveis e com nomes acessíveis; de 768 a 1024px inclusive, navegação lateral compacta de 72px acrescida da área segura lateral, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem barra inferior; a partir de 1025px, navegação lateral desktop, preservando o recolhimento e os destinos atuais. A partir de 768px, apresentar o conteúdo em superfície com fundo de trabalho, contorno de 1px, raio de 16px e margem de 8px, com a navegação integrada ao entorno e cabeçalho transparente conforme a referência. Reservar espaço para navegação e áreas seguras, sem encobrir conteúdo, foco, mensagens ou controles. Preservar acesso ao menu da conta, configurações, links e saída em todas as larguras, adaptando sua apresentação quando o protótipo esconder o rodapé lateral. Não transportar destinos financeiros futuros para as telas atuais.",
+          "before": "Preservar a organização visual responsiva do design nas estruturas aplicáveis: navegação lateral no desktop e adaptação superior no tablet/celular; controles e conteúdo reorganizados conforme o espaço. Não transportar os destinos financeiros futuros para telas atuais apenas para reproduzir a navegação do protótipo.",
+          "classification": "functional",
+          "id": "layout-R4",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "No tema claro, comparar as estruturas e os componentes aplicáveis com a referência design-input-001 e as alterações compartilhadas de design-input-002, conforme R4 e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter.",
+          "before": "No tema claro, comparar as estruturas e os componentes aplicáveis com o ZIP e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter.",
+          "classification": "functional",
+          "id": "layout-CA2",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais. Conferir também as transições 767/768px e 1024/1025px, incluindo redimensionamento após recolher a navegação desktop; cada largura aplica o modo de R4 e mantém os destinos e ações atuais disponíveis.",
+          "before": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais.",
+          "classification": "functional",
+          "id": "layout-CA6",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "Em largura de até 767px, reconhecer a marca no topo e a navegação principal fixa no rodapé em largura total, com base de 56px mais a área segura, ícones de 24px, alvos de pelo menos 44px, destino ativo e nomes acessíveis mesmo sem legenda visível. Percorrer até o fim da página, focar controles e abrir menus/diálogos: a navegação não encobre ações, mensagens ou foco, e o acesso à conta, configurações, links e saída permanece disponível.",
+          "before": "Critério inexistente na versão anterior.",
+          "classification": "functional",
+          "id": "layout-CA10",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis.",
+          "before": "Critério inexistente na versão anterior.",
+          "classification": "functional",
+          "id": "layout-CA11",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "Design-input-002 prevalece nas alterações de navegação e superfície compartilhadas, com a referência original preservada.",
+          "before": "Design-input-001 com navegação superior tablet/celular.",
+          "classification": "functional",
+          "id": "layout-source",
+          "rationale": "O pacote no mesmo caminho possui outro hash e muda o aceite visual; não é simples correção de localizador."
+        }
+      ],
+      "classification": "functional",
+      "conditions": {
+        "additions": [
+          {
+            "id": "CT-025",
+            "reason": "Transições exatas 767/768px e 1024/1025px, inclusive após recolher a navegação desktop; CA6, CA10 e CA11."
+          },
+          {
+            "id": "CT-026",
+            "reason": "Barra inferior e áreas seguras sem ocultar conteúdo, foco, controles ou conta/configurações/saída; CA10."
+          },
+          {
+            "id": "CT-027",
+            "reason": "Lateral compacta tablet e superfície contínua desktop/tablet com contorno, raio, margens e cabeçalho; CA11."
+          }
+        ],
+        "baseline": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\9ef85f720a776124491346849992d248a38cbe53048fd885a949441271515be9.json",
+          "sha256": "9ef85f720a776124491346849992d248a38cbe53048fd885a949441271515be9"
+        },
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "A entrega abrange a página inicial atual, cadastro, login, recuperação e redefinição de senha, confirmação de senha, verificação de e-mail, desafio de dois fatores, dashboard atual, perfil, alteração de senha, aparência, configuração de dois fatores e passkeys, incluindo seus estados e componentes existentes. Essa lista é inventário do código, não comprovação de aceite funcional anterior."
+          },
+          {
+            "id": "R2",
+            "summary": "Adequar aparência preserva os campos, validações, mensagens funcionais, operações, permissões, destinos e preferências existentes. Não acrescentar regras de autenticação ou financeiras nesta entrega."
+          },
+          {
+            "id": "R3",
+            "summary": "A referência clara usa fundo #F5F7F8, superfícies brancas, texto #172622, texto secundário #52615C, verde principal #145C46, verde positivo #146345, vermelho negativo #A12B36, bordas #D6DFDB e destaque suave #E4F0E9. Preservar a hierarquia do design: títulos de destaque em Georgia e corpo em system-ui; controles com raio de 8px e painéis com 16px; espaçamento, bordas, sombras, estados e proporções conforme o pacote."
+          },
+          {
+            "id": "R4",
+            "summary": "Aplicar a revisão design-input-002 à estrutura autenticada compartilhada: até 767px, marca no topo e navegação principal fixa no rodapé, de largura total, com base de 56px acrescida da área segura inferior e ícones de 24px, alvos de pelo menos 44px, sem legendas visíveis e com nomes acessíveis; de 768 a 1024px inclusive, navegação lateral compacta de 72px acrescida da área segura lateral, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem barra inferior; a partir de 1025px, navegação lateral desktop, preservando o recolhimento e os destinos atuais. A partir de 768px, apresentar o conteúdo em superfície com fundo de trabalho, contorno de 1px, raio de 16px e margem de 8px, com a navegação integrada ao entorno e cabeçalho transparente conforme a referência. Reservar espaço para navegação e áreas seguras, sem encobrir conteúdo, foco, mensagens ou controles. Preservar acesso ao menu da conta, configurações, links e saída em todas as larguras, adaptando sua apresentação quando o protótipo esconder o rodapé lateral. Não transportar destinos financeiros futuros para as telas atuais."
+          },
+          {
+            "id": "R5",
+            "summary": "Preservar claro, escuro e acompanhar o sistema. A variante escura é uma adaptação aprovada da identidade fornecida, mantendo hierarquia visual, distinção entre superfícies, leitura dos textos e identificação dos estados. Não reutilizar o tema escuro neutro do starter sem adequação à identidade FinAI."
+          },
+          {
+            "id": "R6",
+            "summary": "A marca FinAI substitui a identidade visual genérica do starter nas superfícies atuais. Não apresentar rótulos do protótipo que afirmem armazenamento apenas no navegador ou assistente simulado; persistência e IA real serão tratadas pelas Features responsáveis."
+          },
+          {
+            "id": "R7",
+            "summary": "A base visual é aceita sobre as telas atuais. Não criar páginas de Transações ou Assistente, formulários financeiros, números demonstrativos ou operações simuladas nesta Feature. As novas telas e suas composições específicas seguem a base nas próximas Features."
+          },
+          {
+            "id": "CA1",
+            "summary": "Ao visitar cada superfície de R1 que esteja disponível para o usuário, reconhecer a identidade FinAI na marca, tipografia, paleta e componentes; nas superfícies sem desenho próprio, preservar campos e finalidade com a mesma linguagem visual."
+          },
+          {
+            "id": "CA2",
+            "summary": "No tema claro, comparar as estruturas e os componentes aplicáveis com a referência design-input-001 e as alterações compartilhadas de design-input-002, conforme R4 e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter."
+          },
+          {
+            "id": "CA3",
+            "summary": "Selecionar claro, escuro e acompanhar o sistema; cada opção continua disponível e aplica a aparência correspondente. Ao retornar à aplicação, manter a preferência conforme o comportamento existente."
+          },
+          {
+            "id": "CA4",
+            "summary": "Com acompanhar o sistema selecionado, alterar a preferência do dispositivo; a aparência acompanha a mudança. Com claro ou escuro explicitamente selecionado, a preferência do dispositivo não substitui a escolha."
+          },
+          {
+            "id": "CA5",
+            "summary": "No tema escuro, abrir as mesmas superfícies e estados do tema claro; manter conteúdo e ações equivalentes, identidade FinAI, textos legíveis e distinção visual entre superfícies, bordas, foco, erros e demais estados existentes."
+          },
+          {
+            "id": "CA6",
+            "summary": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais. Conferir também as transições 767/768px e 1024/1025px, incluindo redimensionamento após recolher a navegação desktop; cada largura aplica o modo de R4 e mantém os destinos e ações atuais disponíveis."
+          },
+          {
+            "id": "CA7",
+            "summary": "Navegar e utilizar formulários, menus e diálogos atuais com mouse e teclado; preservar rótulos, foco visível e estados aplicáveis de hover, ativo, desabilitado e carregamento demonstrados no design ou existentes na aplicação."
+          },
+          {
+            "id": "CA8",
+            "summary": "Executar ações atuais com dados válidos e inválidos, onde aplicável; campos, validações, mensagens, cancelamentos, confirmações e resultados funcionais permanecem equivalentes após a adequação visual. O mesmo vale para restrições de acesso de visitantes e usuários autenticados."
+          },
+          {
+            "id": "CA9",
+            "summary": "Ao navegar pela entrega, não encontrar novas páginas financeiras, dados fictícios, operações simuladas, rótulos de armazenamento apenas local ou assistente simulado apresentados como funcionalidades prontas. O dashboard atual permanece sem antecipar as capacidades da Feature Dashboard financeiro."
+          },
+          {
+            "id": "CA10",
+            "summary": "Em largura de até 767px, reconhecer a marca no topo e a navegação principal fixa no rodapé em largura total, com base de 56px mais a área segura, ícones de 24px, alvos de pelo menos 44px, destino ativo e nomes acessíveis mesmo sem legenda visível. Percorrer até o fim da página, focar controles e abrir menus/diálogos: a navegação não encobre ações, mensagens ou foco, e o acesso à conta, configurações, links e saída permanece disponível."
+          },
+          {
+            "id": "CA11",
+            "summary": "De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis."
+          },
+          {
+            "id": "V-Publica",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição da página inicial atual com identidade FinAI, preservando conteúdo funcional e destinos."
+          },
+          {
+            "id": "V-Acesso",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de cadastro, login, recuperação/redefinição e verificação de e-mail."
+          },
+          {
+            "id": "V-Conta",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de perfil, senha, aparência e exclusão de conta."
+          },
+          {
+            "id": "V-Seguranca",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de 2FA, confirmação de senha e passkeys."
+          }
+        ]
+      },
+      "current_requirement": {
+        "approval_sha256": "19632cc8b760cf60c912a965845ebe09c45e3722465bd443a9e0d304a032dbb5",
+        "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34.md",
+        "sha256": "2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34",
+        "source_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\feature.md",
+        "source_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\feature-state.json",
+        "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\336df5405cf1624125049ebf8eb33fd05eabd6d7917f214a5aca7f4956fd3737.json",
+        "state_sha256": "336df5405cf1624125049ebf8eb33fd05eabd6d7917f214a5aca7f4956fd3737"
+      },
+      "impact": {
+        "affected_acceptance_criteria": [
+          {
+            "id": "dev-2:criterion-1",
+            "reason": "O complemento substitui a navegação superior pelo novo comportamento e acrescenta os limites exatos da matriz; o critério histórico da tarefa encerrada permanece sem edição."
+          },
+          {
+            "id": "dev-2:criterion-5",
+            "reason": "O complemento substitui a navegação superior pelo novo comportamento e acrescenta os limites exatos da matriz; o critério histórico da tarefa encerrada permanece sem edição."
+          }
+        ],
+        "affected_coverage": [
+          {
+            "id": "CA2",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          },
+          {
+            "id": "CA6",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          },
+          {
+            "id": "R4",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          }
+        ],
+        "affected_dependencies": [],
+        "affected_tasks": [
+          {
+            "id": "dev-2",
+            "reason": "A entrega de estrutura muda de aceite: preservar #1016113 encerrada e representar a diferença por nova DEV; atualizar as condições e estimativa da QA existente, preservando os demais campos."
+          },
+          {
+            "id": "qa",
+            "reason": "A entrega de estrutura muda de aceite: preservar #1016113 encerrada e representar a diferença por nova DEV; atualizar as condições e estimativa da QA existente, preservando os demais campos."
+          }
+        ],
+        "affected_test_conditions": [
+          {
+            "id": "CT-003",
+            "reason": "O esperado de navegação superior e a fonte de comparação da matriz compartilhada passam ao novo design; preservar o ID e atualizar somente essa diferença."
+          },
+          {
+            "id": "CT-023",
+            "reason": "O esperado de navegação superior e a fonte de comparação da matriz compartilhada passam ao novo design; preservar o ID e atualizar somente essa diferença."
+          }
+        ],
+        "unaffected_acceptance_criteria": [
+          {
+            "id": "dev-1:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "unaffected_coverage": [
+          {
+            "id": "CA1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA7",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA8",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA9",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R7",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Acesso",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Conta",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Publica",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Seguranca",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "unaffected_dependencies": [
+          {
+            "id": "blocks:dev-1:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-2:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-3:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-4:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-5:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "unaffected_tasks": [
+          {
+            "id": "dev-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "unaffected_test_conditions": [
+          {
+            "id": "CT-001",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-002",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-004",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-005",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-006",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-007",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-008",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-009",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-010",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-011",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-012",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-013",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-014",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-015",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-016",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-017",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-018",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-019",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-020",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-021",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-022",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-024",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ]
+      },
+      "number": 1,
+      "preservation": {
+        "dependency_state": null,
+        "divergence_state": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\recovery\\approval-document-path-20261112\\divergence-before.json",
+          "sha256": "d102f7a6f60b27061602c27f4d11076ff54c925bce67664c724c449b48ba5a9c"
+        },
+        "existing_children_review_sha256": null,
+        "published_children": [
+          {
+            "key": "dev-1",
+            "remote_id": 1016112,
+            "source": "create"
+          },
+          {
+            "key": "dev-2",
+            "remote_id": 1016113,
+            "source": "create"
+          },
+          {
+            "key": "dev-3",
+            "remote_id": 1016114,
+            "source": "create"
+          },
+          {
+            "key": "dev-4",
+            "remote_id": 1016115,
+            "source": "create"
+          },
+          {
+            "key": "dev-5",
+            "remote_id": 1016116,
+            "source": "create"
+          },
+          {
+            "key": "qa",
+            "remote_id": 1016117,
+            "source": "create"
+          }
+        ],
+        "study_evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "reason": "Correção do requisito aprovada e alinhada; revisão localizada para uma nova DEV e mesma QA, preservando as tarefas concluídas.",
+      "recorded_at": "2026-11-12T12:38:17Z",
+      "recorded_by": "Mário Tinelli",
+      "review_id": "9c5be5d0baae377dbb536e97365c8fe02b0171a80b1a131af39f3e7a66969fa2",
+      "review_sha256": "63108ba80ac94a42f6621c43252de54b2e4971dcfbff298e8534da5b87492ff0",
+      "summary": "Uma DEV complementar atende ao novo layout desktop/tablet/celular. Preservar #1016112 e #1016113 encerradas e as três DEV específicas New. Na mesma QA #1016117, revisar CT-003 e CT-023, acrescentar CT-025 a CT-027 e propor estimativa total 2,25h. Preservar os demais 22 CTs, anexos e relações anteriores; acrescentar somente nova DEV bloqueando a QA."
+    },
+    {
+      "baseline": {
+        "publication_approval_sha256": "f2d3976260e2610dac0185c62d0654ae32b88084b611d2e842a0cc10098599bc",
+        "publication_revision": 1,
+        "publication_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-publication.json",
+        "publication_state_sha256": "87604081fb91e8dfe88bee2efb7df600a91d60c2fd1619343caca77622f04d5c",
+        "requirement_sha256": "e391a2f8233ae6ed90d8ef2258020d3ac9559d18e92e15defa82fdafe8a0a183",
+        "semantic_model_sha256": "0096906f0f443e604d55cdf8cc8827f110982a36157c278c40ce1a0d1c8730f8",
+        "slices_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-state.json",
+        "slices_state_sha256": "cae0ec3b8c8b382d9931f3e18eb4dc08d8a9e32b0f10d9e5516faaefe36ff0ba",
+        "slicing_approval_sha256": "a55ebd7ccb479c4dcd966bb25eef19ea28fd946d7377a5d757460a8b60251aa9",
+        "slicing_revision": 2
+      },
+      "changes": [
+        {
+          "after": "Aplicar a revisão design-input-002 à estrutura autenticada compartilhada: até 767px, marca no topo e navegação principal fixa no rodapé, de largura total, com base de 56px acrescida da área segura inferior e ícones de 24px, alvos de pelo menos 44px, sem legendas visíveis e com nomes acessíveis; de 768 a 1024px inclusive, navegação lateral compacta de 72px acrescida da área segura lateral, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem barra inferior; a partir de 1025px, navegação lateral desktop, preservando o recolhimento e os destinos atuais. A partir de 768px, apresentar o conteúdo em superfície com fundo de trabalho, contorno de 1px, raio de 16px e margem de 8px, com a navegação integrada ao entorno e cabeçalho transparente conforme a referência. Reservar espaço para navegação e áreas seguras, sem encobrir conteúdo, foco, mensagens ou controles. Preservar acesso ao menu da conta, configurações, links e saída em todas as larguras, adaptando sua apresentação quando o protótipo esconder o rodapé lateral. Não transportar destinos financeiros futuros para as telas atuais.",
+          "before": "Preservar a organização visual responsiva do design nas estruturas aplicáveis: navegação lateral no desktop e adaptação superior no tablet/celular; controles e conteúdo reorganizados conforme o espaço. Não transportar os destinos financeiros futuros para telas atuais apenas para reproduzir a navegação do protótipo.",
+          "classification": "functional",
+          "id": "layout-R4",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "No tema claro, comparar as estruturas e os componentes aplicáveis com a referência design-input-001 e as alterações compartilhadas de design-input-002, conforme R4 e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter.",
+          "before": "No tema claro, comparar as estruturas e os componentes aplicáveis com o ZIP e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter.",
+          "classification": "functional",
+          "id": "layout-CA2",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais. Conferir também as transições 767/768px e 1024/1025px, incluindo redimensionamento após recolher a navegação desktop; cada largura aplica o modo de R4 e mantém os destinos e ações atuais disponíveis.",
+          "before": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais.",
+          "classification": "functional",
+          "id": "layout-CA6",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "Em largura de até 767px, reconhecer a marca no topo e a navegação principal fixa no rodapé em largura total, com base de 56px mais a área segura, ícones de 24px, alvos de pelo menos 44px, destino ativo e nomes acessíveis mesmo sem legenda visível. Percorrer até o fim da página, focar controles e abrir menus/diálogos: a navegação não encobre ações, mensagens ou foco, e o acesso à conta, configurações, links e saída permanece disponível.",
+          "before": "Critério inexistente na versão anterior.",
+          "classification": "functional",
+          "id": "layout-CA10",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis.",
+          "before": "Critério inexistente na versão anterior.",
+          "classification": "functional",
+          "id": "layout-CA11",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "after": "Design-input-002 prevalece nas alterações de navegação e superfície compartilhadas, com a referência original preservada.",
+          "before": "Design-input-001 com navegação superior tablet/celular.",
+          "classification": "functional",
+          "id": "layout-source",
+          "rationale": "O pacote no mesmo caminho possui outro hash e muda o aceite visual; não é simples correção de localizador."
+        }
+      ],
+      "classification": "functional",
+      "conditions": {
+        "additions": [
+          {
+            "id": "CT-025",
+            "reason": "Transições exatas 767/768px e 1024/1025px, inclusive após recolher a navegação desktop; CA6, CA10 e CA11."
+          },
+          {
+            "id": "CT-026",
+            "reason": "Barra inferior e áreas seguras sem ocultar conteúdo, foco, controles ou conta/configurações/saída; CA10."
+          },
+          {
+            "id": "CT-027",
+            "reason": "Lateral compacta tablet e superfície contínua desktop/tablet com contorno, raio, margens e cabeçalho; CA11."
+          }
+        ],
+        "baseline": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\9ef85f720a776124491346849992d248a38cbe53048fd885a949441271515be9.json",
+          "sha256": "9ef85f720a776124491346849992d248a38cbe53048fd885a949441271515be9"
+        },
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "A entrega abrange a página inicial atual, cadastro, login, recuperação e redefinição de senha, confirmação de senha, verificação de e-mail, desafio de dois fatores, dashboard atual, perfil, alteração de senha, aparência, configuração de dois fatores e passkeys, incluindo seus estados e componentes existentes. Essa lista é inventário do código, não comprovação de aceite funcional anterior."
+          },
+          {
+            "id": "R2",
+            "summary": "Adequar aparência preserva os campos, validações, mensagens funcionais, operações, permissões, destinos e preferências existentes. Não acrescentar regras de autenticação ou financeiras nesta entrega."
+          },
+          {
+            "id": "R3",
+            "summary": "A referência clara usa fundo #F5F7F8, superfícies brancas, texto #172622, texto secundário #52615C, verde principal #145C46, verde positivo #146345, vermelho negativo #A12B36, bordas #D6DFDB e destaque suave #E4F0E9. Preservar a hierarquia do design: títulos de destaque em Georgia e corpo em system-ui; controles com raio de 8px e painéis com 16px; espaçamento, bordas, sombras, estados e proporções conforme o pacote."
+          },
+          {
+            "id": "R4",
+            "summary": "Aplicar a revisão design-input-002 à estrutura autenticada compartilhada: até 767px, marca no topo e navegação principal fixa no rodapé, de largura total, com base de 56px acrescida da área segura inferior e ícones de 24px, alvos de pelo menos 44px, sem legendas visíveis e com nomes acessíveis; de 768 a 1024px inclusive, navegação lateral compacta de 72px acrescida da área segura lateral, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem barra inferior; a partir de 1025px, navegação lateral desktop, preservando o recolhimento e os destinos atuais. A partir de 768px, apresentar o conteúdo em superfície com fundo de trabalho, contorno de 1px, raio de 16px e margem de 8px, com a navegação integrada ao entorno e cabeçalho transparente conforme a referência. Reservar espaço para navegação e áreas seguras, sem encobrir conteúdo, foco, mensagens ou controles. Preservar acesso ao menu da conta, configurações, links e saída em todas as larguras, adaptando sua apresentação quando o protótipo esconder o rodapé lateral. Não transportar destinos financeiros futuros para as telas atuais."
+          },
+          {
+            "id": "R5",
+            "summary": "Preservar claro, escuro e acompanhar o sistema. A variante escura é uma adaptação aprovada da identidade fornecida, mantendo hierarquia visual, distinção entre superfícies, leitura dos textos e identificação dos estados. Não reutilizar o tema escuro neutro do starter sem adequação à identidade FinAI."
+          },
+          {
+            "id": "R6",
+            "summary": "A marca FinAI substitui a identidade visual genérica do starter nas superfícies atuais. Não apresentar rótulos do protótipo que afirmem armazenamento apenas no navegador ou assistente simulado; persistência e IA real serão tratadas pelas Features responsáveis."
+          },
+          {
+            "id": "R7",
+            "summary": "A base visual é aceita sobre as telas atuais. Não criar páginas de Transações ou Assistente, formulários financeiros, números demonstrativos ou operações simuladas nesta Feature. As novas telas e suas composições específicas seguem a base nas próximas Features."
+          },
+          {
+            "id": "CA1",
+            "summary": "Ao visitar cada superfície de R1 que esteja disponível para o usuário, reconhecer a identidade FinAI na marca, tipografia, paleta e componentes; nas superfícies sem desenho próprio, preservar campos e finalidade com a mesma linguagem visual."
+          },
+          {
+            "id": "CA2",
+            "summary": "No tema claro, comparar as estruturas e os componentes aplicáveis com a referência design-input-001 e as alterações compartilhadas de design-input-002, conforme R4 e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter."
+          },
+          {
+            "id": "CA3",
+            "summary": "Selecionar claro, escuro e acompanhar o sistema; cada opção continua disponível e aplica a aparência correspondente. Ao retornar à aplicação, manter a preferência conforme o comportamento existente."
+          },
+          {
+            "id": "CA4",
+            "summary": "Com acompanhar o sistema selecionado, alterar a preferência do dispositivo; a aparência acompanha a mudança. Com claro ou escuro explicitamente selecionado, a preferência do dispositivo não substitui a escolha."
+          },
+          {
+            "id": "CA5",
+            "summary": "No tema escuro, abrir as mesmas superfícies e estados do tema claro; manter conteúdo e ações equivalentes, identidade FinAI, textos legíveis e distinção visual entre superfícies, bordas, foco, erros e demais estados existentes."
+          },
+          {
+            "id": "CA6",
+            "summary": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais. Conferir também as transições 767/768px e 1024/1025px, incluindo redimensionamento após recolher a navegação desktop; cada largura aplica o modo de R4 e mantém os destinos e ações atuais disponíveis."
+          },
+          {
+            "id": "CA7",
+            "summary": "Navegar e utilizar formulários, menus e diálogos atuais com mouse e teclado; preservar rótulos, foco visível e estados aplicáveis de hover, ativo, desabilitado e carregamento demonstrados no design ou existentes na aplicação."
+          },
+          {
+            "id": "CA8",
+            "summary": "Executar ações atuais com dados válidos e inválidos, onde aplicável; campos, validações, mensagens, cancelamentos, confirmações e resultados funcionais permanecem equivalentes após a adequação visual. O mesmo vale para restrições de acesso de visitantes e usuários autenticados."
+          },
+          {
+            "id": "CA9",
+            "summary": "Ao navegar pela entrega, não encontrar novas páginas financeiras, dados fictícios, operações simuladas, rótulos de armazenamento apenas local ou assistente simulado apresentados como funcionalidades prontas. O dashboard atual permanece sem antecipar as capacidades da Feature Dashboard financeiro."
+          },
+          {
+            "id": "CA10",
+            "summary": "Em largura de até 767px, reconhecer a marca no topo e a navegação principal fixa no rodapé em largura total, com base de 56px mais a área segura, ícones de 24px, alvos de pelo menos 44px, destino ativo e nomes acessíveis mesmo sem legenda visível. Percorrer até o fim da página, focar controles e abrir menus/diálogos: a navegação não encobre ações, mensagens ou foco, e o acesso à conta, configurações, links e saída permanece disponível."
+          },
+          {
+            "id": "CA11",
+            "summary": "De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis."
+          },
+          {
+            "id": "V-Publica",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição da página inicial atual com identidade FinAI, preservando conteúdo funcional e destinos."
+          },
+          {
+            "id": "V-Acesso",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de cadastro, login, recuperação/redefinição e verificação de e-mail."
+          },
+          {
+            "id": "V-Conta",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de perfil, senha, aparência e exclusão de conta."
+          },
+          {
+            "id": "V-Seguranca",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de 2FA, confirmação de senha e passkeys."
+          }
+        ]
+      },
+      "current_requirement": {
+        "approval_sha256": "19632cc8b760cf60c912a965845ebe09c45e3722465bd443a9e0d304a032dbb5",
+        "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34.md",
+        "sha256": "2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34",
+        "source_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\feature.md",
+        "source_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\feature-state.json",
+        "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\336df5405cf1624125049ebf8eb33fd05eabd6d7917f214a5aca7f4956fd3737.json",
+        "state_sha256": "336df5405cf1624125049ebf8eb33fd05eabd6d7917f214a5aca7f4956fd3737"
+      },
+      "impact": {
+        "affected_acceptance_criteria": [
+          {
+            "id": "dev-2:criterion-1",
+            "reason": "O complemento substitui a navegação superior pelo novo comportamento e acrescenta os limites exatos da matriz; o critério histórico da tarefa encerrada permanece sem edição."
+          },
+          {
+            "id": "dev-2:criterion-5",
+            "reason": "O complemento substitui a navegação superior pelo novo comportamento e acrescenta os limites exatos da matriz; o critério histórico da tarefa encerrada permanece sem edição."
+          }
+        ],
+        "affected_coverage": [
+          {
+            "id": "CA2",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          },
+          {
+            "id": "CA6",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          },
+          {
+            "id": "R4",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          }
+        ],
+        "affected_dependencies": [
+          {
+            "id": "blocks:dev-2:qa",
+            "reason": "O aceite da estrutura que bloqueia QA recebe um complemento: preservar a relação #840 da DEV encerrada com QA e acrescentar uma nova relação da DEV complementar para a mesma QA."
+          }
+        ],
+        "affected_tasks": [
+          {
+            "id": "dev-2",
+            "reason": "A entrega de estrutura muda de aceite: preservar #1016113 encerrada e representar a diferença por nova DEV; atualizar as condições e estimativa da QA existente, preservando os demais campos."
+          },
+          {
+            "id": "qa",
+            "reason": "A entrega de estrutura muda de aceite: preservar #1016113 encerrada e representar a diferença por nova DEV; atualizar as condições e estimativa da QA existente, preservando os demais campos."
+          }
+        ],
+        "affected_test_conditions": [
+          {
+            "id": "CT-003",
+            "reason": "O esperado de navegação superior e a fonte de comparação da matriz compartilhada passam ao novo design; preservar o ID e atualizar somente essa diferença."
+          },
+          {
+            "id": "CT-023",
+            "reason": "O esperado de navegação superior e a fonte de comparação da matriz compartilhada passam ao novo design; preservar o ID e atualizar somente essa diferença."
+          }
+        ],
+        "unaffected_acceptance_criteria": [
+          {
+            "id": "dev-1:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "unaffected_coverage": [
+          {
+            "id": "CA1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA7",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA8",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA9",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R7",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Acesso",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Conta",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Publica",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Seguranca",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "unaffected_dependencies": [
+          {
+            "id": "blocks:dev-1:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-3:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-4:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-5:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "unaffected_tasks": [
+          {
+            "id": "dev-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "unaffected_test_conditions": [
+          {
+            "id": "CT-001",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-002",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-004",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-005",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-006",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-007",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-008",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-009",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-010",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-011",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-012",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-013",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-014",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-015",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-016",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-017",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-018",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-019",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-020",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-021",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-022",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-024",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ]
+      },
+      "number": 2,
+      "preservation": {
+        "dependency_state": null,
+        "divergence_state": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\recovery\\approval-document-path-20261112\\divergence-before.json",
+          "sha256": "d102f7a6f60b27061602c27f4d11076ff54c925bce67664c724c449b48ba5a9c"
+        },
+        "existing_children_review_sha256": null,
+        "published_children": [
+          {
+            "key": "dev-1",
+            "remote_id": 1016112,
+            "source": "create"
+          },
+          {
+            "key": "dev-2",
+            "remote_id": 1016113,
+            "source": "create"
+          },
+          {
+            "key": "dev-3",
+            "remote_id": 1016114,
+            "source": "create"
+          },
+          {
+            "key": "dev-4",
+            "remote_id": 1016115,
+            "source": "create"
+          },
+          {
+            "key": "dev-5",
+            "remote_id": 1016116,
+            "source": "create"
+          },
+          {
+            "key": "qa",
+            "remote_id": 1016117,
+            "source": "create"
+          }
+        ],
+        "study_evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "reason": "Partição completa do impacto; preservar relação histórica e acrescentar o bloqueio da DEV complementar à mesma QA.",
+      "recorded_at": "2026-11-12T12:40:00Z",
+      "recorded_by": "Mário Tinelli",
+      "review_id": "9c5be5d0baae377dbb536e97365c8fe02b0171a80b1a131af39f3e7a66969fa2",
+      "review_sha256": "7bc0f55ed5b82fc535682db80ae517be0fb4bcef2831dc87d644e2b37852c286",
+      "summary": "Uma DEV complementar atende ao novo layout desktop/tablet/celular. Preservar #1016112 e #1016113 encerradas e as três DEV específicas New. Na mesma QA #1016117, revisar CT-003 e CT-023, acrescentar CT-025 a CT-027 e propor estimativa total 2,25h. Preservar os demais 22 CTs, anexos e relações anteriores; acrescentar somente nova DEV bloqueando a QA."
+    },
+    {
+      "number": 3,
+      "review_id": "9c5be5d0baae377dbb536e97365c8fe02b0171a80b1a131af39f3e7a66969fa2",
+      "recorded_by": "Mário Tinelli",
+      "recorded_at": "2026-11-12T12:47:00Z",
+      "reason": "Requisito aprovado e registro v5 reconciliados; prévia de impacto sem alterações de conteúdo ou consentimento.",
+      "baseline": {
+        "slices_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-state.json",
+        "slices_state_sha256": "cae0ec3b8c8b382d9931f3e18eb4dc08d8a9e32b0f10d9e5516faaefe36ff0ba",
+        "slicing_revision": 2,
+        "slicing_approval_sha256": "a55ebd7ccb479c4dcd966bb25eef19ea28fd946d7377a5d757460a8b60251aa9",
+        "publication_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-publication.json",
+        "publication_state_sha256": "87604081fb91e8dfe88bee2efb7df600a91d60c2fd1619343caca77622f04d5c",
+        "publication_revision": 1,
+        "publication_approval_sha256": "f2d3976260e2610dac0185c62d0654ae32b88084b611d2e842a0cc10098599bc",
+        "requirement_sha256": "e391a2f8233ae6ed90d8ef2258020d3ac9559d18e92e15defa82fdafe8a0a183",
+        "semantic_model_sha256": "0096906f0f443e604d55cdf8cc8827f110982a36157c278c40ce1a0d1c8730f8"
+      },
+      "current_requirement": {
+        "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34.md",
+        "sha256": "2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34",
+        "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\85066f40ae625592d7d95eb93d33b162ea9962db54f37fed9d40a6a2d5b4d9ae.json",
+        "state_sha256": "85066f40ae625592d7d95eb93d33b162ea9962db54f37fed9d40a6a2d5b4d9ae",
+        "source_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\feature.md",
+        "source_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\feature-state.json",
+        "approval_sha256": "10ed87b2f4eeff0f6f26e2d824bd40ec6aaae656be1d97b9c3104ce5b58d70d4"
+      },
+      "classification": "functional",
+      "summary": "Uma DEV complementar atende ao novo layout desktop/tablet/celular. Preservar #1016112 e #1016113 encerradas e as três DEV específicas New. Na mesma QA #1016117, revisar CT-003 e CT-023, acrescentar CT-025 a CT-027 e propor estimativa total 2,25h. Preservar os demais 22 CTs, anexos e relações anteriores; acrescentar somente nova DEV bloqueando a QA.",
+      "changes": [
+        {
+          "id": "layout-R4",
+          "classification": "functional",
+          "before": "Preservar a organização visual responsiva do design nas estruturas aplicáveis: navegação lateral no desktop e adaptação superior no tablet/celular; controles e conteúdo reorganizados conforme o espaço. Não transportar os destinos financeiros futuros para telas atuais apenas para reproduzir a navegação do protótipo.",
+          "after": "Aplicar a revisão design-input-002 à estrutura autenticada compartilhada: até 767px, marca no topo e navegação principal fixa no rodapé, de largura total, com base de 56px acrescida da área segura inferior e ícones de 24px, alvos de pelo menos 44px, sem legendas visíveis e com nomes acessíveis; de 768 a 1024px inclusive, navegação lateral compacta de 72px acrescida da área segura lateral, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem barra inferior; a partir de 1025px, navegação lateral desktop, preservando o recolhimento e os destinos atuais. A partir de 768px, apresentar o conteúdo em superfície com fundo de trabalho, contorno de 1px, raio de 16px e margem de 8px, com a navegação integrada ao entorno e cabeçalho transparente conforme a referência. Reservar espaço para navegação e áreas seguras, sem encobrir conteúdo, foco, mensagens ou controles. Preservar acesso ao menu da conta, configurações, links e saída em todas as larguras, adaptando sua apresentação quando o protótipo esconder o rodapé lateral. Não transportar destinos financeiros futuros para as telas atuais.",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "id": "layout-CA2",
+          "classification": "functional",
+          "before": "No tema claro, comparar as estruturas e os componentes aplicáveis com o ZIP e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter.",
+          "after": "No tema claro, comparar as estruturas e os componentes aplicáveis com a referência design-input-001 e as alterações compartilhadas de design-input-002, conforme R4 e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter.",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "id": "layout-CA6",
+          "classification": "functional",
+          "before": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais.",
+          "after": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais. Conferir também as transições 767/768px e 1024/1025px, incluindo redimensionamento após recolher a navegação desktop; cada largura aplica o modo de R4 e mantém os destinos e ações atuais disponíveis.",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "id": "layout-CA10",
+          "classification": "functional",
+          "before": "Critério inexistente na versão anterior.",
+          "after": "Em largura de até 767px, reconhecer a marca no topo e a navegação principal fixa no rodapé em largura total, com base de 56px mais a área segura, ícones de 24px, alvos de pelo menos 44px, destino ativo e nomes acessíveis mesmo sem legenda visível. Percorrer até o fim da página, focar controles e abrir menus/diálogos: a navegação não encobre ações, mensagens ou foco, e o acesso à conta, configurações, links e saída permanece disponível.",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "id": "layout-CA11",
+          "classification": "functional",
+          "before": "Critério inexistente na versão anterior.",
+          "after": "De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis.",
+          "rationale": "O novo design altera resultados visuais verificáveis e exige complemento; aprovação da correção registrada em slices-divergence.json."
+        },
+        {
+          "id": "layout-source",
+          "classification": "functional",
+          "before": "Design-input-001 com navegação superior tablet/celular.",
+          "after": "Design-input-002 prevalece nas alterações de navegação e superfície compartilhadas, com a referência original preservada.",
+          "rationale": "O pacote no mesmo caminho possui outro hash e muda o aceite visual; não é simples correção de localizador."
+        }
+      ],
+      "impact": {
+        "affected_tasks": [
+          {
+            "id": "dev-2",
+            "reason": "A entrega de estrutura muda de aceite: preservar #1016113 encerrada e representar a diferença por nova DEV; atualizar as condições e estimativa da QA existente, preservando os demais campos."
+          },
+          {
+            "id": "qa",
+            "reason": "A entrega de estrutura muda de aceite: preservar #1016113 encerrada e representar a diferença por nova DEV; atualizar as condições e estimativa da QA existente, preservando os demais campos."
+          }
+        ],
+        "unaffected_tasks": [
+          {
+            "id": "dev-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "affected_acceptance_criteria": [
+          {
+            "id": "dev-2:criterion-1",
+            "reason": "O complemento substitui a navegação superior pelo novo comportamento e acrescenta os limites exatos da matriz; o critério histórico da tarefa encerrada permanece sem edição."
+          },
+          {
+            "id": "dev-2:criterion-5",
+            "reason": "O complemento substitui a navegação superior pelo novo comportamento e acrescenta os limites exatos da matriz; o critério histórico da tarefa encerrada permanece sem edição."
+          }
+        ],
+        "unaffected_acceptance_criteria": [
+          {
+            "id": "dev-1:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-1:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-2:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-3:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-4:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "dev-5:criterion-6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "affected_coverage": [
+          {
+            "id": "CA2",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          },
+          {
+            "id": "CA6",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          },
+          {
+            "id": "R4",
+            "reason": "Nova obrigação visual da navegação/estrutura compartilhada; a diferença será coberta pela DEV complementar e QA integrada."
+          }
+        ],
+        "unaffected_coverage": [
+          {
+            "id": "CA1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA4",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA7",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA8",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CA9",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R1",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R2",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R3",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R5",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R6",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "R7",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Acesso",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Conta",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Publica",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "V-Seguranca",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "affected_dependencies": [
+          {
+            "id": "blocks:dev-2:qa",
+            "reason": "O aceite da estrutura que bloqueia QA recebe um complemento: preservar a relação #840 da DEV encerrada com QA e acrescentar uma nova relação da DEV complementar para a mesma QA."
+          }
+        ],
+        "unaffected_dependencies": [
+          {
+            "id": "blocks:dev-1:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-3:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-4:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "blocks:dev-5:qa",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ],
+        "affected_test_conditions": [
+          {
+            "id": "CT-003",
+            "reason": "O esperado de navegação superior e a fonte de comparação da matriz compartilhada passam ao novo design; preservar o ID e atualizar somente essa diferença."
+          },
+          {
+            "id": "CT-023",
+            "reason": "O esperado de navegação superior e a fonte de comparação da matriz compartilhada passam ao novo design; preservar o ID e atualizar somente essa diferença."
+          }
+        ],
+        "unaffected_test_conditions": [
+          {
+            "id": "CT-001",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-002",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-004",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-005",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-006",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-007",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-008",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-009",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-010",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-011",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-012",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-013",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-014",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-015",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-016",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-017",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-018",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-019",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-020",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-021",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-022",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          },
+          {
+            "id": "CT-024",
+            "reason": "Permanece válido e preservado: a mudança da estrutura compartilhada não altera este resultado, regra, jornada, relação ou obrigação anterior."
+          }
+        ]
+      },
+      "preservation": {
+        "published_children": [
+          {
+            "key": "dev-1",
+            "source": "create",
+            "remote_id": 1016112
+          },
+          {
+            "key": "dev-2",
+            "source": "create",
+            "remote_id": 1016113
+          },
+          {
+            "key": "dev-3",
+            "source": "create",
+            "remote_id": 1016114
+          },
+          {
+            "key": "dev-4",
+            "source": "create",
+            "remote_id": 1016115
+          },
+          {
+            "key": "dev-5",
+            "source": "create",
+            "remote_id": 1016116
+          },
+          {
+            "key": "qa",
+            "source": "create",
+            "remote_id": 1016117
+          }
+        ],
+        "existing_children_review_sha256": null,
+        "study_evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "divergence_state": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-divergence.json",
+          "sha256": "40c4ac5bce40dd85653711f3b983f9b107f74658a32b997e5632c2b052ccc84b"
+        },
+        "dependency_state": null
+      },
+      "conditions": {
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "A entrega abrange a página inicial atual, cadastro, login, recuperação e redefinição de senha, confirmação de senha, verificação de e-mail, desafio de dois fatores, dashboard atual, perfil, alteração de senha, aparência, configuração de dois fatores e passkeys, incluindo seus estados e componentes existentes. Essa lista é inventário do código, não comprovação de aceite funcional anterior."
+          },
+          {
+            "id": "R2",
+            "summary": "Adequar aparência preserva os campos, validações, mensagens funcionais, operações, permissões, destinos e preferências existentes. Não acrescentar regras de autenticação ou financeiras nesta entrega."
+          },
+          {
+            "id": "R3",
+            "summary": "A referência clara usa fundo #F5F7F8, superfícies brancas, texto #172622, texto secundário #52615C, verde principal #145C46, verde positivo #146345, vermelho negativo #A12B36, bordas #D6DFDB e destaque suave #E4F0E9. Preservar a hierarquia do design: títulos de destaque em Georgia e corpo em system-ui; controles com raio de 8px e painéis com 16px; espaçamento, bordas, sombras, estados e proporções conforme o pacote."
+          },
+          {
+            "id": "R4",
+            "summary": "Aplicar a revisão design-input-002 à estrutura autenticada compartilhada: até 767px, marca no topo e navegação principal fixa no rodapé, de largura total, com base de 56px acrescida da área segura inferior e ícones de 24px, alvos de pelo menos 44px, sem legendas visíveis e com nomes acessíveis; de 768 a 1024px inclusive, navegação lateral compacta de 72px acrescida da área segura lateral, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem barra inferior; a partir de 1025px, navegação lateral desktop, preservando o recolhimento e os destinos atuais. A partir de 768px, apresentar o conteúdo em superfície com fundo de trabalho, contorno de 1px, raio de 16px e margem de 8px, com a navegação integrada ao entorno e cabeçalho transparente conforme a referência. Reservar espaço para navegação e áreas seguras, sem encobrir conteúdo, foco, mensagens ou controles. Preservar acesso ao menu da conta, configurações, links e saída em todas as larguras, adaptando sua apresentação quando o protótipo esconder o rodapé lateral. Não transportar destinos financeiros futuros para as telas atuais."
+          },
+          {
+            "id": "R5",
+            "summary": "Preservar claro, escuro e acompanhar o sistema. A variante escura é uma adaptação aprovada da identidade fornecida, mantendo hierarquia visual, distinção entre superfícies, leitura dos textos e identificação dos estados. Não reutilizar o tema escuro neutro do starter sem adequação à identidade FinAI."
+          },
+          {
+            "id": "R6",
+            "summary": "A marca FinAI substitui a identidade visual genérica do starter nas superfícies atuais. Não apresentar rótulos do protótipo que afirmem armazenamento apenas no navegador ou assistente simulado; persistência e IA real serão tratadas pelas Features responsáveis."
+          },
+          {
+            "id": "R7",
+            "summary": "A base visual é aceita sobre as telas atuais. Não criar páginas de Transações ou Assistente, formulários financeiros, números demonstrativos ou operações simuladas nesta Feature. As novas telas e suas composições específicas seguem a base nas próximas Features."
+          },
+          {
+            "id": "CA1",
+            "summary": "Ao visitar cada superfície de R1 que esteja disponível para o usuário, reconhecer a identidade FinAI na marca, tipografia, paleta e componentes; nas superfícies sem desenho próprio, preservar campos e finalidade com a mesma linguagem visual."
+          },
+          {
+            "id": "CA2",
+            "summary": "No tema claro, comparar as estruturas e os componentes aplicáveis com a referência design-input-001 e as alterações compartilhadas de design-input-002, conforme R4 e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter."
+          },
+          {
+            "id": "CA3",
+            "summary": "Selecionar claro, escuro e acompanhar o sistema; cada opção continua disponível e aplica a aparência correspondente. Ao retornar à aplicação, manter a preferência conforme o comportamento existente."
+          },
+          {
+            "id": "CA4",
+            "summary": "Com acompanhar o sistema selecionado, alterar a preferência do dispositivo; a aparência acompanha a mudança. Com claro ou escuro explicitamente selecionado, a preferência do dispositivo não substitui a escolha."
+          },
+          {
+            "id": "CA5",
+            "summary": "No tema escuro, abrir as mesmas superfícies e estados do tema claro; manter conteúdo e ações equivalentes, identidade FinAI, textos legíveis e distinção visual entre superfícies, bordas, foco, erros e demais estados existentes."
+          },
+          {
+            "id": "CA6",
+            "summary": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais. Conferir também as transições 767/768px e 1024/1025px, incluindo redimensionamento após recolher a navegação desktop; cada largura aplica o modo de R4 e mantém os destinos e ações atuais disponíveis."
+          },
+          {
+            "id": "CA7",
+            "summary": "Navegar e utilizar formulários, menus e diálogos atuais com mouse e teclado; preservar rótulos, foco visível e estados aplicáveis de hover, ativo, desabilitado e carregamento demonstrados no design ou existentes na aplicação."
+          },
+          {
+            "id": "CA8",
+            "summary": "Executar ações atuais com dados válidos e inválidos, onde aplicável; campos, validações, mensagens, cancelamentos, confirmações e resultados funcionais permanecem equivalentes após a adequação visual. O mesmo vale para restrições de acesso de visitantes e usuários autenticados."
+          },
+          {
+            "id": "CA9",
+            "summary": "Ao navegar pela entrega, não encontrar novas páginas financeiras, dados fictícios, operações simuladas, rótulos de armazenamento apenas local ou assistente simulado apresentados como funcionalidades prontas. O dashboard atual permanece sem antecipar as capacidades da Feature Dashboard financeiro."
+          },
+          {
+            "id": "CA10",
+            "summary": "Em largura de até 767px, reconhecer a marca no topo e a navegação principal fixa no rodapé em largura total, com base de 56px mais a área segura, ícones de 24px, alvos de pelo menos 44px, destino ativo e nomes acessíveis mesmo sem legenda visível. Percorrer até o fim da página, focar controles e abrir menus/diálogos: a navegação não encobre ações, mensagens ou foco, e o acesso à conta, configurações, links e saída permanece disponível."
+          },
+          {
+            "id": "CA11",
+            "summary": "De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis."
+          },
+          {
+            "id": "V-Publica",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição da página inicial atual com identidade FinAI, preservando conteúdo funcional e destinos."
+          },
+          {
+            "id": "V-Acesso",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de cadastro, login, recuperação/redefinição e verificação de e-mail."
+          },
+          {
+            "id": "V-Conta",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de perfil, senha, aparência e exclusão de conta."
+          },
+          {
+            "id": "V-Seguranca",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de 2FA, confirmação de senha e passkeys."
+          }
+        ],
+        "additions": [
+          {
+            "id": "CT-025",
+            "reason": "Transições exatas 767/768px e 1024/1025px, inclusive após recolher a navegação desktop; CA6, CA10 e CA11."
+          },
+          {
+            "id": "CT-026",
+            "reason": "Barra inferior e áreas seguras sem ocultar conteúdo, foco, controles ou conta/configurações/saída; CA10."
+          },
+          {
+            "id": "CT-027",
+            "reason": "Lateral compacta tablet e superfície contínua desktop/tablet com contorno, raio, margens e cabeçalho; CA11."
+          }
+        ],
+        "baseline": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\9ef85f720a776124491346849992d248a38cbe53048fd885a949441271515be9.json",
+          "sha256": "9ef85f720a776124491346849992d248a38cbe53048fd885a949441271515be9"
+        }
+      },
+      "review_sha256": "c45d623d1d604562cbf782d40089d17185ad695169c9da7171e3ddeca4a2f63c"
+    },
+    {
+      "number": 4,
+      "review_id": "07befc4f02fc3d7310e6414f6caa69249e1b47884983e17b33d1174e43f7b32d",
+      "recorded_by": "Mário Tinelli",
+      "recorded_at": "2026-11-12T14:29:26.3113308Z",
+      "reason": "Tradução e URLs aprovadas; duas DEV e QA com2h, mantendo histórico, /login e compatibilidade.",
+      "baseline": {
+        "slices_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-state.json",
+        "slices_state_sha256": "cae0ec3b8c8b382d9931f3e18eb4dc08d8a9e32b0f10d9e5516faaefe36ff0ba",
+        "slicing_revision": 2,
+        "slicing_approval_sha256": "a55ebd7ccb479c4dcd966bb25eef19ea28fd946d7377a5d757460a8b60251aa9",
+        "publication_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-publication.json",
+        "publication_state_sha256": "87604081fb91e8dfe88bee2efb7df600a91d60c2fd1619343caca77622f04d5c",
+        "publication_revision": 1,
+        "publication_approval_sha256": "f2d3976260e2610dac0185c62d0654ae32b88084b611d2e842a0cc10098599bc",
+        "requirement_sha256": "e391a2f8233ae6ed90d8ef2258020d3ac9559d18e92e15defa82fdafe8a0a183",
+        "semantic_model_sha256": "0096906f0f443e604d55cdf8cc8827f110982a36157c278c40ce1a0d1c8730f8",
+        "application": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\35975a6921f2777f538760b28c76d8b4bec7d0b0f60d633d5b9e2d137039cc83.json",
+          "sha256": "35975a6921f2777f538760b28c76d8b4bec7d0b0f60d633d5b9e2d137039cc83"
+        }
+      },
+      "current_requirement": {
+        "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\fbc39ec093a7b15a06640cf4e0aff731dfcfb32ff235c196c022b7c8893fcaff.md",
+        "sha256": "fbc39ec093a7b15a06640cf4e0aff731dfcfb32ff235c196c022b7c8893fcaff",
+        "state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\2b7a4a12c327dcef3d2d22e539b252263440f22958418920dd838800d4892227.json",
+        "state_sha256": "2b7a4a12c327dcef3d2d22e539b252263440f22958418920dd838800d4892227",
+        "source_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\feature.md",
+        "source_state_path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\feature-state.json",
+        "approval_sha256": "fcfa1d66a1cf31b6c794ddd68a9b39954216b7107b4b986cad561ea7bf870c78"
+      },
+      "classification": "functional",
+      "summary": "Tradução integral da interface e URLs em duas DEV de2h, com /login preservada e endereços anteriores funcionais. Preservar as sete filhas atuais e seus critérios; QA existente passa a2h e recebe oito condições adicionais, mantendo as27 vigentes. Novas DEV Sequencing7/8; QA9; demais posições8–23 avançam para10–25. Revisão anterior de layout permanece histórica e concluída.",
+      "changes": [
+        {
+          "id": "translation-R2",
+          "classification": "functional",
+          "before": "Adequar aparência preserva os campos, validações, mensagens funcionais, operações, permissões, destinos e preferências existentes. Não acrescentar regras de autenticação ou financeiras nesta entrega.",
+          "after": "Adequar aparência e idioma preserva campos, validações, significado das mensagens funcionais, operações, permissões, destinos e preferências existentes. Traduzir a apresentação dos textos para português brasileiro sem alterar seus efeitos. Os novos endereços seguem R9 e os antigos continuam funcionais conforme R10. Não acrescentar regras de autenticação ou financeiras nesta entrega.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-R8",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "Apresentar em português brasileiro todos os textos controlados pela aplicação nas superfícies atuais de R1: página pública, navegação, títulos e breadcrumbs, formulários, botões, placeholders, avisos, feedback, estados vazios/carregamento/erro, validações, diálogos, textos de ajuda, tooltips e nomes/instruções acessíveis. Abranger os e-mails e notificações já enviados pela aplicação, inclusive recuperação e verificação de e-mail; preservar as mensagens que já estejam corretamente traduzidas. O idioma padrão e o fallback não devem reintroduzir inglês em conteúdo próprio exibido ao usuário.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-R9",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "Usar caminhos em português, sem acentos e conforme o mapa de URLs desta regra, para as jornadas e operações próprias existentes, incluindo links, formulários, notificações, redirecionamentos e retomada após autenticação. /login permanece /login por decisão expressa do usuário; a página inicial permanece /. Preservar métodos HTTP, parâmetros, valores, tokens, assinaturas, expiração, restrições de acesso e mecanismos de segurança. Identificadores internos de rotas, classes e campos não precisam ser traduzidos. Endpoints padronizados de protocolo e infraestrutura, como /.well-known/passkey-endpoints, não recebem tradução que viole seu contrato.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-R10",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "Todos os endereços próprios anteriores continuam funcionando para seus mesmos destinos e operações, inclusive favoritos, formulários abertos e links de recuperação/verificação já enviados por e-mail. As navegações e comunicações novas passam a usar os caminhos principais em português, com /login preservado. Links antigos válidos mantêm o efeito e o prazo originais; links inválidos, expirados ou adulterados continuam recusados. Compatibilidade não reduz proteção nem repete operações.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-R11",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "A tradução preserva a identidade, temas claro/escuro/sistema, composição responsiva e finalidade de cada tela. Não traduzir conteúdo informado pelos usuários, nomes próprios, marcas, endereços de terceiros nem valores técnicos que precisem permanecer exatos. Textos nativos do navegador, sistema operacional ou autenticador seguem o idioma desses ambientes; os textos controlados pelo FinAI permanecem em português. Esta revisão não cria seletor de idioma ou novas telas financeiras.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-CA12",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "Percorrer todas as telas atuais de R1, menus e estados existentes, como visitante e usuário autenticado: títulos, textos, campos, ações, mensagens e conteúdo acessível próprio estão em português brasileiro, sem rótulos ingleses remanescentes da aplicação. Dados informados pelo usuário e marcas mantêm seu conteúdo original.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-CA13",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "Executar ações atuais válidas e inválidas, incluindo acesso, recuperação/verificação de e-mail, perfil, senha, exclusão, 2FA e chaves de acesso: feedback, validação e e-mails controlados pela aplicação estão em português, com os mesmos efeitos e restrições. Inglês não reaparece no conteúdo próprio por fallback.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-CA14",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "Abrir e utilizar cada caminho próprio do mapa aprovado, por links, formulários e comunicação nova; as URLs principais estão em português. /login continua atendendo acesso e envio do login no mesmo endereço, e / permanece como início. Preservar destinos, parâmetros e métodos, inclusive nas operações que não abrem uma página própria.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-CA15",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "Acessar todos os caminhos anteriores, incluindo favoritos, envio de formulários antigos e e-mails de recuperação/verificação gerados antes da mudança: os acessos válidos continuam realizando somente as operações esperadas. Testar token, assinatura ou prazo inválidos e acesso sem permissão: manter a recusa original com mensagens próprias em português, sem ampliar validade, contornar proteção ou duplicar efeitos.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        },
+        {
+          "id": "translation-CA16",
+          "classification": "functional",
+          "before": "Obrigação não existente na versão anterior aprovada.",
+          "after": "Nos temas e larguras já exigidos por CA3–CA7, os textos traduzidos e nomes acessíveis permanecem legíveis e utilizáveis, sem sobreposição, corte de ações ou rolagem horizontal da página. Navegação, retornos após autenticação e acesso a configurações e saída continuam disponíveis, consumindo a composição já aprovada.",
+          "rationale": "Revisão de idioma e URLs expressamente aprovada por Mário Tinelli, incluindo manutenção de /login, todos os caminhos anteriores e configurações."
+        }
+      ],
+      "impact": {
+        "affected_tasks": [
+          {
+            "id": "dev-1",
+            "reason": "Idioma e caminhos tornam-se obrigações adicionais; preservar as DEV históricas, representar o complemento por duas novas DEV e atualizar a mesma QA."
+          },
+          {
+            "id": "dev-2",
+            "reason": "Idioma e caminhos tornam-se obrigações adicionais; preservar as DEV históricas, representar o complemento por duas novas DEV e atualizar a mesma QA."
+          },
+          {
+            "id": "dev-3",
+            "reason": "Idioma e caminhos tornam-se obrigações adicionais; preservar as DEV históricas, representar o complemento por duas novas DEV e atualizar a mesma QA."
+          },
+          {
+            "id": "dev-4",
+            "reason": "Idioma e caminhos tornam-se obrigações adicionais; preservar as DEV históricas, representar o complemento por duas novas DEV e atualizar a mesma QA."
+          },
+          {
+            "id": "dev-5",
+            "reason": "Idioma e caminhos tornam-se obrigações adicionais; preservar as DEV históricas, representar o complemento por duas novas DEV e atualizar a mesma QA."
+          },
+          {
+            "id": "qa",
+            "reason": "Idioma e caminhos tornam-se obrigações adicionais; preservar as DEV históricas, representar o complemento por duas novas DEV e atualizar a mesma QA."
+          }
+        ],
+        "unaffected_tasks": [
+          {
+            "id": "dev-layout-revision-001",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          }
+        ],
+        "affected_acceptance_criteria": [],
+        "unaffected_acceptance_criteria": [
+          {
+            "id": "dev-1:criterion-1",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-1:criterion-2",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-1:criterion-3",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-1:criterion-4",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-1:criterion-5",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-1:criterion-6",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-2:criterion-1",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-2:criterion-2",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-2:criterion-3",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-2:criterion-4",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-2:criterion-5",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-3:criterion-1",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-3:criterion-2",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-3:criterion-3",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-3:criterion-4",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-3:criterion-5",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-3:criterion-6",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-4:criterion-1",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-4:criterion-2",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-4:criterion-3",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-4:criterion-4",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-4:criterion-5",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-4:criterion-6",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-5:criterion-1",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-5:criterion-2",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-5:criterion-3",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-5:criterion-4",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-5:criterion-5",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "dev-5:criterion-6",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          }
+        ],
+        "affected_coverage": [
+          {
+            "id": "R2",
+            "reason": "R2 passa a preservar o significado ao traduzir mensagens e trocar URLs com compatibilidade."
+          }
+        ],
+        "unaffected_coverage": [
+          {
+            "id": "CA1",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CA2",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CA3",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CA4",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CA5",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CA6",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CA7",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CA8",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CA9",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "R1",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "R3",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "R4",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "R5",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "R6",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "R7",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "V-Acesso",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "V-Conta",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "V-Publica",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "V-Seguranca",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          }
+        ],
+        "affected_dependencies": [
+          {
+            "id": "blocks:dev-3:qa",
+            "reason": "Preservar este bloqueio histórico e acrescentar o bloqueio das novas entregas de tradução da jornada à mesma QA."
+          },
+          {
+            "id": "blocks:dev-4:qa",
+            "reason": "Preservar este bloqueio histórico e acrescentar o bloqueio das novas entregas de tradução da jornada à mesma QA."
+          },
+          {
+            "id": "blocks:dev-5:qa",
+            "reason": "Preservar este bloqueio histórico e acrescentar o bloqueio das novas entregas de tradução da jornada à mesma QA."
+          }
+        ],
+        "unaffected_dependencies": [
+          {
+            "id": "blocks:dev-1:qa",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "blocks:dev-2:qa",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "relation-layout-qa-001",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          }
+        ],
+        "affected_test_conditions": [],
+        "unaffected_test_conditions": [
+          {
+            "id": "CT-001",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-002",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-003",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-004",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-005",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-006",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-007",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-008",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-009",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-010",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-011",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-012",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-013",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-014",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-015",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-016",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-017",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-018",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-019",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-020",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-021",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-022",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-023",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-024",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-025",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-026",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          },
+          {
+            "id": "CT-027",
+            "reason": "Permanece válido e preservado; a nova tradução acrescenta obrigações próprias, mantendo os resultados, dados, permissões e critérios já aprovados. O layout revisado já foi aplicado no ciclo anterior."
+          }
+        ]
+      },
+      "preservation": {
+        "published_children": [
+          {
+            "key": "dev-1",
+            "source": "create",
+            "remote_id": 1016112
+          },
+          {
+            "key": "dev-2",
+            "source": "create",
+            "remote_id": 1016113
+          },
+          {
+            "key": "dev-3",
+            "source": "create",
+            "remote_id": 1016114
+          },
+          {
+            "key": "dev-4",
+            "source": "create",
+            "remote_id": 1016115
+          },
+          {
+            "key": "dev-5",
+            "source": "create",
+            "remote_id": 1016116
+          },
+          {
+            "key": "qa",
+            "source": "create",
+            "remote_id": 1016117
+          },
+          {
+            "key": "dev-layout-revision-001",
+            "source": "adopted",
+            "remote_id": 1016204
+          }
+        ],
+        "existing_children_review_sha256": null,
+        "study_evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "divergence_state": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\slices-divergence.json",
+          "sha256": "40c4ac5bce40dd85653711f3b983f9b107f74658a32b997e5632c2b052ccc84b"
+        },
+        "dependency_state": null
+      },
+      "conditions": {
+        "requirements": [
+          {
+            "id": "R1",
+            "summary": "A entrega abrange a página inicial atual, cadastro, login, recuperação e redefinição de senha, confirmação de senha, verificação de e-mail, desafio de dois fatores, dashboard atual, perfil, alteração de senha, aparência, configuração de dois fatores e passkeys, incluindo seus estados e componentes existentes. Essa lista é inventário do código, não comprovação de aceite funcional anterior."
+          },
+          {
+            "id": "R2",
+            "summary": "Adequar aparência e idioma preserva campos, validações, significado das mensagens funcionais, operações, permissões, destinos e preferências existentes. Traduzir a apresentação dos textos para português brasileiro sem alterar seus efeitos. Os novos endereços seguem R9 e os antigos continuam funcionais conforme R10. Não acrescentar regras de autenticação ou financeiras nesta entrega."
+          },
+          {
+            "id": "R3",
+            "summary": "A referência clara usa fundo #F5F7F8, superfícies brancas, texto #172622, texto secundário #52615C, verde principal #145C46, verde positivo #146345, vermelho negativo #A12B36, bordas #D6DFDB e destaque suave #E4F0E9. Preservar a hierarquia do design: títulos de destaque em Georgia e corpo em system-ui; controles com raio de 8px e painéis com 16px; espaçamento, bordas, sombras, estados e proporções conforme o pacote."
+          },
+          {
+            "id": "R4",
+            "summary": "Aplicar a revisão design-input-002 à estrutura autenticada compartilhada: até 767px, marca no topo e navegação principal fixa no rodapé, de largura total, com base de 56px acrescida da área segura inferior e ícones de 24px, alvos de pelo menos 44px, sem legendas visíveis e com nomes acessíveis; de 768 a 1024px inclusive, navegação lateral compacta de 72px acrescida da área segura lateral, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem barra inferior; a partir de 1025px, navegação lateral desktop, preservando o recolhimento e os destinos atuais. A partir de 768px, apresentar o conteúdo em superfície com fundo de trabalho, contorno de 1px, raio de 16px e margem de 8px, com a navegação integrada ao entorno e cabeçalho transparente conforme a referência. Reservar espaço para navegação e áreas seguras, sem encobrir conteúdo, foco, mensagens ou controles. Preservar acesso ao menu da conta, configurações, links e saída em todas as larguras, adaptando sua apresentação quando o protótipo esconder o rodapé lateral. Não transportar destinos financeiros futuros para as telas atuais."
+          },
+          {
+            "id": "R5",
+            "summary": "Preservar claro, escuro e acompanhar o sistema. A variante escura é uma adaptação aprovada da identidade fornecida, mantendo hierarquia visual, distinção entre superfícies, leitura dos textos e identificação dos estados. Não reutilizar o tema escuro neutro do starter sem adequação à identidade FinAI."
+          },
+          {
+            "id": "R6",
+            "summary": "A marca FinAI substitui a identidade visual genérica do starter nas superfícies atuais. Não apresentar rótulos do protótipo que afirmem armazenamento apenas no navegador ou assistente simulado; persistência e IA real serão tratadas pelas Features responsáveis."
+          },
+          {
+            "id": "R7",
+            "summary": "A base visual é aceita sobre as telas atuais. Não criar páginas de Transações ou Assistente, formulários financeiros, números demonstrativos ou operações simuladas nesta Feature. As novas telas e suas composições específicas seguem a base nas próximas Features."
+          },
+          {
+            "id": "R8",
+            "summary": "Apresentar em português brasileiro todos os textos controlados pela aplicação nas superfícies atuais de R1: página pública, navegação, títulos e breadcrumbs, formulários, botões, placeholders, avisos, feedback, estados vazios/carregamento/erro, validações, diálogos, textos de ajuda, tooltips e nomes/instruções acessíveis. Abranger os e-mails e notificações já enviados pela aplicação, inclusive recuperação e verificação de e-mail; preservar as mensagens que já estejam corretamente traduzidas. O idioma padrão e o fallback não devem reintroduzir inglês em conteúdo próprio exibido ao usuário."
+          },
+          {
+            "id": "R9",
+            "summary": "Usar caminhos em português, sem acentos e conforme o mapa de URLs desta regra, para as jornadas e operações próprias existentes, incluindo links, formulários, notificações, redirecionamentos e retomada após autenticação. /login permanece /login por decisão expressa do usuário; a página inicial permanece /. Preservar métodos HTTP, parâmetros, valores, tokens, assinaturas, expiração, restrições de acesso e mecanismos de segurança. Identificadores internos de rotas, classes e campos não precisam ser traduzidos. Endpoints padronizados de protocolo e infraestrutura, como /.well-known/passkey-endpoints, não recebem tradução que viole seu contrato."
+          },
+          {
+            "id": "R10",
+            "summary": "Todos os endereços próprios anteriores continuam funcionando para seus mesmos destinos e operações, inclusive favoritos, formulários abertos e links de recuperação/verificação já enviados por e-mail. As navegações e comunicações novas passam a usar os caminhos principais em português, com /login preservado. Links antigos válidos mantêm o efeito e o prazo originais; links inválidos, expirados ou adulterados continuam recusados. Compatibilidade não reduz proteção nem repete operações."
+          },
+          {
+            "id": "R11",
+            "summary": "A tradução preserva a identidade, temas claro/escuro/sistema, composição responsiva e finalidade de cada tela. Não traduzir conteúdo informado pelos usuários, nomes próprios, marcas, endereços de terceiros nem valores técnicos que precisem permanecer exatos. Textos nativos do navegador, sistema operacional ou autenticador seguem o idioma desses ambientes; os textos controlados pelo FinAI permanecem em português. Esta revisão não cria seletor de idioma ou novas telas financeiras."
+          },
+          {
+            "id": "CA1",
+            "summary": "Ao visitar cada superfície de R1 que esteja disponível para o usuário, reconhecer a identidade FinAI na marca, tipografia, paleta e componentes; nas superfícies sem desenho próprio, preservar campos e finalidade com a mesma linguagem visual."
+          },
+          {
+            "id": "CA2",
+            "summary": "No tema claro, comparar as estruturas e os componentes aplicáveis com a referência design-input-001 e as alterações compartilhadas de design-input-002, conforme R4 e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter."
+          },
+          {
+            "id": "CA3",
+            "summary": "Selecionar claro, escuro e acompanhar o sistema; cada opção continua disponível e aplica a aparência correspondente. Ao retornar à aplicação, manter a preferência conforme o comportamento existente."
+          },
+          {
+            "id": "CA4",
+            "summary": "Com acompanhar o sistema selecionado, alterar a preferência do dispositivo; a aparência acompanha a mudança. Com claro ou escuro explicitamente selecionado, a preferência do dispositivo não substitui a escolha."
+          },
+          {
+            "id": "CA5",
+            "summary": "No tema escuro, abrir as mesmas superfícies e estados do tema claro; manter conteúdo e ações equivalentes, identidade FinAI, textos legíveis e distinção visual entre superfícies, bordas, foco, erros e demais estados existentes."
+          },
+          {
+            "id": "CA6",
+            "summary": "Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais. Conferir também as transições 767/768px e 1024/1025px, incluindo redimensionamento após recolher a navegação desktop; cada largura aplica o modo de R4 e mantém os destinos e ações atuais disponíveis."
+          },
+          {
+            "id": "CA7",
+            "summary": "Navegar e utilizar formulários, menus e diálogos atuais com mouse e teclado; preservar rótulos, foco visível e estados aplicáveis de hover, ativo, desabilitado e carregamento demonstrados no design ou existentes na aplicação."
+          },
+          {
+            "id": "CA8",
+            "summary": "Executar ações atuais com dados válidos e inválidos, onde aplicável; campos, validações, mensagens, cancelamentos, confirmações e resultados funcionais permanecem equivalentes após a adequação visual. O mesmo vale para restrições de acesso de visitantes e usuários autenticados."
+          },
+          {
+            "id": "CA9",
+            "summary": "Ao navegar pela entrega, não encontrar novas páginas financeiras, dados fictícios, operações simuladas, rótulos de armazenamento apenas local ou assistente simulado apresentados como funcionalidades prontas. O dashboard atual permanece sem antecipar as capacidades da Feature Dashboard financeiro."
+          },
+          {
+            "id": "CA10",
+            "summary": "Em largura de até 767px, reconhecer a marca no topo e a navegação principal fixa no rodapé em largura total, com base de 56px mais a área segura, ícones de 24px, alvos de pelo menos 44px, destino ativo e nomes acessíveis mesmo sem legenda visível. Percorrer até o fim da página, focar controles e abrir menus/diálogos: a navegação não encobre ações, mensagens ou foco, e o acesso à conta, configurações, links e saída permanece disponível."
+          },
+          {
+            "id": "CA11",
+            "summary": "De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis."
+          },
+          {
+            "id": "CA12",
+            "summary": "Percorrer todas as telas atuais de R1, menus e estados existentes, como visitante e usuário autenticado: títulos, textos, campos, ações, mensagens e conteúdo acessível próprio estão em português brasileiro, sem rótulos ingleses remanescentes da aplicação. Dados informados pelo usuário e marcas mantêm seu conteúdo original."
+          },
+          {
+            "id": "CA13",
+            "summary": "Executar ações atuais válidas e inválidas, incluindo acesso, recuperação/verificação de e-mail, perfil, senha, exclusão, 2FA e chaves de acesso: feedback, validação e e-mails controlados pela aplicação estão em português, com os mesmos efeitos e restrições. Inglês não reaparece no conteúdo próprio por fallback."
+          },
+          {
+            "id": "CA14",
+            "summary": "Abrir e utilizar cada caminho próprio do mapa aprovado, por links, formulários e comunicação nova; as URLs principais estão em português. /login continua atendendo acesso e envio do login no mesmo endereço, e / permanece como início. Preservar destinos, parâmetros e métodos, inclusive nas operações que não abrem uma página própria."
+          },
+          {
+            "id": "CA15",
+            "summary": "Acessar todos os caminhos anteriores, incluindo favoritos, envio de formulários antigos e e-mails de recuperação/verificação gerados antes da mudança: os acessos válidos continuam realizando somente as operações esperadas. Testar token, assinatura ou prazo inválidos e acesso sem permissão: manter a recusa original com mensagens próprias em português, sem ampliar validade, contornar proteção ou duplicar efeitos."
+          },
+          {
+            "id": "CA16",
+            "summary": "Nos temas e larguras já exigidos por CA3–CA7, os textos traduzidos e nomes acessíveis permanecem legíveis e utilizáveis, sem sobreposição, corte de ações ou rolagem horizontal da página. Navegação, retornos após autenticação e acesso a configurações e saída continuam disponíveis, consumindo a composição já aprovada."
+          },
+          {
+            "id": "V-Publica",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição da página inicial atual com identidade FinAI, preservando conteúdo funcional e destinos."
+          },
+          {
+            "id": "V-Acesso",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de cadastro, login, recuperação/redefinição e verificação de e-mail."
+          },
+          {
+            "id": "V-Conta",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de perfil, senha, aparência e exclusão de conta."
+          },
+          {
+            "id": "V-Seguranca",
+            "summary": "Desdobramento de R1/R2/CA1/CA6/CA8: composição e estados de 2FA, confirmação de senha e passkeys."
+          }
+        ],
+        "additions": [
+          {
+            "id": "CT-028",
+            "reason": "Textos próprios e acessíveis das jornadas iniciais em pt-BR."
+          },
+          {
+            "id": "CT-029",
+            "reason": "Configurações, conta e segurança integralmente em pt-BR."
+          },
+          {
+            "id": "CT-030",
+            "reason": "Validações, feedback e e-mails controlados pela aplicação em pt-BR."
+          },
+          {
+            "id": "CT-031",
+            "reason": "Mapa completo de caminhos principais em português com /login preservado."
+          },
+          {
+            "id": "CT-032",
+            "reason": "Compatibilidade de navegação pelos endereços anteriores."
+          },
+          {
+            "id": "CT-033",
+            "reason": "Links de e-mails antigos, com assinatura/token/prazo válidos e inválidos."
+          },
+          {
+            "id": "CT-034",
+            "reason": "Métodos e efeitos preservados nos endpoints antigos de escrita."
+          },
+          {
+            "id": "CT-035",
+            "reason": "Dados do usuário, temas, acessibilidade e encaixe responsivo preservados."
+          }
+        ],
+        "baseline": {
+          "path": "C:\\Users\\maari\\Herd\\github\\fin-ai\\docs\\harness\\features\\1016101-adequacao-visual-do-finai\\.flow\\review-evidence\\a6cf4d40810e54997f1ab78d1ccda4743bdf26557fa430055dca70ed8cc19b86.json",
+          "sha256": "a6cf4d40810e54997f1ab78d1ccda4743bdf26557fa430055dca70ed8cc19b86"
+        }
+      },
+      "review_sha256": "1223d205919faaa1c0b7b47343616f4b700c4b6d440e8b1c01926f80243f3e01"
+    }
+  ],
+  "schema_version": 1,
+  "status": "authorized"
+}

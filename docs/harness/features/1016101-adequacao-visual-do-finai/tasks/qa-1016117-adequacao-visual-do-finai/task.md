@@ -4,8 +4,8 @@
 - Tipo: `QA`
 - Tracker: Deliverable (`5`)
 - Item pai: `#1016101`
-- Estimativa: `2.25h`
-- Sequencing: `7`
+- Estimativa: `2h`
+- Sequencing: `9`
 
 ## Descrição
 
@@ -77,3 +77,5 @@ Item pai Redmine #1016101; regras/critérios R1, R2, R3, R4, R5, R6, R7, CA1, CA
 - `#1016117` blocks `#1016123`
 - `#1016117` blocks `#1016129`
 - `#1016204` blocks `#1016117`
+- `#1016231` blocks `#1016117`
+- `#1016232` blocks `#1016117`
