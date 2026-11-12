@@ -33,6 +33,8 @@ export function NavFooter({
                                     href={toUrl(item.href)}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={item.title}
+                                    title={item.title}
                                 >
                                     {item.icon && (
                                         <item.icon className="h-5 w-5" />

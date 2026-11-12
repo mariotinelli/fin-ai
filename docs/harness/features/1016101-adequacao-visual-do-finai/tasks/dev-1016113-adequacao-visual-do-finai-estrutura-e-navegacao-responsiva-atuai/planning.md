@@ -53,24 +53,36 @@ As capturas abaixo usam factories/RefreshDatabase e sessão isolada no ambiente 
 
 ## Baseline
 
-Comando completo equivalente ao `composer test`, expandido para PowerShell no Windows. Seleção de PHP 8.5 e atribuição de XDEBUG_MODE são processuais, sem alterar configuração global. Scripts internos POSIX de frontend são interpretados pelo Bun; a atribuição POSIX do script Composer de testes é substituída pelo equivalente abaixo. Nenhum verificador corrige fontes:
+Compatibilidade Windows: a invocação do PHPStan explicita o subcomando `analyse`. Na versão instalada 2.3.5, a chamada sem subcomando e com `--configuration` separado de um caminho absoluto Windows reproduz `There are no commands defined in the "C" namespace.`. Com `analyse`, o mesmo caminho é reconhecido como configuração. Regras, caches, ordem dos verificadores e modo somente conferência são preservados; esta correção do comando não comprova aprovação da suíte nem altera as verificações no host/renderizada.
+
+Comando completo equivalente ao `composer test`, expandido para PowerShell no Windows e precedido por build para preparar assets e módulos Wayfinder antes do lint, tipagem e testes de navegador. Cada comando do executor começa sem as saídas geradas anteriores; não depender do build de outro estágio. Seleção de PHP 8.5 e atribuição de XDEBUG_MODE são processuais, sem alterar configuração global. Scripts internos POSIX de frontend são interpretados pelo Bun; a atribuição POSIX do script Composer de testes é substituída pelo equivalente abaixo. Nenhum verificador corrige fontes:
 
 ```powershell
 $env:Path = "$env:USERPROFILE\.config\herd\bin\php85;$env:Path"
 $env:XDEBUG_MODE = 'coverage'
-& php vendor/bin/pint --parallel --test
+& bun run build
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& php vendor/bin/rector --dry-run
+$utf8 = [System.Text.UTF8Encoding]::new($false)
+$rectorConfiguration = Join-Path $env:RALPH_ARTIFACTS_DIR 'rector.php'
+$rectorSource = (Join-Path (Get-Location).Path 'rector.php').Replace('\', '/').Replace("'", "\'")
+[System.IO.File]::WriteAllText($rectorConfiguration, "<?php return (require '$rectorSource')->withCache(cacheDirectory: getenv('RALPH_ARTIFACTS_DIR').'/rector-cache');", $utf8)
+$phpstanConfiguration = Join-Path $env:RALPH_ARTIFACTS_DIR 'phpstan.neon'
+$phpstanSource = (Join-Path (Get-Location).Path 'phpstan.neon').Replace('\', '/').Replace("'", "''")
+$phpstanCache = (Join-Path $env:RALPH_ARTIFACTS_DIR 'phpstan-cache').Replace('\', '/').Replace("'", "''")
+[System.IO.File]::WriteAllText($phpstanConfiguration, "includes:`n    - '$phpstanSource'`nparameters:`n    tmpDir: '$phpstanCache'`n", $utf8)
+& php vendor/bin/pint --parallel --test --cache-file "$env:RALPH_ARTIFACTS_DIR/pint.cache"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& php vendor/bin/rector --dry-run --config $rectorConfiguration
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & bun run test:lint
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& php vendor/bin/phpstan
+& php vendor/bin/phpstan analyse --configuration $phpstanConfiguration
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & bun run test:types
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& php vendor/bin/pest --type-coverage --min=100
+& php vendor/bin/pest --type-coverage --min=100 "--type-coverage-json=$env:RALPH_ARTIFACTS_DIR/type-coverage.json"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& php vendor/bin/pest --parallel --coverage --exactly=100.0
+& php vendor/bin/pest --parallel --coverage --exactly=100.0 --cache-directory "$env:RALPH_ARTIFACTS_DIR/pest-cache" --log-junit "$env:RALPH_ARTIFACTS_DIR/suite.xml"
 exit $LASTEXITCODE
 ```
 
@@ -90,7 +102,7 @@ O cache não continha Chromium 1254 exigido por Playwright 1.65.0: o primeiro pr
 
 Resultado inicial: suíte completa aprovada com código 0; nenhum arquivo versionado alterado. A prova final do comando renderizado também passou: 6 testes, 480 asserções e 144 capturas protegidas verificadas em 74,04 s, além do build. Essa prova inclui recarregar cada viewport para fechar estados transitórios anteriores e proteger capturas preexistentes. As capturas retratam a base anterior e comprovam viabilidade do mecanismo, não aceite da futura implementação.
 
-A CI `.github/workflows/tests.yml` faz build antes de `composer test`, em Linux/PHP 8.5/PCOV/Node 24; o build não integra o agregado local e será conferência focada. Avisos preexistentes de OPcache incompatível e depreciação `withSetProviders()` do Rector não justificam mudar ini/dependências.
+A CI `.github/workflows/tests.yml` faz build antes de `composer test`, em Linux/PHP 8.5/PCOV/Node 24; a preparação por build também precede o agregado local nesta retomada. A baseline histórica acima não é resultado dos comandos alterados. Avisos preexistentes de OPcache incompatível e depreciação `withSetProviders()` do Rector não justificam mudar ini/dependências.
 
 ## Riscos
 
@@ -109,16 +121,73 @@ Entregar sidebar/topo, cabeçalho e conteúdo compatíveis com FinAI, com todos 
 
 Plano aprovado, baseline e preflight disponíveis. Identidade/temas de #1016112 já integrados nesta base; usar essa implementação. Preservar relações publicadas e limites das irmãs.
 
+### Inventário das saídas de verificação
+
+Inventário do preflight, verificações no host, captura renderizada e suíte completa, conferido nas configurações e no código das ferramentas instaladas. Saídas parciais de falha, timeout ou cancelamento seguem a mesma preservação das saídas de sucesso. `RALPH_ARTIFACTS_DIR` é fornecido pelo executor a cada comando; `RALPH_EVIDENCE_DIR` continua reservado às imagens/metadados de aceite visual.
+
+| Verificador e fonte inspecionada | Sucesso | Falha e destino/preservação |
+| --- | --- | --- |
+| Pint (`--help`, `pint.json`) | Resultado no log do executor; cache configurado por `--cache-file` em `RALPH_ARTIFACTS_DIR/pint.cache`. | Diagnóstico no mesmo log, cache parcial no mesmo destino; `--test` não corrige fontes. |
+| Rector (`rector.php`) e PHPStan (`phpstan.neon`) | Logs do executor; configurações derivadas em `RALPH_ARTIFACTS_DIR` mantêm as regras originais e redirecionam caches para `rector-cache` e `phpstan-cache`. | Erros/diffs de conferência no log e caches parciais no mesmo destino; caches históricos `tmp/rector` e `tmp/phpstan` são preservados como artefatos anteriores. Não executar modo de correção. |
+| Frontend (`package.json`, `vite.config.ts`) | `vp fmt --check`, `vp lint` e `tsc --noEmit` escrevem diagnósticos no log; TypeScript não emite arquivos. | Erros de formato, lint, tipos ou inicialização no mesmo log; não usar `--fix`. Temporários internos das dependências permanecem em suas áreas ignoradas, sem declará-las como artefatos ou modificar dependências. |
+| Build e Wayfinder (`vite.config.ts`) | Manifesto/assets em `public/build`; funções geradas em `resources/js/actions`, `resources/js/routes` e `resources/js/wayfinder`. Esses caminhos são necessários aos consumidores atuais. | Log de erro e possíveis arquivos parciais nesses mesmos diretórios. Somente conteúdos gerados não rastreados pertencem à verificação. |
+| Pest/PHPUnit focado e Gate 3 (`phpunit.xml`, `Pest/Plugins/Cache.php`, ajuda CLI) | Resumo no log; cache e JUnit em `RALPH_ARTIFACTS_DIR/pest-cache`, `focused.xml` ou `suite.xml`. Cobertura funcional continua no console, sem habilitar HTML/vídeo adicionais. | JUnit e logs preservam as asserções falhas; cache/relatórios parciais também são coletados. O preflight reutilizado não expõe opções de relatório e mantém os padrões internos do Pest. |
+| Cobertura de tipos (`Pest/TypeCoverage/Plugin.php`, `Support/FileCache.php`) | JSON em `RALPH_ARTIFACTS_DIR/type-coverage.json`, além do console. O cache interno fixo fica em `vendor/pestphp/pest-plugin-type-coverage/.temp`; o padrão de cache do preflight fica em `vendor/pestphp/pest/.temp`. | JSON parcial e diagnóstico no log; caches internos de dependências não são movidos, apagados ou incluídos como raízes de artefatos. |
+| Browser (`Support/Screenshot.php`, `Support/Trace.php`, `Configuration.php`) | Capturas solicitadas vão a `RALPH_EVIDENCE_DIR`; screenshots auxiliares podem ir a `tests/Browser/Screenshots`. | Asserções geram PNGs em `tests/Browser/Screenshots`, incluindo subdiretórios de diff; traces ZIP usam `tests/Browser/Traces` quando habilitados. Trace e vídeo não estão habilitados nesta fase; não presumir sua geração. Esses diretórios fixos são coletados pelo executor, sem limpeza manual. |
+| Bootstrap Laravel e fixtures (`tests/Pest.php`, scripts de captura) | Views/cache/sessões e dados isolados em `storage/framework`, logs em `storage/logs`, cache de bootstrap em `bootstrap/cache`; fixtures/configurações temporárias e caches dos analisadores em `tmp`. | Logs, fixtures remanescentes e capturas parciais são preservados. As imagens PNG e `captures.jsonl` de aceite permanecem em `RALPH_EVIDENCE_DIR`, separadas dos artefatos de diagnóstico. |
+
+As raízes abaixo autorizam apenas a coleta de conteúdos gerados não rastreados, inclusive anteriores à retomada. O executor preserva cópias verificadas no runtime antes de preparar cada comando e registra os caminhos duráveis também na falha. Arquivos rastreados, metadados, imagens de referência e snapshots continuam protegidos; não adicionar raízes de fontes, dependências ou exceções globais por extensão. Não atualizar snapshots. Se houver arquivo rastreado ou referência em diretório que o Pest limpa automaticamente, interromper antes de executar esse teste e alinhar sua saída, preservando o original.
+
+Retomar o mesmo comando a partir de `host-checks-blocked`, conservando implementação, commits, evidências e `.flow`. A asserção sobre o menu `Settings` em `ShellNavigationTest.php:80`, se reproduzida, deve chegar ao diagnóstico somente leitura com seus artefatos mapeados e então à correção focada quando demonstrado o defeito; a declaração de artefatos não aprova nem suprime essa falha. Não reiniciar a implementação ou reclassificar manualmente o estado.
+
+### Artefatos de verificação
+
+- `tests/Browser/Screenshots`
+- `tests/Browser/Traces`
+- `public/build`
+- `resources/js/actions`
+- `resources/js/routes`
+- `resources/js/wayfinder`
+- `tmp`
+- `storage/framework`
+- `storage/logs`
+- `bootstrap/cache`
+
 ### Preflight da validação
 
-Reusar suporte existente que recria fixture autenticada e verifica dashboard protegido em claro/escuro, escrevendo e lendo PNGs em `RALPH_EVIDENCE_DIR`. Executado com sucesso nesta inspeção após preparar Chromium 1254. Ralph fornece `RALPH_CAPTURE_MODE=preflight` e diretório privado. O suporte usa PHP 8.5 do Herd e os assets existentes; se faltarem assets/browser/bootstrap, parar antes de desenvolver.
+Recompilar os assets antes da captura, pois o executor preserva e retira as saídas geradas dos diretórios declarados a cada comando. Reusar suporte existente que recria fixture autenticada e verifica dashboard protegido em claro/escuro, escrevendo e lendo PNGs em `RALPH_EVIDENCE_DIR`. Ralph fornece `RALPH_CAPTURE_MODE=preflight` e diretório privado. O suporte usa PHP 8.5 do Herd; se o build ou a captura falhar, parar preservando o diagnóstico e o estado da retomada.
 
 ```powershell
+$env:Path = "$env:USERPROFILE\.config\herd\bin\php85;$env:Path"
+& bun run build
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 python 'docs/harness/features/1016101-adequacao-visual-do-finai/tasks/dev-1016112-adequacao-visual-do-finai-identidade-e-temas-no-painel-atual/capture.py'
 exit $LASTEXITCODE
 ```
 
+### Verificação no host
+
+O bootstrap de `tests/Pest.php` seleciona um hot file isolado em `storage/framework/testing/vite.hot`, que não é criado pelos testes. Isso mantém o uso dos assets compilados sem ler, alterar ou remover `public/hot` do desenvolvimento; vale também para os testes de navegador do Gate 3.
+
+Reavaliar a implementação, os testes e o suporte de captura já existentes, preservando as alterações e `.flow`. Se faltar somente executar verificações impedidas pelo sandbox, emitir `status: ready-for-host-checks` com `pending_checks: ["host", "rendered"]`, identificando os impedimentos em `checks`; não repetir o preflight do pai nem declarar aceite visual antecipadamente. Trabalho de implementação ou de testes ainda incompleto deve ser concluído antes desse encaminhamento.
+
+O host começa pelo build para preparar assets e módulos Wayfinder antes da análise de tipos incluída no lint e dos testes de navegador. Depois confere formatação/lint sem corrigir fontes e executa os testes focados de navegação, layout, aparência e acesso com factories e banco de testes isolado. A seção renderizada conserva seu build e a captura das 144 imagens para revisão independente. Não mudar fontes, dependências, configuração global ou encerrar processos externos. Falhas interrompem a sequência e precisam de diagnóstico; aprovação nesta seção não dispensa validação independente nem a suíte completa do Gate 3.
+
+```powershell
+$env:Path = "$env:USERPROFILE\.config\herd\bin\php85;$env:Path"
+$env:APP_ENV = 'testing'
+$env:PLAYWRIGHT_BROWSERS_PATH = "$env:LOCALAPPDATA\ms-playwright"
+& bun run build
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& bun run test:lint
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& php vendor/bin/pest --compact --cache-directory "$env:RALPH_ARTIFACTS_DIR/pest-cache" --log-junit "$env:RALPH_ARTIFACTS_DIR/focused.xml" tests/Browser/ShellNavigationTest.php tests/Browser/LayoutTest.php tests/Browser/AppearanceTest.php tests/Feature/ShellAccessTest.php
+exit $LASTEXITCODE
+```
+
 ### Verificação renderizada
+
+Além das 144 capturas da matriz, gerar dashboard recolhido em 1366×768 nos temas claro e escuro (duas imagens representativas), atendendo ao estado adicional já previsto em Estratégia. O pedido de evidências salvo é lido como dados; a cobertura completa inclui essas duas imagens também na retomada, sem alterar comportamento da aplicação.
 
 O comando abaixo gera fixture temporária independente, compila assets e captura a matriz aprovada. Preservar o seletor de ação `sidebar-menu-button` ou equivalente visível com o mesmo hook; não criar ações só para a captura. Se houver `RALPH_EVIDENCE_REQUEST`, ler como JSON e executar novamente a cobertura completa aprovada, sem executar texto recebido. Qualquer estado ausente, redirect para login, erro JS, overflow ou imagem ilegível falha. Não alterar código para completar evidências durante esta etapa.
 
@@ -140,10 +209,7 @@ if request:
     report = json.loads(Path(request).read_text(encoding='utf-8'))
     assert isinstance(report, dict) and isinstance(report.get('findings'), list), 'Pedido de evidências inválido'
     print('Pedido recebido; recriando toda a cobertura aprovada.', flush=True)
-failure_image = repo / 'tests/Browser/Screenshots/it_captures_the_authenticated_shell.png'
-screenshots = failure_image.parent
-if screenshots.is_dir() and any(path.is_file() for path in screenshots.rglob('*')):
-    raise RuntimeError('Capturas preexistentes: preservar e resolver antes de capturar')
+artifacts = Path(environment['RALPH_ARTIFACTS_DIR']).resolve()
 subprocess.run(['bun', 'run', 'build'], env=environment, check=True)
 fixture = r'''<?php
 declare(strict_types=1);
@@ -165,8 +231,17 @@ it('captures the authenticated shell', function (string $route): void {
             $page->refresh()->resize($width,$height)->assertNoJavaScriptErrors()
                 ->assertScript('document.documentElement.style.colorScheme', $theme)
                 ->assertScript('document.documentElement.scrollWidth <= innerWidth', true);
-            foreach ($route === 'dashboard' ? ['default','menu-open','menu-keyboard'] : ['default'] as $state) {
-                if ($state !== 'default') {
+            $states = $route === 'dashboard' ? ['default','menu-open','menu-keyboard'] : ['default'];
+            if ($route === 'dashboard' && $width === 1366) {
+                $states[] = 'desktop-collapsed';
+            }
+            foreach ($states as $state) {
+                if ($state === 'desktop-collapsed') {
+                    $page->click('[data-sidebar="trigger"]')
+                        ->assertVisible('.finai-navigation[data-collapsible="icon"]')
+                        ->assertScript('Math.round(document.querySelector(".finai-navigation").getBoundingClientRect().width)', 80)
+                        ->assertScript('document.documentElement.scrollWidth <= innerWidth', true);
+                } elseif ($state !== 'default') {
                     if ($page->script('Array.from(document.querySelectorAll("[data-test=sidebar-menu-button]")).every(el => el.getClientRects().length === 0)')) {
                         $page->click('[data-sidebar="trigger"]');
                     }
@@ -186,7 +261,10 @@ it('captures the authenticated shell', function (string $route): void {
                 $line = json_encode($entry, JSON_THROW_ON_ERROR|JSON_UNESCAPED_SLASHES);
                 file_put_contents(getenv('RALPH_EVIDENCE_DIR').'/captures.jsonl', $line.PHP_EOL, FILE_APPEND);
                 echo $line.PHP_EOL;
-                if ($state !== 'default') {
+                if ($state === 'desktop-collapsed') {
+                    $page->click('[data-sidebar="trigger"]')
+                        ->assertScript('document.querySelector(".finai-navigation").getAttribute("data-collapsible")', null);
+                } elseif ($state !== 'default') {
                     $page->keys('[role="menu"]', 'Escape');
                 }
             }
@@ -206,13 +284,9 @@ with tempfile.TemporaryDirectory(prefix='shell-evidence-', dir=repo / 'tmp') as 
             entry.text = (repo / entry.text).resolve().as_posix()
     config_path = temporary / 'phpunit.xml'
     config.write(config_path, encoding='utf-8', xml_declaration=True)
-    try:
-        subprocess.run([str(php),'vendor/bin/pest','--configuration',str(config_path),str(test),'--compact'],env=environment,check=True)
-    finally:
-        if failure_image.is_file():
-            failure_image.replace(output / 'capture-failure.png')
+    subprocess.run([str(php),'vendor/bin/pest','--configuration',str(config_path),str(test),'--compact','--cache-directory',str(artifacts/'pest-cache'),'--log-junit',str(artifacts/'rendered.xml')],env=environment,check=True)
 entries = [json.loads(line) for line in (output/'captures.jsonl').read_text(encoding='utf-8').splitlines() if line.strip()]
-assert len(entries) == 144 and len({entry['path'] for entry in entries}) == 144, 'Cobertura incompleta'
+assert len(entries) == 146 and len({entry['path'] for entry in entries}) == 146, 'Cobertura incompleta'
 for entry in entries:
     header = Path(entry['path']).read_bytes()[:24]
     assert header[:8] == b'\x89PNG\r\n\x1a\n' and len(header) == 24, 'PNG inválido'

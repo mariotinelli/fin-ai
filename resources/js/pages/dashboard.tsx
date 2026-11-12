@@ -15,7 +15,7 @@ export default function Dashboard() {
     return (
         <>
             <Head title="Dashboard" />
-            <div className="flex h-full min-w-0 flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
+            <div className="flex h-full min-w-0 flex-1 flex-col gap-6">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <div className="relative aspect-video overflow-hidden rounded-xl border border-border bg-card">
                         <PlaceholderPattern className="absolute inset-0 size-full stroke-primary/15" />
@@ -27,7 +27,10 @@ export default function Dashboard() {
                         <PlaceholderPattern className="absolute inset-0 size-full stroke-primary/15" />
                     </div>
                 </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-border bg-card md:min-h-min">
+                <div
+                    data-test="dashboard-panel"
+                    className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-border bg-card md:min-h-min"
+                >
                     <PlaceholderPattern className="absolute inset-0 size-full stroke-primary/15" />
                 </div>
             </div>

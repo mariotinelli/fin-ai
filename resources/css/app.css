@@ -146,3 +146,183 @@
         @apply bg-background text-foreground;
     }
 }
+
+.finai-navigation {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex: 0 0 240px;
+    flex-direction: column;
+    gap: 48px;
+    width: 240px;
+    height: 100svh;
+    padding: 32px 24px;
+    border-right: 1px solid var(--border);
+}
+
+.finai-brand > div {
+    width: 40px;
+    height: 40px;
+}
+
+.finai-brand svg {
+    width: 24px;
+    height: 24px;
+}
+
+.finai-brand > span {
+    margin-left: 0;
+}
+
+.finai-navigation-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: auto;
+}
+
+.finai-user {
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+.finai-user .grid {
+    min-width: 0;
+}
+
+.finai-topbar {
+    padding: 16px 32px;
+}
+
+.finai-content {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding: 32px;
+    flex: 1;
+    min-width: 0;
+}
+
+.finai-navigation[data-collapsible='icon'] {
+    flex-basis: 80px;
+    width: 80px;
+    padding-inline: 24px;
+}
+
+.finai-navigation[data-collapsible='icon'] .finai-brand > span {
+    display: none;
+}
+
+.finai-navigation[data-collapsible='icon'] .finai-brand > div {
+    width: 32px;
+    height: 32px;
+}
+
+@media (min-width: 1440px) {
+    .finai-topbar {
+        padding-inline: 48px;
+    }
+
+    .finai-content {
+        padding: 48px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .finai-navigation {
+        flex-basis: 208px;
+        width: 208px;
+        padding-inline: 16px;
+    }
+
+    .finai-content {
+        padding: 24px;
+    }
+}
+
+@media (max-width: 1023px) {
+    .finai-navigation {
+        position: static;
+        flex: none;
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+        width: 100%;
+        height: auto;
+        padding: 16px 24px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .finai-primary {
+        margin-left: auto;
+    }
+
+    .finai-navigation-footer {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        margin-top: 0;
+        min-width: 0;
+    }
+
+    .finai-user {
+        width: 160px;
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .finai-external [data-sidebar='menu'] {
+        flex-direction: row;
+    }
+
+    .finai-external [data-sidebar='menu-button'] {
+        width: 40px;
+        height: 44px;
+        justify-content: center;
+    }
+
+    .finai-external [data-sidebar='menu-button'] > span {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .finai-navigation {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .finai-brand {
+        align-self: center;
+    }
+
+    .finai-brand > span {
+        font-size: 24px;
+    }
+
+    .finai-primary {
+        margin: 0;
+    }
+
+    .finai-primary [data-sidebar='menu-button'] {
+        justify-content: center;
+        gap: 8px;
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .finai-navigation-footer {
+        justify-content: space-between;
+    }
+
+    .finai-user {
+        width: min(208px, calc(100% - 96px));
+    }
+
+    .finai-content {
+        padding: 24px 16px;
+    }
+}
