@@ -22,22 +22,26 @@ export function NavFooter({
             className={`group-data-[collapsible=icon]:p-0 ${className || ''}`}
         >
             <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="[@media(width<=1023px)]:flex-row">
                     {items.map((item) => (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
-                                className="text-muted-foreground hover:text-primary"
+                                className="text-muted-foreground hover:text-primary [@media(width<=1023px)]:h-11 [@media(width<=1023px)]:w-10 [@media(width<=1023px)]:justify-center"
                             >
                                 <a
                                     href={toUrl(item.href)}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    aria-label={item.title}
+                                    title={item.title}
                                 >
                                     {item.icon && (
                                         <item.icon className="h-5 w-5" />
                                     )}
-                                    <span>{item.title}</span>
+                                    <span className="[@media(width<=1023px)]:hidden">
+                                        {item.title}
+                                    </span>
                                 </a>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

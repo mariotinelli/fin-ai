@@ -205,8 +205,37 @@ def worktree_fingerprint(repo: Path) -> str:
 def render(template: Path, values: dict[str, str]) -> str:
     text = template.read_text(encoding="utf-8")
     for key, value in values.items():
+        if key in {"RENDERED_VERIFICATION", "VALIDATION_PREFLIGHT", "HOST_VERIFICATION", "DEVELOPMENT_REPORT", "EVIDENCE_REQUEST", "CORRECTION_REPORT"} and len(value) > 50000 and "{{" + key + "}}" in text:
+            if EVENTS is None:
+                fail("runtime storage is required to preserve a large agent report")
+            report = EVENTS.private_file(f"context-{key.lower()}-{uuid.uuid4()}.txt")
+            report.write_text(value, encoding="utf-8")
+            value = (
+                f"Relatório integral preservado em {report}. "
+                "Leia esse arquivo em modo somente leitura, por partes quando necessário, "
+                "e consulte seus logs, imagens e mapeamentos de artefatos. "
+                "Esta referência substitui somente a inclusão inline; nenhum resultado, "
+                "critério ou evidência foi removido ou aprovado."
+            )
         text = text.replace("{{" + key + "}}", value)
     return text
+
+
+def stage_phase_changes(repo: Path, body: str) -> None:
+    staged = run(["git", "add", "--update", "--", "."], repo)
+    if staged.returncode:
+        fail(f"Gate 4 could not stage tracked changes: {sanitize(staged.stderr or staged.stdout)}")
+    candidates = run(["git", "ls-files", "--others", "--exclude-standard", "-z"], repo)
+    if candidates.returncode:
+        fail("Gate 4 could not inspect untracked changes")
+    roots = declared_artifacts(body)
+    normalize = str.casefold if os.name == "nt" else lambda value: value
+    roots = [normalize(root) + "/" for root in roots]
+    paths = [path for path in candidates.stdout.split("\0") if path and not any(normalize(path).startswith(root) for root in roots)]
+    for offset in range(0, len(paths), 64):
+        staged = run(["git", "--literal-pathspecs", "add", "--", *paths[offset:offset + 64]], repo)
+        if staged.returncode:
+            fail(f"Gate 4 could not stage new source: {sanitize(staged.stderr or staged.stdout)}")
 
 
 def runner_command(package: Path) -> list[str]:
@@ -762,7 +791,7 @@ def execute(arguments: argparse.Namespace) -> int:
             if worktree_changes(repo) and state.get("current_phase") != number:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
             previous_gate = state.get("current_gate") if state.get("current_phase") == number else None
-            resume_validation = previous_gate in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked"}
+            resume_validation = previous_gate in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked", "commit"}
             resume_host = previous_gate in {"host-checks", "host-checks-blocked", "host-diagnosis"}
             save_state(state_path, state, current_phase=number, current_gate="host-checks" if resume_host else "validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
@@ -953,12 +982,7 @@ def execute(arguments: argparse.Namespace) -> int:
 
                 save_state(state_path, state, current_gate="commit")
                 started = gate_started(number, "commit", attempt)
-                exclusions = [(":(exclude,literal,icase)" if os.name == "nt" else ":(exclude,literal)") + path for path in declared_artifacts(body)]
-                staged = run(["git", "add", "--update", "--", "."], repo)
-                if not staged.returncode:
-                    staged = run(["git", "add", "--all", "--", ".", *exclusions], repo)
-                if staged.returncode:
-                    fail("Gate 4 could not stage phase changes")
+                stage_phase_changes(repo, body)
                 if not git(repo, "diff", "--cached", "--name-only"):
                     fail("Gate 4 has no changes to commit")
                 committed = run(["git", "commit", "--no-verify", "-m", f"feat: complete phase {number} - {title}"[:72].rstrip()], repo)
