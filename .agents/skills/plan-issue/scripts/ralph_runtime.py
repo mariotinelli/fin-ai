@@ -148,6 +148,7 @@ def human_event(record: dict[str, Any]) -> str | None:
     instant = datetime.fromisoformat(record["time"]).astimezone().strftime("%H:%M")
     gates = {
         "development": ("DESENVOLVIMENTO", "Gate 1"),
+        "development-investigation": ("DESENVOLVIMENTO · INVESTIGAÇÃO", "Investigação focada"),
         "host-checks": ("VERIFICAÇÕES NO HOST", "Verificações do Desenvolvimento"),
         "host-diagnosis": ("DIAGNÓSTICO", "Diagnóstico da verificação no host"),
         "investigation": ("INVESTIGAÇÃO", "Investigação da verificação"),
@@ -181,6 +182,10 @@ def human_event(record: dict[str, Any]) -> str | None:
         return f"[{label}] {gate_name} em andamento [{instant}]"
     if event == "gate-finished":
         status = {"completed": "finalizado", "pending": "com implementação pronta e verificações pendentes", "approved": "aprovado", "rejected": "reprovado", "blocked": "bloqueado por verificação"}.get(result, result)
+        if result == "pending" and gate == "host-diagnosis":
+            status = "com investigação focada no Desenvolvimento encaminhada"
+        elif result == "pending" and gate == "development-investigation":
+            status = "com evidências preparadas e verificações pendentes"
         detail = ""
         if result == "rejected":
             values = record.get("details", {}).get("findings") or record.get("details", {}).get("normalized_failures") or []

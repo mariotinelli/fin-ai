@@ -23,7 +23,9 @@ from typing import Any, Callable
 sys.dont_write_bytecode = True
 from ralph_runtime import EventSink, ProgressBuffer, RuntimeFailure, TaskLock, atomic_json, popen_group, sanitize, sanitize_text, SECRET_KEYS, terminate_process_tree
 from verification_workspace import VerificationWorkspace, declared_artifacts
-from verification_investigation import read_history, resolve_failure
+from verification_investigation import read_history
+from failure_ledger import FailureLedger
+from failure_triage import legacy_triage, normalize_triage
 
 
 class ExecutionError(RuntimeError):
@@ -31,6 +33,7 @@ class ExecutionError(RuntimeError):
 
 
 EVENTS: EventSink | None = None
+LEDGER: FailureLedger | None = None
 ACTIVE_PROCESS: subprocess.Popen[Any] | None = None
 CANCELLED = False
 
@@ -186,7 +189,7 @@ def worktree_changes(repo: Path) -> str:
     return git(repo, "status", "--porcelain=v1", "--untracked-files=all")
 
 
-def worktree_fingerprint(repo: Path) -> str:
+def worktree_fingerprint(repo: Path, *, output_roots: list[str] | None = None) -> str:
     """Detect content changes even when porcelain still lists the same modified files."""
     result = hashlib.sha256()
     for arguments in (("rev-parse", "--verify", "HEAD"), ("diff", "--binary"), ("diff", "--cached", "--binary")):
@@ -198,10 +201,18 @@ def worktree_fingerprint(repo: Path) -> str:
     if files.returncode:
         fail("cannot inspect untracked verification inputs")
     for name in sorted(filter(None, files.stdout.split("\0"))):
+        compare = name.casefold() if os.name == "nt" else name
+        roots = [(root.casefold() if os.name == "nt" else root) + "/" for root in output_roots or []]
+        if any(compare.startswith(root) for root in roots):
+            continue
         path = repo / name
         result.update(name.encode("utf-8"))
         result.update(os.readlink(path).encode("utf-8") if path.is_symlink() else path.read_bytes())
     return result.hexdigest()
+
+
+def development_revision(repo: Path, body: str) -> str:
+    return worktree_fingerprint(repo, output_roots=declared_artifacts(body))
 
 
 def render(template: Path, values: dict[str, str]) -> str:
@@ -446,6 +457,15 @@ def validate_result(result: dict[str, Any], mode: str) -> None:
         for finding in result["findings"]:
             if not isinstance(finding, dict) or finding.get("kind", "defect") not in {"defect", "verification-blocked", "evidence-missing"}:
                 fail("validation finding requires a valid kind")
+            if "failure_id" in finding and not isinstance(finding["failure_id"], str):
+                fail("review failure identity must be a string")
+            for field in ("behavior", "expected"):
+                if field in finding and (not isinstance(finding[field], str) or not finding[field].strip()):
+                    fail("review failure requires an observable behavior and expectation")
+            if "test_refs" in finding and (not isinstance(finding["test_refs"], list) or any(not isinstance(value, str) or not value.strip() for value in finding["test_refs"])):
+                fail("review failure references must be strings")
+            if "blocker_condition" in finding and finding["blocker_condition"] not in {"none", "missing-runtime", "missing-credential", "unavailable-service", "requires-global-change", "scope-decision"}:
+                fail("review blocker condition is invalid")
             for field in ("severity", "criterion", "evidence"):
                 if not isinstance(finding.get(field), str) or not finding[field].strip():
                     fail("validation finding requires severity criterion and evidence")
@@ -478,7 +498,7 @@ def validate_evidence_scope(result: dict[str, Any], planning: str, phase_body: s
     shared = re.split(r"^## Fase \d+\s+[—-]\s+", planning, maxsplit=1, flags=re.MULTILINE)[0]
     approved = " ".join((shared + "\n" + phase_body).split())
     for finding in result.get("findings", []):
-        if finding.get("kind") == "evidence-missing":
+        if finding.get("kind") == "evidence-missing" or (finding.get("kind") == "verification-blocked" and finding.get("blocker_condition") == "none"):
             basis = " ".join(str(finding.get("plan_basis", "")).split())
             if not basis or basis not in approved:
                 fail("evidence request exceeds the approved phase/shared plan; review plan_basis without expanding capture scope")
@@ -715,6 +735,10 @@ def diagnose_host_failure(package: Path, repo: Path, values: dict[str, str], pha
         result = invoke_agent(package, repo, "diagnose-host", render(package / "prompts" / "diagnose-host.md", values), package / "schemas" / "host-diagnosis.schema.json", phase, timeout, model)
         result = redact_result(result)
         atomic_json(EVENTS.root.parent / f"phase-{phase}-host-diagnosis.json", result)
+        if "route" in result:
+            triage = normalize_triage(result, repo, values.get("PLANNING_TEXT", ""), values.get("PHASE", ""))
+            atomic_json(EVENTS.root.parent / f"phase-{phase}-host-triage.json", triage)
+            return triage
         validate_result(result, "validate")
         if result["verdict"] != "rejected" or not result["findings"] or result["visual_validation"]["status"] != "not-applicable":
             fail("host diagnosis must report concrete defects/blockers without approving the phase or visual acceptance")
@@ -726,7 +750,7 @@ def diagnose_host_failure(package: Path, repo: Path, values: dict[str, str], pha
                 fail("diagnosis returned an invalid investigation request")
             if investigation["requested"] and (investigation["cause"] != "inconclusive-test" or not investigation["reason"].strip() or any(f["kind"] == "defect" for f in result["findings"])):
                 fail("only inconclusive test failures without demonstrated defects can request reproduction")
-        return result
+        return legacy_triage(result)
     finally:
         if worktree_fingerprint(repo) != before:
             fail("read-only host diagnosis modified repository source; changes preserved")
@@ -739,27 +763,9 @@ def investigation_path(phase: int, context: str) -> Path:
 
 
 def investigation_context(phase: int) -> str:
+    if LEDGER is not None and LEDGER.data["phase"] == phase:
+        return json.dumps(LEDGER.data, ensure_ascii=False, indent=2)
     return json.dumps({context: history for context in ("host", "tests") if (history := read_history(investigation_path(phase, context))) is not None}, ensure_ascii=False, indent=2)
-
-
-def reproduce_failure(repo: Path, phase_body: str, phase: int, timeout: float, context: str, report: dict[str, Any], repeat_suite: Callable[[], dict[str, Any]]) -> dict[str, Any]:
-    declared = rendered_command(phase_body, "Reprodução da verificação")
-    if declared is not None:
-        environment = os.environ.copy()
-        for key in ("RALPH_CAPTURE_MODE", "RALPH_EVIDENCE_DIR", "RALPH_EVIDENCE_REQUEST"):
-            environment.pop(key, None)
-        with tempfile.TemporaryDirectory(prefix="ralph-reproduction-") as temporary:
-            environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
-            return run_verification(repo, declared[0], phase_body, phase, timeout, declared[1], environment=environment, label="Reprodução da verificação")
-    if context == "tests":
-        return repeat_suite()
-    checks = report.get("checks", [])
-    if checks and checks[-1].get("check") == "host":
-        return run_host_checks(repo, phase_body, phase, timeout, [])
-    if checks and checks[-1].get("check") == "rendered":
-        rendered = run_rendered_verification(repo, phase_body, phase, timeout)
-        return {"status": rendered["status"], "message": rendered.get("message", ""), "diagnosable": rendered.get("diagnosable", False), "rendered": rendered}
-    fail("cannot identify an approved failed command for reproduction")
 
 
 def resolve_check_failure(package: Path, repo: Path, values: dict[str, str], phase_body: str, phase: int, attempt: int, context: str,
@@ -767,24 +773,67 @@ def resolve_check_failure(package: Path, repo: Path, values: dict[str, str], pha
                           confirm: Callable[[], dict[str, Any]]) -> dict[str, Any]:
     if EVENTS is None:
         fail("runtime log is unavailable")
-    original_inputs = worktree_fingerprint(repo)
-    def diagnose(current: dict[str, Any], history: dict[str, Any] | None) -> dict[str, Any]:
-        started = gate_started(phase, "host-diagnosis", attempt)
-        diagnostic_values = {**values, "HOST_VERIFICATION": json.dumps(current, ensure_ascii=False, indent=2),
-                             "INVESTIGATION_REPORT": json.dumps(history, ensure_ascii=False, indent=2)}
-        result = diagnose_host_failure(package, repo, diagnostic_values, phase, diagnosis_timeout, model)
-        gate_finished(phase, "host-diagnosis", attempt, "rejected" if validation_action(result) == "retry" else "blocked", started, findings=result["findings"])
-        return result
-    def reproduce() -> dict[str, Any]:
-        emit("investigation-progress", phase=phase, gate="investigation", attempt=attempt, result="running", details={"step": "reproducing"})
-        return reproduce_failure(repo, phase_body, phase, timeout, context, report, confirm)
-    def confirmation() -> dict[str, Any]:
-        emit("investigation-progress", phase=phase, gate="investigation", attempt=attempt, result="running", details={"step": "confirming"})
-        return confirm()
-    return resolve_failure(report, history_path=investigation_path(phase, context),
-                           archive_path=EVENTS.root / f"phase-{phase}-{context}-investigation-{uuid.uuid4()}.json",
-                           diagnose=diagnose, reproduce=reproduce, confirm=confirmation,
-                           same_inputs=lambda: worktree_fingerprint(repo) == original_inputs)
+    if LEDGER is None:
+        fail("failure registry is unavailable")
+    started = gate_started(phase, "host-diagnosis", attempt)
+    diagnostic_values = {**values, "HOST_VERIFICATION": json.dumps(report, ensure_ascii=False, indent=2),
+                         "INVESTIGATION_REPORT": investigation_context(phase)}
+    diagnosis = diagnose_host_failure(package, repo, diagnostic_values, phase, diagnosis_timeout, model)
+    failure_context = "rendered" if context == "host" and report.get("checks") and report["checks"][-1].get("check") == "rendered" else context
+    identities = LEDGER.observe(diagnosis["failures"], redact_result(report), failure_context, worktree_fingerprint(repo))
+    route = diagnosis["route"]
+    action = {"correction": "correct", "development-investigation": "investigate", "blocked": "blocked"}[route]
+    selected = [identity for identity, observation in zip(identities, diagnosis["failures"]) if observation["disposition"] == route]
+    if action in {"correct", "investigate"}:
+        LEDGER.queue("correction" if action == "correct" else "investigation", selected)
+    gate_finished(phase, "host-diagnosis", attempt, "rejected" if action == "correct" else "pending" if action == "investigate" else "blocked", started, findings=diagnosis["findings"])
+    return {"action": action, "report": report, "diagnosis": diagnosis, "history": None, "reason": "", "failure_ids": identities}
+
+
+def queue_review_correction(review: dict[str, Any], report: dict[str, Any], context: str, repo: Path, *, kind: str = "correction") -> None:
+    if LEDGER is None:
+        fail("failure registry is unavailable")
+    triage = legacy_triage(review)
+    for item, finding in zip(triage["failures"], review["findings"]):
+        for field in ("behavior", "expected", "test_refs"):
+            if field in finding:
+                item[field] = finding[field]
+        if kind == "investigation" and finding.get("kind") in {"verification-blocked", "evidence-missing"} and finding.get("blocker_condition") == "none":
+            item.update(disposition="development-investigation", blocker_type="none")
+        claimed = finding.get("failure_id", "")
+        if claimed:
+            # The ledger verifies association. A guessed ID must never inherit an
+            # unrelated quota or turn a valid new failure into a protocol blocker.
+            item["existing_failure_id"] = claimed
+    identities = LEDGER.observe(triage["failures"], redact_result(report), context, worktree_fingerprint(repo))
+    disposition = "correction" if kind == "correction" else "development-investigation"
+    selected = [identity for identity, item in zip(identities, triage["failures"]) if item["disposition"] == disposition]
+    LEDGER.queue(kind, selected)
+
+
+def run_investigation_probe(repo: Path, body: str, phase: int, timeout: float, suite: str, suite_shell: str, identities: list[str]) -> tuple[str, dict[str, Any]]:
+    if LEDGER is None:
+        fail("failure registry is unavailable")
+    groups = [LEDGER.data["failures"][key] for key in identities]
+    last = groups[0]["observations"][-1]
+    context, original = last["context"], LEDGER.report(last)
+    declared = rendered_command(body, "Reprodução da verificação")
+    section = re.search(r"^### Reprodução da verificação[ \t]*$", body, re.MULTILINE)
+    coverage = re.split(r"^#{1,3} ", body[section.end():], maxsplit=1, flags=re.MULTILINE)[0] if section else ""
+    cases = set(re.findall(r"^- Caso: `([^`]+)`[ \t]*$", coverage, re.MULTILINE))
+    expectations = set(re.findall(r"^- Esperado: `([^`]+)`[ \t]*$", coverage, re.MULTILINE))
+    required = {reference for group in groups for reference in group["test_refs"]}
+    emit("investigation-progress", phase=phase, gate="investigation", result="running", details={"step": "reproducing"})
+    if declared is not None and required and required.issubset(cases) and {group["expected"] for group in groups}.issubset(expectations):
+        result = run_verification(repo, declared[0], body, phase, timeout, declared[1], label="Reprodução da verificação")
+    elif context == "tests" or (context == "validation" and rendered_command(body) is None):
+        result = run_verification(repo, suite, body, phase, timeout, suite_shell)
+    elif context == "rendered" or (context == "validation" and rendered_command(body) is not None) or original.get("checks", [{}])[-1].get("check") == "rendered":
+        result = run_rendered_verification(repo, body, phase, timeout)
+    else:
+        result = run_host_checks(repo, body, phase, timeout, [])
+    LEDGER.record_probe(identities, redact_result(result), worktree_fingerprint(repo))
+    return context, result
 
 
 def emit(event: str, **values: Any) -> None:
@@ -819,7 +868,7 @@ def signal_handler(_signum: int, _frame: Any) -> None:
 
 
 def execute(arguments: argparse.Namespace) -> int:
-    global EVENTS
+    global EVENTS, LEDGER
     planning = Path(arguments.planning).resolve()
     suite, phases = parse_planning(planning)
     _, suite_shell = baseline_command(planning.read_text(encoding="utf-8"))
@@ -854,11 +903,37 @@ def execute(arguments: argparse.Namespace) -> int:
             if worktree_changes(repo) and state.get("current_phase") != number:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
             previous_gate = state.get("current_gate") if state.get("current_phase") == number else None
+            execution_id = state.get("current_execution_id") if previous_gate else None
+            if execution_id is None:
+                execution_id = str(uuid.uuid4())
+            try:
+                if str(uuid.UUID(str(execution_id))) != execution_id:
+                    fail("invalid phase execution identity; preserve state before resuming")
+            except ValueError:
+                fail("invalid phase execution identity; preserve state before resuming")
+            saved_development = EVENTS.root.parent / f"phase-{number}-development.json"
+            initial_used = 0
+            if previous_gate and saved_development.is_file():
+                saved = json.loads(saved_development.read_text(encoding="utf-8"))
+                validate_result(saved, "develop")
+                initial_used = 1
+            legacy_evidence = [str(investigation_path(number, context_name)) for context_name in ("host", "tests") if investigation_path(number, context_name).is_file()]
+            LEDGER = FailureLedger(EVENTS.root.parent / f"phase-{number}-failures-{execution_id}.json", number,
+                                   max_total=arguments.max_attempts, max_per_failure=arguments.max_failure_attempts,
+                                   initial_used=initial_used, legacy_evidence=legacy_evidence)
+            if prior_artifacts:
+                LEDGER.data.setdefault("prior_artifacts", []).extend(redact_result(prior_artifacts))
+                LEDGER.save()
             resume_validation = previous_gate in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked", "commit", "tests-blocked", "tests-diagnosis"}
             resume_host = previous_gate in {"host-checks", "host-checks-blocked", "host-diagnosis"}
-            save_state(state_path, state, current_phase=number, current_gate="host-checks" if resume_host else "validation" if resume_validation else "development")
+            save_state(state_path, state, current_phase=number, current_execution_id=execution_id, current_gate="host-checks" if resume_host else "validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
             correction = str(state.get("last_failure", "")).strip() if previous_gate == "development" else ""
+            if correction and not LEDGER.data.get("pending"):
+                legacy = {"existing_failure_id": "", "criterion": "Pending phase correction", "behavior": "Legacy pending correction",
+                          "expected": "Approved phase checks satisfied", "observed": correction, "test_refs": [], "evidence": [correction], "disposition": "correction"}
+                identities = LEDGER.observe([legacy], {"status": "failed", "message": correction}, "validation", worktree_fingerprint(repo))
+                LEDGER.queue("correction", identities)
             rendered: dict[str, Any] = {"status": "not-configured", "images": []}
             development_path = EVENTS.root.parent / f"phase-{number}-development.json"
             evidence_request_path = EVENTS.root.parent / f"phase-{number}-evidence-request.json"
@@ -889,38 +964,83 @@ def execute(arguments: argparse.Namespace) -> int:
             if preflight["status"] == "failed":
                 save_state(state_path, state, current_gate="host-checks-blocked" if resume_host else "validation-blocked" if resume_validation else "preflight-blocked")
                 fail(f"Preflight da validação bloqueado; corrija o ambiente e retome. Diagnóstico: {preflight.get('log')}. {sanitize(str(preflight.get('message', '')))}")
-            for attempt in range(1, arguments.max_attempts + 1):
+            attempt = LEDGER.data["global_used"]
+            while True:
                 values = {"REPOSITORY": str(repo), "CONTEXT_PATHS": context, "PHASE": body, "PHASE_NUMBER": str(number), "CORRECTION_REPORT": correction,
                           "RENDERED_VERIFICATION": json.dumps(rendered, ensure_ascii=False, indent=2),
-                          "VALIDATION_PREFLIGHT": json.dumps(preflight, ensure_ascii=False, indent=2)}
+                          "VALIDATION_PREFLIGHT": json.dumps(preflight, ensure_ascii=False, indent=2), "PLANNING_TEXT": planning.read_text(encoding="utf-8")}
                 prepared_rendered = None
                 host_report: dict[str, Any] = {"status": "not-configured", "checks": []}
                 if not resume_validation and not resume_host:
                     previous_rendered = {}
-                    started = gate_started(number, "development", attempt)
-                    template = package / "prompts" / ("correct.md" if correction else "develop.md")
+                    pending = LEDGER.data.get("pending")
+                    work_kind = pending["kind"] if pending else "implementation"
+                    work_ids = pending["failure_ids"] if pending else []
+                    if pending:
+                        values["CORRECTION_REPORT"] = LEDGER.pending_report()
+                    work_gate = "development-investigation" if work_kind == "investigation" else "development"
+                    started = time.monotonic()
+                    template = package / "prompts" / {"implementation": "develop.md", "correction": "correct.md", "investigation": "investigate-development.md"}[work_kind]
                     report_available = False
+                    intervention = None
+                    revision_before = development_revision(repo, body)
                     try:
-                        result = invoke_agent(package, repo, "develop", render(template, values), package / "schemas" / "development-result.schema.json", number, arguments.dev_timeout_minutes * 60, arguments.model)
+                        intervention = LEDGER.reserve(work_kind, work_ids, revision_before)
+                        attempt = LEDGER.data["global_used"]
+                        started = gate_started(number, work_gate, attempt)
+                        save_state(state_path, state, current_gate=work_gate)
+                        schema = "development-investigation.schema.json" if work_kind == "investigation" else "development-result.schema.json"
+                        result = invoke_agent(package, repo, "develop", render(template, values), package / "schemas" / schema, number, arguments.dev_timeout_minutes * 60, arguments.model)
                         development = redact_result(result)
                         atomic_json(development_path, development)
                         report_available = True
+                        worker_artifacts = preserve_prior_artifacts(repo, body, number)
+                        if worker_artifacts:
+                            development["artifacts"] = redact_result(worker_artifacts)
+                            atomic_json(development_path, development)
                         validate_result(development, "develop")
+                        LEDGER.finish(intervention, development, development_revision(repo, body))
                         if development["status"] == "blocked":
                             fail(f"Desenvolvimento bloqueado: {development_report(development)}")
-                        if not worktree_changes(repo):
+                        if work_kind != "investigation" and not worktree_changes(repo):
                             fail(f"Gate 1 finished without repository changes. {development_report(development)}")
-                        for context_name in ("host", "tests"):
-                            history_path = investigation_path(number, context_name)
-                            if history_path.exists():
-                                history_path.unlink()
                     except (ExecutionError, RuntimeFailure, OSError) as error:
                         reason = sanitize_text(str(error))
                         diagnostic = development_path if report_available else EVENTS.events_path
-                        save_state(state_path, state, current_gate="development-blocked", last_failure=reason)
-                        gate_finished(number, "development", attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
+                        if intervention and LEDGER.data["interventions"][-1]["status"] == "started":
+                            LEDGER.finish(intervention, {"status": "blocked", "summary": reason}, development_revision(repo, body))
+                        save_state(state_path, state, current_gate="development-investigation-blocked" if work_kind == "investigation" else "development-blocked", last_failure=reason)
+                        gate_finished(number, work_gate, attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
                         fail(f"{sanitize(reason)} Diagnóstico: {diagnostic}. Corrija o impedimento e retome o mesmo comando; trabalho preservado.")
-                    gate_finished(number, "development", attempt, "pending" if development["status"] == "ready-for-host-checks" else "completed", started)
+                    gate_finished(number, work_gate, attempt, "pending" if development["status"] == "ready-for-host-checks" else "completed", started)
+                    if work_kind == "investigation" and development_revision(repo, body) == revision_before:
+                        observation = LEDGER.data["failures"][work_ids[0]]["observations"][-1]
+                        original = LEDGER.report(observation)
+                        resolution = resolve_check_failure(package, repo, values, body, number, attempt, observation["context"], original,
+                                                           arguments.host_timeout_minutes * 60, arguments.validation_timeout_minutes * 60, arguments.model,
+                                                           confirm=lambda: original)
+                        if resolution["action"] in {"correct", "investigate"}:
+                            save_state(state_path, state, current_gate="development", last_failure=LEDGER.pending_report())
+                            continue
+                        save_state(state_path, state, current_gate="development-investigation-blocked", last_failure=validation_report(resolution["diagnosis"]))
+                        fail("development investigation established a blocker; evidence preserved")
+                    if work_kind == "investigation" and development["investigation_outcome"]["kind"] == "evidence-prepared" and LEDGER.consume_probe(work_ids):
+                        origin = LEDGER.data["failures"][work_ids[0]]["observations"][-1]["context"]
+                        probe_timeout = {"host": arguments.host_timeout_minutes, "rendered": arguments.render_timeout_minutes, "tests": arguments.tests_timeout_minutes}.get(origin, arguments.host_timeout_minutes)
+                        probe_context, probe = run_investigation_probe(repo, body, number, probe_timeout * 60, suite, suite_shell, work_ids)
+                        if probe["status"] != "completed":
+                            if not probe.get("diagnosable"):
+                                save_state(state_path, state, current_gate="host-checks-blocked", last_failure=str(probe.get("message", "Probe unavailable")))
+                                fail("investigation probe unavailable or unsafe; work and evidence preserved")
+                            probe_values = {**values, "DEVELOPMENT_REPORT": json.dumps(development, ensure_ascii=False)}
+                            resolution = resolve_check_failure(package, repo, probe_values, body, number, attempt, probe_context, probe,
+                                                               arguments.host_timeout_minutes * 60, arguments.validation_timeout_minutes * 60, arguments.model,
+                                                               confirm=lambda: probe)
+                            if resolution["action"] in {"correct", "investigate"}:
+                                save_state(state_path, state, current_gate="development", last_failure=LEDGER.pending_report())
+                                continue
+                            save_state(state_path, state, current_gate="host-checks-blocked", last_failure=validation_report(resolution["diagnosis"]))
+                            fail("investigation established an external/scope blocker; evidence preserved")
                 if not resume_validation and (resume_host or development.get("status") == "ready-for-host-checks" or rendered_command(body, "Verificação no host") is not None):
                     save_state(state_path, state, current_gate="host-checks")
                     started = gate_started(number, "host-checks", attempt)
@@ -941,14 +1061,14 @@ def execute(arguments: argparse.Namespace) -> int:
                                 reason = "Diagnóstico da falha no host indisponível: " + sanitize_text(str(error)) + "\nFalha original: " + reason
                             else:
                                 diagnosis = resolution["diagnosis"]
-                                if resolution["action"] == "correct":
+                                if resolution["action"] in {"correct", "investigate"}:
                                     correction = "Corrija somente os defeitos demonstrados pela verificação no host, preservando o restante da fase:\n" + validation_report(diagnosis, defects_only=True) + f"\nRelatório da verificação: {diagnostic}"
                                     if resolution["history"]:
                                         correction += "\nInvestigação preservada: " + str(resolution["history"]["archive_path"])
                                     save_state(state_path, state, current_gate="development", last_failure=correction)
                                     gate_finished(number, "host-checks", attempt, "rejected", started, findings=diagnosis["findings"], report_path=str(diagnostic))
                                     if attempt == arguments.max_attempts:
-                                        fail(f"Verificações no host rejeitaram a fase {number} {attempt} vezes; correção e trabalho preservados. Diagnóstico: {diagnostic}")
+                                        fail(f"Limite de {attempt} intervenções no Desenvolvimento da fase {number} atingido; encaminhamento e trabalho preservados. Diagnóstico: {diagnostic}")
                                     resume_host = False
                                     resume_validation = False
                                     previous_rendered = {}
@@ -956,16 +1076,13 @@ def execute(arguments: argparse.Namespace) -> int:
                                     if evidence_request_path.exists():
                                         evidence_request_path.unlink()
                                     continue
-                                if resolution["action"] == "recovered":
-                                    host_report = {**resolution["report"], "investigation": resolution["history"]}
-                                    atomic_json(diagnostic, host_report)
-                                else:
-                                    reason += "\n" + validation_report(diagnosis) + "\n" + resolution["reason"]
+                                reason += "\n" + validation_report(diagnosis) + "\n" + resolution["reason"]
                         if host_report["status"] != "completed":
                             save_state(state_path, state, current_gate="host-checks-blocked", last_failure=reason)
                             gate_finished(number, "host-checks", attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
                             fail(f"{sanitize(reason)} Relatório: {diagnostic}. Retome o mesmo comando após diagnosticar/corrigir o impedimento; Desenvolvimento preservado.")
                     prepared_rendered = host_report.get("rendered")
+                    LEDGER.verified("host", redact_result(host_report), worktree_fingerprint(repo))
                     gate_finished(number, "host-checks", attempt, "completed", started, report_path=str(diagnostic))
                 elif resume_validation and (development.get("status") == "ready-for-host-checks" or rendered_command(body, "Verificação no host") is not None):
                     saved_host = EVENTS.root.parent / f"phase-{number}-host-checks.json"
@@ -979,8 +1096,22 @@ def execute(arguments: argparse.Namespace) -> int:
 
                 save_state(state_path, state, current_gate="validation")
                 started = gate_started(number, "validation", attempt)
+                restart_development = False
                 for evidence_attempt in range(2):
                     rendered = prepared_rendered if evidence_attempt == 0 and prepared_rendered is not None else run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60, evidence_request=evidence_request)
+                    if rendered["status"] == "failed" and rendered.get("diagnosable"):
+                        failed_render = {**rendered, "checks": [{"check": "rendered", "status": "failed", "log": rendered.get("log")}], "rendered": rendered}
+                        resolution = resolve_check_failure(package, repo, values, body, number, attempt, "rendered", failed_render,
+                                                           arguments.render_timeout_minutes * 60, arguments.validation_timeout_minutes * 60, arguments.model,
+                                                           confirm=lambda: rendered)
+                        if resolution["action"] in {"correct", "investigate"}:
+                            save_state(state_path, state, current_gate="development", last_failure=LEDGER.pending_report())
+                            restart_development = True
+                            break
+                        save_state(state_path, state, current_gate="validation-blocked", last_failure=validation_report(resolution["diagnosis"]))
+                        fail("rendered verification established an external/scope blocker; evidence preserved")
+                    if rendered["status"] == "completed":
+                        LEDGER.verified("rendered", redact_result(rendered), worktree_fingerprint(repo))
                     if previous_rendered:
                         rendered["previous_reports"] = [previous_rendered]
                         rendered["images"] = list(dict.fromkeys([*previous_rendered.get("images", []), *rendered.get("images", [])]))
@@ -1005,6 +1136,12 @@ def execute(arguments: argparse.Namespace) -> int:
                     if worktree_fingerprint(repo) != before:
                         fail("Gate 2 modified the repository")
                     action = validation_action(validation)
+                    scoped_unknown = any(item.get("kind") in {"verification-blocked", "evidence-missing"} and item.get("blocker_condition") == "none" for item in validation["findings"])
+                    if action != "retry" and scoped_unknown and (action != "prepare-evidence" or evidence_attempt or rendered_command(body) is None or rendered["status"] == "failed"):
+                        queue_review_correction(validation, rendered, "validation", repo, kind="investigation")
+                        save_state(state_path, state, current_gate="development", last_failure=LEDGER.pending_report())
+                        restart_development = True
+                        break
                     if action != "prepare-evidence":
                         if action in {"approved", "retry"} and evidence_request_path.exists():
                             evidence_request_path.unlink()
@@ -1020,6 +1157,8 @@ def execute(arguments: argparse.Namespace) -> int:
                     emit("evidence-preparation", phase=number, gate="validation", attempt=attempt, result="started", report_path=evidence_request_path)
                     previous_rendered = rendered
                     # The next pass reuses the approved capture command, never a command from agent output.
+                if restart_development:
+                    continue
                 save_state(state_path, state, current_gate="validation")
                 if action == "approved" and rendered["status"] == "failed":
                     action = "blocked"
@@ -1030,11 +1169,12 @@ def execute(arguments: argparse.Namespace) -> int:
                     gate_finished(number, "validation", attempt, "blocked", started, findings=validation.get("findings", []), rendered=rendered)
                     fail(f"Gate 2 interrompido por verificação bloqueada; corrija o ambiente/evidências e retome o mesmo comando. Diagnóstico: {diagnostic}. {sanitize(reason)}")
                 if action == "retry":
+                    queue_review_correction(validation, rendered, "validation", repo)
                     correction = validation_report(validation, defects_only=True)
                     save_state(state_path, state, current_gate="development", last_failure=correction)
                     gate_finished(number, "validation", attempt, "rejected", started, findings=validation.get("findings", []))
                     if attempt == arguments.max_attempts:
-                        fail(f"Gate 2 rejected phase {number} {attempt} times; changes were preserved")
+                        fail(f"phase development limit reached ({attempt}); validation findings and work preserved")
                     continue
                 gate_finished(number, "validation", attempt, "approved", started)
 
@@ -1045,7 +1185,6 @@ def execute(arguments: argparse.Namespace) -> int:
                 if not passed and not outcome["diagnosable"]:
                     save_state(state_path, state, current_gate="tests-blocked", last_failure=report)
                     fail(f"Gate 3 verification blocked; source and artifacts preserved. {sanitize(report)} Diagnóstico: {outcome['directory']}/report.json")
-                recovered_tests = False
                 if not passed:
                     save_state(state_path, state, current_gate="tests-diagnosis", last_failure=report)
                     try:
@@ -1056,51 +1195,22 @@ def execute(arguments: argparse.Namespace) -> int:
                         reason = "Diagnóstico da suíte indisponível: " + sanitize_text(str(error))
                         save_state(state_path, state, current_gate="tests-blocked", last_failure=reason)
                         fail(f"{reason}. Resultado original preservado: {report_path}")
-                    if resolution["action"] == "correct":
+                    if resolution["action"] in {"correct", "investigate"}:
                         correction = "Corrija somente os defeitos demonstrados pela suíte:\n" + validation_report(resolution["diagnosis"], defects_only=True)
                         if resolution["history"]:
                             correction += "\nInvestigação preservada: " + str(resolution["history"]["archive_path"])
                         save_state(state_path, state, current_gate="development", last_failure=correction)
                         gate_finished(number, "tests", attempt, "rejected", started, findings=resolution["diagnosis"]["findings"])
                         if attempt == arguments.max_attempts:
-                            fail(f"Gate 3 failed phase {number} {attempt} times. Diagnóstico: {report_path}")
+                            fail(f"phase development limit reached ({attempt}); suite findings and work preserved. Diagnóstico: {report_path}")
                         continue
-                    if resolution["action"] != "recovered":
+                    if resolution["action"] == "blocked":
                         reason = validation_report(resolution["diagnosis"]) + "\n" + resolution["reason"]
                         save_state(state_path, state, current_gate="tests-blocked", last_failure=reason)
                         gate_finished(number, "tests", attempt, "blocked", started, reason=reason)
                         fail(f"Suíte com causa não resolvida; trabalho e evidências preservados. {sanitize(reason)}")
-                    recovered_tests = True
                 gate_finished(number, "tests", attempt, "approved", started)
-
-                if recovered_tests:
-                    save_state(state_path, state, current_gate="validation")
-                    review_started = gate_started(number, "validation", attempt)
-                    values["INVESTIGATION_REPORT"] = investigation_context(number)
-                    before = worktree_fingerprint(repo)
-                    try:
-                        review = invoke_agent(package, repo, "validate", render(package / "prompts" / "validate.md", values), package / "schemas" / "validation-result.schema.json", number, arguments.validation_timeout_minutes * 60, arguments.model)
-                        validate_result(review, "validate")
-                        validate_evidence_scope(review, planning.read_text(encoding="utf-8"), body)
-                    except (ExecutionError, RuntimeFailure, OSError) as error:
-                        save_state(state_path, state, current_gate="validation-blocked", last_failure=sanitize_text(str(error)))
-                        fail("independent review of investigation results failed; work preserved")
-                    finally:
-                        if worktree_fingerprint(repo) != before:
-                            save_state(state_path, state, current_gate="validation-blocked")
-                            fail("Gate 2 modified the repository during investigation review; changes preserved")
-                    review_action = validation_action(review)
-                    if review_action == "retry":
-                        correction = validation_report(review, defects_only=True)
-                        save_state(state_path, state, current_gate="development", last_failure=correction)
-                        gate_finished(number, "validation", attempt, "rejected", review_started, findings=review["findings"])
-                        if attempt == arguments.max_attempts:
-                            fail("investigation review rejected at attempt limit; work preserved")
-                        continue
-                    if review_action != "approved":
-                        save_state(state_path, state, current_gate="validation-blocked", last_failure=validation_report(review))
-                        fail("investigation remains unverified by independent review; work preserved")
-                    gate_finished(number, "validation", attempt, "approved", review_started)
+                LEDGER.verified("tests", redact_result(outcome), worktree_fingerprint(repo))
 
                 save_state(state_path, state, current_gate="commit")
                 started = gate_started(number, "commit", attempt)
@@ -1114,6 +1224,7 @@ def execute(arguments: argparse.Namespace) -> int:
                 state["completed_phases"].append(number)
                 state["phase_commits"][str(number)] = commit
                 state.pop("last_failure", None)
+                state.pop("current_execution_id", None)
                 save_state(state_path, state, current_phase=None, current_gate=None)
                 gate_finished(number, "commit", attempt, "completed", started, commit=commit)
                 emit("phase-finished", phase=number, gate="commit", attempt=attempt, result="completed")
@@ -1128,7 +1239,8 @@ def parser() -> argparse.ArgumentParser:
     value = argparse.ArgumentParser()
     value.add_argument("planning")
     value.add_argument("--model", default="gpt-6.1-sol")
-    value.add_argument("--max-attempts", type=int, default=3)
+    value.add_argument("--max-attempts", type=int, default=6)
+    value.add_argument("--max-failure-attempts", type=int, default=2)
     value.add_argument("--dev-timeout-minutes", type=positive, default=60.0)
     value.add_argument("--validation-timeout-minutes", type=positive, default=30.0)
     value.add_argument("--render-timeout-minutes", type=positive, default=10.0)
@@ -1140,8 +1252,8 @@ def parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     arguments = parser().parse_args()
-    if arguments.max_attempts < 1:
-        print("Ralph interrompido: --max-attempts must be a positive integer", file=sys.stderr)
+    if arguments.max_attempts < 1 or arguments.max_failure_attempts < 1:
+        print("Ralph interrompido: development limits must be positive integers", file=sys.stderr)
         return 1
     try:
         return execute(arguments)

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [[ "${1:-}" != "execute" || $# -lt 2 ]]; then
-  echo "usage: ralph.sh execute <planning.md> [--model MODEL] [--max-attempts N] [--dev-timeout-minutes N] [--validation-timeout-minutes N] [--render-timeout-minutes N] [--tests-timeout-minutes N] [--verbose]" >&2
+  echo "usage: ralph.sh execute <planning.md> [--model MODEL] [--max-attempts N] [--max-failure-attempts N] [--dev-timeout-minutes N] [--validation-timeout-minutes N] [--host-timeout-minutes N] [--render-timeout-minutes N] [--tests-timeout-minutes N] [--verbose]" >&2
   exit 64
 fi
 
