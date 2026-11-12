@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/auth-layout';
+import AuthLayout from '@/layouts/auth/finai-auth-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
@@ -28,7 +28,9 @@ export default function Login({
         <>
             <Head title="Log in" />
 
-            <PasskeyVerify />
+            <div className="[&_span.bg-background]:bg-card">
+                <PasskeyVerify />
+            </div>
 
             <Form
                 {...store.form()}
@@ -54,7 +56,7 @@ export default function Login({
                             </div>
 
                             <div className="grid gap-2">
-                                <div className="flex items-center">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <Label htmlFor="password">Password</Label>
                                     {canResetPassword && (
                                         <TextLink
@@ -111,7 +113,7 @@ export default function Login({
             </Form>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-positive">
+                <div className="mt-6 rounded-md border border-positive bg-card p-4 text-sm leading-relaxed font-medium text-positive">
                     {status}
                 </div>
             )}
