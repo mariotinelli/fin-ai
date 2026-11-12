@@ -4,6 +4,8 @@ Correct only the findings below in repository `{{REPOSITORY}}`. This is a fresh 
 
 If you start servers or test processes, record their PIDs and stop only those processes when finished. Do not perform general process or temporary-directory cleanup; preserve the Ralph executor and its artifacts.
 
+Use 3–6 short commentary milestones during a long correction: one plain line beginning with `RALPH_PROGRESS: `, at most 180 characters in pt-BR, naming the defect being corrected, the check result or the next concrete action. Report observed facts and new blockers; preserve the distinction between a started and a passed check. The parent coalesces updates to one per minute. Keep secrets, tool transcripts and repetitive liveness out of these lines; use commentary rather than shell commands or files. Return final JSON separately without the marker.
+
 ## Required reading
 
 {{CONTEXT_PATHS}}
@@ -31,3 +33,5 @@ Retain the primary visual source and approved adaptations during corrections. Fo
 Return the complete current `visual_evidence` collection, including preserved captures that still represent the corrected implementation. Each item identifies `path`, `screen`, `state`, `viewport`, `theme` and `reference`; paths must remain readable after your session and temporary processes close. Replace stale captures and explain unavailable coverage or the isolated authenticated fixture invocation in `checks`, without credentials or session data. This report replaces the previous development handoff for independent review.
 
 The correction report contains actionable implementation defects. The parent executor reruns the approved `Verificação renderizada` command after correction; do not repeat browser-launch attempts inside the agent sandbox solely to clear EPERM or declare a blocked comparison verified. Preserve the capture contract, test isolation and evidence directory; changes to the approved command require plan review.
+
+A host-diagnosis report is scoped the same way: correct only the demonstrated formatting/lint/test defects and listed affected files, preserving unrelated functionality and existing changes. Inspect the configured formatter/linter rules and use supported local tooling when available. Verification commands on the parent remain check-only; do not turn them into source-writing fixers, invent a new parent command, or return an unchanged handoff as if the defect were fixed. If the correction itself needs an unavailable tool, report the specific remaining obstacle and any required approved plan support; independent acceptance remains pending.

@@ -43,6 +43,33 @@ def sanitize_text(value: str) -> str:
     return "\n".join(SECRET_VALUES.sub("[REDACTED]", line) for line in value.split("\n"))
 
 
+class ProgressBuffer:
+    """Coalesce explicit agent milestones into short, infrequent updates."""
+
+    def __init__(self) -> None:
+        self.pending: str | None = None
+        self.last: str | None = None
+        self.sent_at: float | None = None
+
+    def offer(self, line: str) -> None:
+        if not line.startswith("RALPH_PROGRESS:"):
+            return
+        message = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", line.removeprefix("RALPH_PROGRESS:"))
+        message = re.sub(r"[\x00-\x1f\x7f]", " ", message)
+        message = " ".join(sanitize_text(message).split())[:180]
+        if message and message != self.last:
+            self.pending = message
+
+    def take(self, now: float, *, force: bool = False) -> str | None:
+        if self.pending is None or (not force and self.sent_at is not None and now - self.sent_at < 60):
+            return None
+        message = self.pending
+        self.pending = None
+        self.last = message
+        self.sent_at = now
+        return message
+
+
 class EventSink:
     """Write a safe console projection and private, structured execution records."""
 
@@ -122,6 +149,7 @@ def human_event(record: dict[str, Any]) -> str | None:
     gates = {
         "development": ("DESENVOLVIMENTO", "Gate 1"),
         "host-checks": ("VERIFICAÇÕES NO HOST", "Verificações do Desenvolvimento"),
+        "host-diagnosis": ("DIAGNÓSTICO", "Diagnóstico da verificação no host"),
         "validation": ("VALIDAÇÃO", "Gate 2"),
         "tests": ("TESTES", "Gate 3"),
         "integral_validation": ("VALIDAÇÃO INTEGRAL", "Validação integral"),
@@ -140,8 +168,11 @@ def human_event(record: dict[str, Any]) -> str | None:
     label, gate_name = gates[gate]
     if event == "evidence-preparation":
         return f"[EVIDÊNCIAS] Completando capturas com o comando aprovado; pedido: {record['report_path']} [{instant}]"
+    if event == "agent-update":
+        message = record.get("details", {}).get("message", "")
+        return f"[{label}] {message} [{instant}]" if message else None
     if event == "agent-progress":
-        return f"[{label}] {gate_name} em andamento; diagnóstico atualizado: {record['report_path']} [{instant}]"
+        return None  # Liveness remains in structured diagnostics, without console repetition.
     if event == "gate-started":
         return f"[{label}] {gate_name} em andamento [{instant}]"
     if event == "gate-finished":
