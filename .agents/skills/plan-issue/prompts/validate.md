@@ -40,6 +40,12 @@ Verification artifacts may be archived outside the workspace. Consult each comma
 
 Development may report `ready-for-host-checks`: implementation is ready, with explicit sandbox-limited checks completed by the parent using approved commands. Inspect those logs and results together with the code and rendered evidence; this status alone is not incomplete implementation or approval. A passed host check is input to this independent review, not a replacement for it. Gate 3 still owns the complete suite.
 
+## Verification investigation history
+
+{{INVESTIGATION_REPORT}}
+
+Review original failures together with reproduction and full-confirmation logs/artifacts. A later green result alone neither resolves the original cause nor proves a test was flaky; `not-reproduced` records a bounded observation. Unchanged source files do not rule out indirect regressions. Approve only when the phase's observable criteria and verification evidence actually suffice; otherwise identify a demonstrated defect or the concrete unresolved reliability/scope blocker. Never erase or silently disregard a failed run to obtain approval. A post-suite investigation requires this independent review again before commit.
+
 ## Parent-side rendered verification
 
 {{RENDERED_VERIFICATION}}

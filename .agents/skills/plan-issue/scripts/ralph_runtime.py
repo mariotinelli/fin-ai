@@ -150,6 +150,7 @@ def human_event(record: dict[str, Any]) -> str | None:
         "development": ("DESENVOLVIMENTO", "Gate 1"),
         "host-checks": ("VERIFICAÇÕES NO HOST", "Verificações do Desenvolvimento"),
         "host-diagnosis": ("DIAGNÓSTICO", "Diagnóstico da verificação no host"),
+        "investigation": ("INVESTIGAÇÃO", "Investigação da verificação"),
         "validation": ("VALIDAÇÃO", "Gate 2"),
         "tests": ("TESTES", "Gate 3"),
         "integral_validation": ("VALIDAÇÃO INTEGRAL", "Validação integral"),
@@ -166,6 +167,9 @@ def human_event(record: dict[str, Any]) -> str | None:
             return "Execução concluída. Revise o diff completo e teste no navegador quando aplicável."
         return None
     label, gate_name = gates[gate]
+    if event == "investigation-progress":
+        message = "Reproduzindo a falha com comando aprovado" if record.get("details", {}).get("step") == "reproducing" else "Confirmando com todas as verificações obrigatórias"
+        return f"[{label}] {message} [{instant}]"
     if event == "evidence-preparation":
         return f"[EVIDÊNCIAS] Completando capturas com o comando aprovado; pedido: {record['report_path']} [{instant}]"
     if event == "agent-update":
