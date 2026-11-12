@@ -1,7 +1,6 @@
 import { Form, Head } from '@inertiajs/react';
 import { useRef } from 'react';
 import UserPasswordController from '@/actions/App/Http/Controllers/UserPasswordController';
-import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -30,12 +29,14 @@ export default function Password({ passwordRules }: Props) {
         <>
             <Head title="Password settings" />
 
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
-                />
+            <div className="space-y-6 rounded-2xl border bg-card p-4 text-card-foreground sm:p-6">
+                <header className="space-y-1">
+                    <h2 className="text-xl font-semibold">Update password</h2>
+                    <p className="text-sm text-muted-foreground">
+                        Ensure your account is using a long, random password to
+                        stay secure
+                    </p>
+                </header>
 
                 <Form
                     {...UserPasswordController.update.form()}
@@ -70,7 +71,7 @@ export default function Password({ passwordRules }: Props) {
                                     id="current_password"
                                     ref={currentPasswordInput}
                                     name="current_password"
-                                    className="mt-1 block w-full"
+                                    className="block w-full"
                                     autoComplete="current-password"
                                     placeholder="Current password"
                                 />
@@ -86,7 +87,7 @@ export default function Password({ passwordRules }: Props) {
                                     ref={passwordInput}
                                     name="password"
                                     passwordrules={passwordRules}
-                                    className="mt-1 block w-full"
+                                    className="block w-full"
                                     autoComplete="new-password"
                                     placeholder="New password"
                                 />
@@ -103,7 +104,7 @@ export default function Password({ passwordRules }: Props) {
                                     id="password_confirmation"
                                     name="password_confirmation"
                                     passwordrules={passwordRules}
-                                    className="mt-1 block w-full"
+                                    className="block w-full"
                                     autoComplete="new-password"
                                     placeholder="Confirm password"
                                 />
@@ -113,7 +114,7 @@ export default function Password({ passwordRules }: Props) {
                                 />
                             </div>
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-4 border-t pt-6">
                                 <Button
                                     disabled={processing}
                                     data-test="update-password-button"
@@ -129,4 +130,7 @@ export default function Password({ passwordRules }: Props) {
     );
 }
 
-Password.layout = [[AppLayout, { breadcrumbs }], SettingsLayout];
+Password.layout = [
+    [AppLayout, { breadcrumbs }],
+    [SettingsLayout, { finai: true }],
+];

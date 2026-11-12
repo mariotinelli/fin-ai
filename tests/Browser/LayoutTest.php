@@ -74,6 +74,8 @@ it('may delete the account from the profile settings', function (): void {
         ->fill('password', 'password')
         ->click('@confirm-delete-user-button')
         ->assertPathIs('/')
+        ->navigate(route('user-profile.edit'))
+        ->assertPathIs('/login')
         ->assertNoJavaScriptErrors();
 
     expect($user->fresh())->toBeNull();

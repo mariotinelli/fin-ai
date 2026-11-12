@@ -40,7 +40,10 @@ const sidebarNavItems: NavItem[] = [
     },
 ];
 
-export default function SettingsLayout({ children }: PropsWithChildren) {
+export default function SettingsLayout({
+    children,
+    finai = false,
+}: PropsWithChildren<{ finai?: boolean }>) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
     // When server-side rendering, we only render the layout on the client...
@@ -49,14 +52,43 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     return (
-        <div className="px-4 py-6">
-            <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
-            />
+        <div
+            className={
+                finai
+                    ? 'mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-8'
+                    : 'px-4 py-6'
+            }
+        >
+            {finai ? (
+                <header className="mb-8 space-y-2">
+                    <h1 className="font-serif text-[clamp(32px,3vw,40px)] leading-[1.2] font-normal tracking-[-1px]">
+                        Settings
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Manage your profile and account settings
+                    </p>
+                </header>
+            ) : (
+                <Heading
+                    title="Settings"
+                    description="Manage your profile and account settings"
+                />
+            )}
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
+            <div
+                className={
+                    finai
+                        ? 'flex min-w-0 flex-col gap-8 lg:flex-row'
+                        : 'flex flex-col lg:flex-row lg:space-x-12'
+                }
+            >
+                <aside
+                    className={
+                        finai
+                            ? 'w-full shrink-0 lg:w-48'
+                            : 'w-full max-w-xl lg:w-48'
+                    }
+                >
                     <nav
                         className="flex flex-col space-y-1 space-x-0"
                         aria-label="Settings"
@@ -67,11 +99,27 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 size="sm"
                                 variant="ghost"
                                 asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
-                                })}
+                                className={cn(
+                                    'w-full justify-start',
+                                    finai && 'min-h-12 px-4 text-base',
+                                    {
+                                        'bg-muted':
+                                            !finai &&
+                                            isCurrentOrParentUrl(item.href),
+                                        'bg-accent text-primary':
+                                            finai &&
+                                            isCurrentOrParentUrl(item.href),
+                                    },
+                                )}
                             >
-                                <Link href={item.href}>
+                                <Link
+                                    href={item.href}
+                                    aria-current={
+                                        finai && isCurrentOrParentUrl(item.href)
+                                            ? 'page'
+                                            : undefined
+                                    }
+                                >
                                     {item.icon && (
                                         <item.icon className="h-4 w-4" />
                                     )}
@@ -82,10 +130,18 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                     </nav>
                 </aside>
 
-                <Separator className="my-6 lg:hidden" />
+                {!finai && <Separator className="my-6 lg:hidden" />}
 
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">
+                <div
+                    className={finai ? 'min-w-0 flex-1' : 'flex-1 md:max-w-2xl'}
+                >
+                    <section
+                        className={
+                            finai
+                                ? 'max-w-3xl space-y-6'
+                                : 'max-w-xl space-y-12'
+                        }
+                    >
                         {children}
                     </section>
                 </div>

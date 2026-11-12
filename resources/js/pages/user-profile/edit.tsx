@@ -1,7 +1,6 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import UserProfileController from '@/actions/App/Http/Controllers/UserProfileController';
 import DeleteUser from '@/components/delete-user';
-import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,14 +25,15 @@ export default function Edit({ status }: { status?: string }) {
         <>
             <Head title="Profile settings" />
 
-            <h1 className="sr-only">Profile settings</h1>
-
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Profile information"
-                    description="Update your name and email address"
-                />
+            <div className="space-y-6 rounded-2xl border bg-card p-4 text-card-foreground sm:p-6">
+                <header className="space-y-1">
+                    <h2 className="text-xl font-semibold">
+                        Profile information
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        Update your name and email address
+                    </p>
+                </header>
 
                 <Form
                     {...UserProfileController.update.form()}
@@ -49,7 +49,7 @@ export default function Edit({ status }: { status?: string }) {
 
                                 <Input
                                     id="name"
-                                    className="mt-1 block w-full"
+                                    className="block w-full"
                                     defaultValue={auth.user.name}
                                     name="name"
                                     required
@@ -57,10 +57,7 @@ export default function Edit({ status }: { status?: string }) {
                                     placeholder="Full name"
                                 />
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.name}
-                                />
+                                <InputError message={errors.name} />
                             </div>
 
                             <div className="grid gap-2">
@@ -69,7 +66,7 @@ export default function Edit({ status }: { status?: string }) {
                                 <Input
                                     id="email"
                                     type="email"
-                                    className="mt-1 block w-full"
+                                    className="block w-full"
                                     defaultValue={auth.user.email}
                                     name="email"
                                     required
@@ -77,15 +74,12 @@ export default function Edit({ status }: { status?: string }) {
                                     placeholder="Email address"
                                 />
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.email}
-                                />
+                                <InputError message={errors.email} />
                             </div>
 
                             {auth.user.email_verified_at === null && (
-                                <div>
-                                    <p className="-mt-4 text-sm text-muted-foreground">
+                                <div className="space-y-2 rounded-lg border bg-accent p-4">
+                                    <p className="text-sm text-muted-foreground">
                                         Your email address is unverified.{' '}
                                         <Link
                                             href={send()}
@@ -106,7 +100,7 @@ export default function Edit({ status }: { status?: string }) {
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-4 border-t pt-6">
                                 <Button
                                     disabled={processing}
                                     data-test="update-profile-button"
@@ -124,4 +118,7 @@ export default function Edit({ status }: { status?: string }) {
     );
 }
 
-Edit.layout = [[AppLayout, { breadcrumbs }], SettingsLayout];
+Edit.layout = [
+    [AppLayout, { breadcrumbs }],
+    [SettingsLayout, { finai: true }],
+];
