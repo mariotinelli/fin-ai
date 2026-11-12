@@ -98,6 +98,7 @@ def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
         phases.append((number, match.group(2).strip(), body))
         rendered_command(body)
         rendered_command(body, "Preflight da validação")
+        rendered_command(body, "Verificação no host")
     numbers = [phase[0] for phase in phases]
     if numbers != sorted(set(numbers)):
         fail("phase numbers must be unique and increasing")
@@ -360,14 +361,21 @@ def invoke_agent(package: Path, repo: Path, mode: str, prompt: str, schema: Path
 
 def validate_result(result: dict[str, Any], mode: str) -> None:
     if mode == "develop":
-        if result.get("status") not in {"completed", "blocked"}:
+        if result.get("status") not in {"completed", "blocked", "ready-for-host-checks"}:
             fail("development agent returned an invalid status")
-        if result["status"] == "blocked":
+        if result["status"] in {"blocked", "ready-for-host-checks"}:
             if not isinstance(result.get("summary"), str) or not result["summary"].strip():
-                fail("blocked development requires a concrete reason in summary")
+                fail("development handoff requires a concrete reason in summary")
             checks = result.get("checks")
             if not isinstance(checks, list) or not checks or any(not isinstance(item, str) or not item.strip() for item in checks):
-                fail("blocked development requires diagnostic checks")
+                fail("development handoff requires diagnostic checks")
+        pending = result.get("pending_checks", [])
+        if not isinstance(pending, list) or any(not isinstance(item, str) or item not in {"host", "rendered"} for item in pending) or len(set(pending)) != len(pending):
+            fail("pending_checks must identify unique approved host/rendered checks")
+        if result["status"] == "ready-for-host-checks" and not pending:
+            fail("ready-for-host-checks requires explicit pending_checks")
+        if result["status"] != "ready-for-host-checks" and pending:
+            fail("only ready-for-host-checks can defer checks to the host")
     elif result.get("verdict") not in {"approved", "rejected"} or not isinstance(result.get("findings"), list):
         fail("validation agent returned an invalid result")
     if mode != "develop":
@@ -518,6 +526,50 @@ def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: 
     return report
 
 
+def run_host_checks(repo: Path, phase_body: str, phase: int, timeout: float, pending: list[str]) -> dict[str, Any]:
+    """Complete only plan-declared checks, without allowing them to edit source."""
+    if EVENTS is None:
+        fail("runtime log is unavailable")
+    report: dict[str, Any] = {"status": "failed", "checks": [], "message": ""}
+    report_path = EVENTS.root.parent / f"phase-{phase}-host-checks.json"
+    try:
+        host = rendered_command(phase_body, "Verificação no host")
+        if "host" in pending and host is None:
+            fail("pending host check requires an approved Verificação no host command in planning.md")
+        if "rendered" in pending and rendered_command(phase_body) is None:
+            fail("pending rendered check requires an approved Verificação renderizada command in planning.md")
+        if host is not None:
+            log = EVENTS.private_file(f"phase-{phase}-host-checks.log")
+            before = worktree_fingerprint(repo)
+            try:
+                environment = os.environ.copy()
+                for name in ("RALPH_CAPTURE_MODE", "RALPH_EVIDENCE_DIR", "RALPH_EVIDENCE_REQUEST"):
+                    environment.pop(name, None)
+                with tempfile.TemporaryDirectory(prefix="ralph-host-check-") as temporary:
+                    environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
+                    passed, message, _ = run_tests(repo, host[0], phase, timeout, host[1], environment=environment, output_path=log, label="Verificação no host")
+            finally:
+                if worktree_fingerprint(repo) != before:
+                    fail(f"host verification modified repository source; changes preserved. Diagnóstico: {log}")
+            report["checks"].append({"check": "host", "status": "completed" if passed else "failed", "message": message, "log": str(log)})
+            if not passed:
+                fail(f"Verificação no host falhou; diagnostique ambiente ou defeito antes de corrigir código. Diagnóstico: {log}. {message}")
+        if "rendered" in pending:
+            rendered = run_rendered_verification(repo, phase_body, phase, timeout)
+            report["rendered"] = rendered
+            report["checks"].append({"check": "rendered", "status": rendered["status"], "log": rendered.get("log")})
+            if rendered["status"] != "completed":
+                fail(f"Verificação renderizada no host incompleta. Diagnóstico: {rendered.get('log')}. {rendered.get('message', '')}")
+        report["status"] = "completed"
+        report["message"] = "Verificações declaradas no host concluídas; revisão independente pendente."
+    except (ExecutionError, RuntimeFailure, OSError) as error:
+        report["message"] = sanitize_text(str(error))
+    atomic_json(report_path, redact_result(report))
+    if CANCELLED:
+        fail(f"execution cancelled; host diagnostics preserved: {report_path}")
+    return report
+
+
 def emit(event: str, **values: Any) -> None:
     if EVENTS is not None:
         EVENTS.emit(event, **values)
@@ -585,7 +637,8 @@ def execute(arguments: argparse.Namespace) -> int:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
             previous_gate = state.get("current_gate") if state.get("current_phase") == number else None
             resume_validation = previous_gate in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked"}
-            save_state(state_path, state, current_phase=number, current_gate="validation" if resume_validation else "development")
+            resume_host = previous_gate in {"host-checks", "host-checks-blocked"}
+            save_state(state_path, state, current_phase=number, current_gate="host-checks" if resume_host else "validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
             correction = str(state.get("last_failure", "")).strip() if previous_gate == "development" else ""
             rendered: dict[str, Any] = {"status": "not-configured", "images": []}
@@ -603,22 +656,28 @@ def execute(arguments: argparse.Namespace) -> int:
                 if not isinstance(previous_rendered, dict) or not isinstance(previous_rendered.get("images", []), list):
                     fail("saved rendered evidence report is invalid; changes preserved")
             development: dict[str, Any] = {"status": "unavailable", "message": "Relatório anterior indisponível; verificar evidências existentes e registrar lacunas."}
-            if resume_validation and development_path.is_file():
+            if (resume_validation or resume_host) and development_path.is_file():
                 try:
                     development = redact_result(json.loads(development_path.read_text(encoding="utf-8")))
                     if not isinstance(development, dict):
                         fail("saved development report must be a JSON object")
                 except (OSError, ValueError) as error:
                     fail(f"cannot read saved development report; changes preserved: {sanitize(str(error))}")
+            if resume_host:
+                validate_result(development, "develop")
+                if development.get("status") not in {"completed", "ready-for-host-checks"}:
+                    fail("host resume requires an explicit ready or completed development report; changes preserved")
             preflight = run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60, heading="Preflight da validação")
             if preflight["status"] == "failed":
-                save_state(state_path, state, current_gate="validation-blocked" if resume_validation else "preflight-blocked")
+                save_state(state_path, state, current_gate="host-checks-blocked" if resume_host else "validation-blocked" if resume_validation else "preflight-blocked")
                 fail(f"Preflight da validação bloqueado; corrija o ambiente e retome. Diagnóstico: {preflight.get('log')}. {sanitize(str(preflight.get('message', '')))}")
             for attempt in range(1, arguments.max_attempts + 1):
                 values = {"REPOSITORY": str(repo), "CONTEXT_PATHS": context, "PHASE": body, "PHASE_NUMBER": str(number), "CORRECTION_REPORT": correction,
                           "RENDERED_VERIFICATION": json.dumps(rendered, ensure_ascii=False, indent=2),
                           "VALIDATION_PREFLIGHT": json.dumps(preflight, ensure_ascii=False, indent=2)}
-                if not resume_validation:
+                prepared_rendered = None
+                host_report: dict[str, Any] = {"status": "not-configured", "checks": []}
+                if not resume_validation and not resume_host:
                     previous_rendered = {}
                     started = gate_started(number, "development", attempt)
                     template = package / "prompts" / ("correct.md" if correction else "develop.md")
@@ -639,18 +698,39 @@ def execute(arguments: argparse.Namespace) -> int:
                         save_state(state_path, state, current_gate="development-blocked", last_failure=reason)
                         gate_finished(number, "development", attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
                         fail(f"{sanitize(reason)} Diagnóstico: {diagnostic}. Corrija o impedimento e retome o mesmo comando; trabalho preservado.")
-                    gate_finished(number, "development", attempt, "completed", started)
+                    gate_finished(number, "development", attempt, "pending" if development["status"] == "ready-for-host-checks" else "completed", started)
+                if not resume_validation and (resume_host or development.get("status") == "ready-for-host-checks" or rendered_command(body, "Verificação no host") is not None):
+                    save_state(state_path, state, current_gate="host-checks")
+                    started = gate_started(number, "host-checks", attempt)
+                    host_report = run_host_checks(repo, body, number, arguments.host_timeout_minutes * 60, development.get("pending_checks", []))
+                    diagnostic = EVENTS.root.parent / f"phase-{number}-host-checks.json"
+                    if host_report["status"] != "completed":
+                        reason = str(host_report.get("message", "Verificações no host incompletas"))
+                        save_state(state_path, state, current_gate="host-checks-blocked", last_failure=reason)
+                        gate_finished(number, "host-checks", attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
+                        fail(f"{sanitize(reason)} Relatório: {diagnostic}. Retome o mesmo comando após diagnosticar/corrigir o impedimento; Desenvolvimento preservado.")
+                    prepared_rendered = host_report.get("rendered")
+                    gate_finished(number, "host-checks", attempt, "completed", started, report_path=str(diagnostic))
+                elif resume_validation and (development.get("status") == "ready-for-host-checks" or rendered_command(body, "Verificação no host") is not None):
+                    saved_host = EVENTS.root.parent / f"phase-{number}-host-checks.json"
+                    if saved_host.is_file():
+                        host_report = redact_result(json.loads(saved_host.read_text(encoding="utf-8")))
+                    if not isinstance(host_report, dict) or host_report.get("status") != "completed":
+                        save_state(state_path, state, current_gate="host-checks-blocked")
+                        fail("host verification report is missing or incomplete; resume the same command to rerun approved checks without development")
+                resume_host = False
                 resume_validation = False
 
                 save_state(state_path, state, current_gate="validation")
                 started = gate_started(number, "validation", attempt)
                 for evidence_attempt in range(2):
-                    rendered = run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60, evidence_request=evidence_request)
+                    rendered = prepared_rendered if evidence_attempt == 0 and prepared_rendered is not None else run_rendered_verification(repo, body, number, arguments.render_timeout_minutes * 60, evidence_request=evidence_request)
                     if previous_rendered:
                         rendered["previous_reports"] = [previous_rendered]
                         rendered["images"] = list(dict.fromkeys([*previous_rendered.get("images", []), *rendered.get("images", [])]))
                     values["RENDERED_VERIFICATION"] = json.dumps(rendered, ensure_ascii=False, indent=2)
                     values["DEVELOPMENT_REPORT"] = json.dumps(development, ensure_ascii=False, indent=2)
+                    values["HOST_VERIFICATION"] = json.dumps(host_report, ensure_ascii=False, indent=2)
                     values["VALIDATION_PREFLIGHT"] = json.dumps(preflight, ensure_ascii=False, indent=2)
                     values["EVIDENCE_REQUEST"] = evidence_request.read_text(encoding="utf-8") if evidence_request else "Sem pedido anterior de capturas adicionais."
                     before = worktree_fingerprint(repo)
@@ -745,6 +825,7 @@ def parser() -> argparse.ArgumentParser:
     value.add_argument("--dev-timeout-minutes", type=positive, default=60.0)
     value.add_argument("--validation-timeout-minutes", type=positive, default=30.0)
     value.add_argument("--render-timeout-minutes", type=positive, default=10.0)
+    value.add_argument("--host-timeout-minutes", type=positive, default=10.0)
     value.add_argument("--tests-timeout-minutes", type=positive, default=60.0)
     value.add_argument("--verbose", action="store_true")
     return value

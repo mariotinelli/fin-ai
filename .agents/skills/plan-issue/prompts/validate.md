@@ -30,6 +30,12 @@ Read the complete report, including every `checks` entry and `visual_evidence` i
 
 Preflight captures demonstrate environment readiness before development; phase acceptance requires current post-development evidence.
 
+## Host verification
+
+{{HOST_VERIFICATION}}
+
+Development may report `ready-for-host-checks`: implementation is ready, with explicit sandbox-limited checks completed by the parent using approved commands. Inspect those logs and results together with the code and rendered evidence; this status alone is not incomplete implementation or approval. A passed host check is input to this independent review, not a replacement for it. Gate 3 still owns the complete suite.
+
 ## Parent-side rendered verification
 
 {{RENDERED_VERIFICATION}}
