@@ -7,6 +7,7 @@ import hashlib
 import json
 import math
 import os
+import queue
 import re
 import shutil
 import signal
@@ -20,7 +21,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 sys.dont_write_bytecode = True
-from ralph_runtime import EventSink, RuntimeFailure, TaskLock, atomic_json, popen_group, sanitize, sanitize_text, SECRET_KEYS, terminate_process_tree
+from ralph_runtime import EventSink, ProgressBuffer, RuntimeFailure, TaskLock, atomic_json, popen_group, sanitize, sanitize_text, SECRET_KEYS, terminate_process_tree
 
 
 class ExecutionError(RuntimeError):
@@ -236,12 +237,18 @@ def communicate(process: subprocess.Popen[Any], timeout: float) -> tuple[str, st
         ACTIVE_PROCESS = None
 
 
+def agent_gate(mode: str) -> str:
+    return {"develop": "development", "validate": "validation", "diagnose-host": "host-diagnosis"}[mode]
+
+
 def stream_agent(process: subprocess.Popen[Any], timeout: float, stdout_path: Path, stderr_path: Path, phase: int, mode: str) -> tuple[str, str, int]:
     """Drain both pipes concurrently; keep sanitized diagnostics even on interruption."""
     global ACTIVE_PROCESS
     ACTIVE_PROCESS = process
     outputs: list[list[str]] = [[], []]
     failures: list[Exception] = []
+    progress_queue: queue.Queue[str] = queue.Queue()
+    progress = ProgressBuffer()
 
     def drain(pipe: Any, path: Path, output: list[str]) -> None:
         try:
@@ -251,6 +258,8 @@ def stream_agent(process: subprocess.Popen[Any], timeout: float, stdout_path: Pa
                     output.append(safe)
                     stream.write(safe)
                     stream.flush()
+                    if safe.startswith("RALPH_PROGRESS:"):
+                        progress_queue.put(safe)
         except Exception as error:
             failures.append(error)
 
@@ -258,16 +267,29 @@ def stream_agent(process: subprocess.Popen[Any], timeout: float, stdout_path: Pa
                for pipe, path, output in zip((process.stdout, process.stderr), (stdout_path, stderr_path), outputs)]
     started = time.monotonic()
     next_progress = started + 30
+
+    def flush_progress(*, force: bool = False) -> None:
+        while True:
+            try:
+                progress.offer(progress_queue.get_nowait())
+            except queue.Empty:
+                break
+        message = progress.take(time.monotonic(), force=force)
+        if message:
+            emit("agent-update", phase=phase, gate=agent_gate(mode),
+                 result="reported", report_path=stderr_path, details={"message": message})
+
     try:
         for reader in readers:
             reader.start()
         while process.poll() is None:
             now = time.monotonic()
+            flush_progress()
             if CANCELLED or now - started >= timeout:
                 terminate_process_tree(process)
                 fail("execution cancelled" if CANCELLED else f"process timed out after {timeout:g} seconds")
             if now >= next_progress:
-                emit("agent-progress", phase=phase, gate="development" if mode == "develop" else "validation",
+                emit("agent-progress", phase=phase, gate=agent_gate(mode),
                      result="running", report_path=stderr_path, duration_ms=int((now - started) * 1000))
                 next_progress = now + 30
             time.sleep(0.1)
@@ -279,6 +301,7 @@ def stream_agent(process: subprocess.Popen[Any], timeout: float, stdout_path: Pa
         for reader in readers:
             reader.join(timeout=5)
         ACTIVE_PROCESS = None
+        flush_progress(force=True)
     if any(reader.is_alive() for reader in readers):
         fail("agent output pipes did not close; diagnostics preserved")
     if failures:
@@ -345,7 +368,7 @@ def invoke_agent(package: Path, repo: Path, mode: str, prompt: str, schema: Path
         except ExecutionError as error:
             fail(f"{sanitize(str(error))}. Diagnóstico: {stderr_path}; saída: {stdout_path}")
         if returncode:
-            gate = "Gate 1" if mode == "develop" else "Gate 2"
+            gate = {"develop": "Gate 1", "validate": "Gate 2", "diagnose-host": "Diagnóstico no host"}[mode]
             fail(f"{gate} falhou: {extract_error(stderr)} (código de saída {returncode}). Diagnóstico: {stderr_path}")
         try:
             result = json.loads(result_path.read_text(encoding="utf-8"))
@@ -505,6 +528,7 @@ def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: 
             environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
             passed, output, _ = run_tests(repo, capture[0], phase, timeout, capture[1], environment=environment, output_path=log, label=heading)
         report["message"] = output
+        report["diagnosable"] = not passed
         if directory.is_symlink() or directory.resolve() != canonical:
             fail("capture directory was redirected")
         for path in directory.rglob("*"):
@@ -519,6 +543,7 @@ def run_rendered_verification(repo: Path, phase_body: str, phase: int, timeout: 
     except (ExecutionError, OSError) as error:
         if CANCELLED:
             raise
+        report["diagnosable"] = False
         report["message"] = sanitize_text(str(error))
     if worktree_fingerprint(repo) != before:
         fail(f"rendered verification modified repository source; changes preserved. Diagnóstico: {log}")
@@ -530,7 +555,7 @@ def run_host_checks(repo: Path, phase_body: str, phase: int, timeout: float, pen
     """Complete only plan-declared checks, without allowing them to edit source."""
     if EVENTS is None:
         fail("runtime log is unavailable")
-    report: dict[str, Any] = {"status": "failed", "checks": [], "message": ""}
+    report: dict[str, Any] = {"status": "failed", "checks": [], "message": "", "diagnosable": False}
     report_path = EVENTS.root.parent / f"phase-{phase}-host-checks.json"
     try:
         host = rendered_command(phase_body, "Verificação no host")
@@ -539,7 +564,7 @@ def run_host_checks(repo: Path, phase_body: str, phase: int, timeout: float, pen
         if "rendered" in pending and rendered_command(phase_body) is None:
             fail("pending rendered check requires an approved Verificação renderizada command in planning.md")
         if host is not None:
-            log = EVENTS.private_file(f"phase-{phase}-host-checks.log")
+            log = EVENTS.private_file(f"phase-{phase}-host-checks-{uuid.uuid4()}.log")
             before = worktree_fingerprint(repo)
             try:
                 environment = os.environ.copy()
@@ -553,12 +578,14 @@ def run_host_checks(repo: Path, phase_body: str, phase: int, timeout: float, pen
                     fail(f"host verification modified repository source; changes preserved. Diagnóstico: {log}")
             report["checks"].append({"check": "host", "status": "completed" if passed else "failed", "message": message, "log": str(log)})
             if not passed:
+                report["diagnosable"] = True
                 fail(f"Verificação no host falhou; diagnostique ambiente ou defeito antes de corrigir código. Diagnóstico: {log}. {message}")
         if "rendered" in pending:
             rendered = run_rendered_verification(repo, phase_body, phase, timeout)
             report["rendered"] = rendered
             report["checks"].append({"check": "rendered", "status": rendered["status"], "log": rendered.get("log")})
             if rendered["status"] != "completed":
+                report["diagnosable"] = rendered.get("diagnosable", False)
                 fail(f"Verificação renderizada no host incompleta. Diagnóstico: {rendered.get('log')}. {rendered.get('message', '')}")
         report["status"] = "completed"
         report["message"] = "Verificações declaradas no host concluídas; revisão independente pendente."
@@ -568,6 +595,26 @@ def run_host_checks(repo: Path, phase_body: str, phase: int, timeout: float, pen
     if CANCELLED:
         fail(f"execution cancelled; host diagnostics preserved: {report_path}")
     return report
+
+
+def diagnose_host_failure(package: Path, repo: Path, values: dict[str, str], phase: int, timeout: float, model: str) -> dict[str, Any]:
+    """Classify a failed executed check without granting write access or approval."""
+    if EVENTS is None:
+        fail("runtime log is unavailable")
+    before = worktree_fingerprint(repo)
+    try:
+        result = invoke_agent(package, repo, "diagnose-host", render(package / "prompts" / "diagnose-host.md", values), package / "schemas" / "validation-result.schema.json", phase, timeout, model)
+        result = redact_result(result)
+        atomic_json(EVENTS.root.parent / f"phase-{phase}-host-diagnosis.json", result)
+        validate_result(result, "validate")
+        if result["verdict"] != "rejected" or not result["findings"] or result["visual_validation"]["status"] != "not-applicable":
+            fail("host diagnosis must report concrete defects/blockers without approving the phase or visual acceptance")
+        if any(finding.get("kind") not in {"defect", "verification-blocked"} for finding in result["findings"]):
+            fail("host diagnosis requires explicit defect or verification-blocked findings")
+        return result
+    finally:
+        if worktree_fingerprint(repo) != before:
+            fail("read-only host diagnosis modified repository source; changes preserved")
 
 
 def emit(event: str, **values: Any) -> None:
@@ -637,7 +684,7 @@ def execute(arguments: argparse.Namespace) -> int:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
             previous_gate = state.get("current_gate") if state.get("current_phase") == number else None
             resume_validation = previous_gate in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked"}
-            resume_host = previous_gate in {"host-checks", "host-checks-blocked"}
+            resume_host = previous_gate in {"host-checks", "host-checks-blocked", "host-diagnosis"}
             save_state(state_path, state, current_phase=number, current_gate="host-checks" if resume_host else "validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
             correction = str(state.get("last_failure", "")).strip() if previous_gate == "development" else ""
@@ -706,6 +753,32 @@ def execute(arguments: argparse.Namespace) -> int:
                     diagnostic = EVENTS.root.parent / f"phase-{number}-host-checks.json"
                     if host_report["status"] != "completed":
                         reason = str(host_report.get("message", "Verificações no host incompletas"))
+                        if host_report.get("diagnosable"):
+                            save_state(state_path, state, current_gate="host-diagnosis", last_failure=reason)
+                            diagnosis_started = gate_started(number, "host-diagnosis", attempt)
+                            values["HOST_VERIFICATION"] = json.dumps(host_report, ensure_ascii=False, indent=2)
+                            try:
+                                diagnosis = diagnose_host_failure(package, repo, values, number, arguments.validation_timeout_minutes * 60, arguments.model)
+                            except (ExecutionError, RuntimeFailure, OSError) as error:
+                                reason = "Diagnóstico da falha no host indisponível: " + sanitize_text(str(error)) + "\nFalha original: " + reason
+                                gate_finished(number, "host-diagnosis", attempt, "blocked", diagnosis_started, reason=reason)
+                            else:
+                                if validation_action(diagnosis) == "retry":
+                                    correction = "Corrija somente os defeitos demonstrados pela verificação no host, preservando o restante da fase:\n" + validation_report(diagnosis, defects_only=True) + f"\nRelatório da verificação: {diagnostic}"
+                                    save_state(state_path, state, current_gate="development", last_failure=correction)
+                                    gate_finished(number, "host-diagnosis", attempt, "rejected", diagnosis_started, findings=diagnosis["findings"])
+                                    gate_finished(number, "host-checks", attempt, "rejected", started, findings=diagnosis["findings"], report_path=str(diagnostic))
+                                    if attempt == arguments.max_attempts:
+                                        fail(f"Verificações no host rejeitaram a fase {number} {attempt} vezes; correção e trabalho preservados. Diagnóstico: {diagnostic}")
+                                    resume_host = False
+                                    resume_validation = False
+                                    previous_rendered = {}
+                                    evidence_request = None
+                                    if evidence_request_path.exists():
+                                        evidence_request_path.unlink()
+                                    continue
+                                reason += "\n" + validation_report(diagnosis)
+                                gate_finished(number, "host-diagnosis", attempt, "blocked", diagnosis_started, findings=diagnosis["findings"])
                         save_state(state_path, state, current_gate="host-checks-blocked", last_failure=reason)
                         gate_finished(number, "host-checks", attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
                         fail(f"{sanitize(reason)} Relatório: {diagnostic}. Retome o mesmo comando após diagnosticar/corrigir o impedimento; Desenvolvimento preservado.")

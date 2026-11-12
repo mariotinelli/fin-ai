@@ -38,7 +38,7 @@ def cli_compatibility(codex: str, repo: str, sandbox: str) -> str | None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=("develop", "validate"), required=True)
+    parser.add_argument("--mode", choices=("develop", "validate", "diagnose-host"), required=True)
     parser.add_argument("--prompt", required=True)
     parser.add_argument("--schema", required=True)
     parser.add_argument("--result", required=True)

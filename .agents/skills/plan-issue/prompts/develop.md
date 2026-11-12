@@ -4,6 +4,8 @@ Implement only the approved phase below in repository `{{REPOSITORY}}`. This is 
 
 If you start servers or test processes, record their PIDs and stop only those processes when finished. Do not perform general process or temporary-directory cleanup; preserve the Ralph executor and its artifacts.
 
+Report compact progress in commentary using one plain line starting with `RALPH_PROGRESS: ` followed by at most 180 characters in pt-BR. Send 3–6 meaningful milestones during a long phase: requirements mapped, concrete implementation area being changed, focused check result and next action, or a new blocker. State observed facts; separate attempted checks from passed checks. Keep each update about the current work rather than narrating tools, repeating liveness or estimating percentages. The parent extracts these lines without reading your transcript and limits display to one per minute, keeping the latest pending update. Do not run a command merely to print progress, write a progress file or include secrets. Return the final schema JSON separately, without a marker prefix.
+
 ## Required reading
 
 {{CONTEXT_PATHS}}
