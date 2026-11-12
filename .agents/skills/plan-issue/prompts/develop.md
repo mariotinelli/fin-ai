@@ -6,6 +6,8 @@ If you start servers or test processes, record their PIDs and stop only those pr
 
 Report compact progress in commentary using one plain line starting with `RALPH_PROGRESS: ` followed by at most 180 characters in pt-BR. Send 3–6 meaningful milestones during a long phase: requirements mapped, concrete implementation area being changed, focused check result and next action, or a new blocker. State observed facts; separate attempted checks from passed checks. Keep each update about the current work rather than narrating tools, repeating liveness or estimating percentages. The parent extracts these lines without reading your transcript and limits display to one per minute, keeping the latest pending update. Do not run a command merely to print progress, write a progress file or include secrets. Return the final schema JSON separately, without a marker prefix.
 
+Prepare verifier outputs under the approved artifact contract: parent commands receive `RALPH_ARTIFACTS_DIR` for generated logs/reports/traces/screenshots; fixed workspace output roots must be declared in the phase's `Artefatos de verificação`. Capture variables belong to parent subprocesses, not this agent session. Preserve tracked baselines/source, keep generated outputs separate, and report a needed localized plan amendment if a tool has an undeclared output path. Do not weaken source checks or add blanket image/report ignores to conceal verification side effects.
+
 ## Required reading
 
 {{CONTEXT_PATHS}}

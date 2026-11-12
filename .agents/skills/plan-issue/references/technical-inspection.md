@@ -38,4 +38,6 @@ Expand aggregate scripts until relevant verifiers, options and configuration are
 
 Check required runtime, package managers and coverage support. Distinguish commands that only check from commands that fix files. Identify a reproducible execution path in the project and Ralph environments; do not reduce requirements or install dependencies to bypass a blocked baseline.
 
-**Complete when:** the complete command, its composition and prerequisites are known, and its effects allow initial observation without modifying tracked files.
+Inspect every verifier's success, assertion-failure and interrupted-run output locations, using installed configuration/code rather than only a passing run. Include screenshots, traces/videos, coverage, reports, logs and cleanup behavior. Route supported output options to `RALPH_ARTIFACTS_DIR`; otherwise map fixed generated directories to the phase's `Artefatos de verificação` under [the shared output contract](planning-contract.md). Keep tracked baselines/source protected and generated ownership explicit. Test the failure-plus-artifact handoff with an isolated representative fixture where feasible, without introducing a failing application test or changing product behavior. Missing output knowledge is a technical preparation gap, not permission to ignore arbitrary new files or disable source checks.
+
+**Complete when:** the complete command, its composition/prerequisites and success/failure outputs are known, with safe artifact routing and initial observation preserving tracked files.
