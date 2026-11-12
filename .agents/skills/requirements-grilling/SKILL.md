@@ -5,6 +5,8 @@ description: Interview stakeholders to expose and resolve functional requirement
 
 # Requirements grilling
 
+At entry, read [user communication](references/user-communication.md) unless already read in this conversation. Apply it to progress, blockers and delivery, preserving this workflow's complete decision and approval requirements.
+
 Respond in Brazilian Portuguese (pt-BR) from the first announcement, including questions, recommendations, decision records, authored requirements and final review. Preserve technical identifiers and apply this language choice when invoked by another workflow unless the user explicitly requests another language. The question example below is user-facing Portuguese, not the language of these instructions.
 
 Turn the available evidence and stakeholder answers into shared functional understanding. Product decisions belong to the stakeholder; technical facts come from the available repository, tools, and sources.

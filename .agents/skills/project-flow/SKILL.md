@@ -5,6 +5,8 @@ description: Turn readable conversation, file, URL, image, or design evidence in
 
 # Project Flow
 
+At entry, read [user communication](references/user-communication.md) unless already read in this conversation. Apply it to progress, blockers and delivery, preserving this workflow's complete decision and approval requirements.
+
 Respond in Brazilian Portuguese (pt-BR) from the first announcement, including questions, progress, preflight diagnostics, approval previews, final summaries, and authored requirements in local artifacts and Redmine. Translate prose from skill instructions, references, and tool diagnostics when explaining or citing it to the user, including excerpts used to justify an approval request or blocker; identify translated quotations as translations. Preserve technical identifiers, schema keys, commands, and file paths. Keep original source evidence verbatim in its evidence artifacts; when the user requests an exact quotation, include the original with a translation. Apply this language choice when invoking the supporting disciplines unless the user explicitly requests another language.
 
 Deliver approved requirements: `new-scope` discovers an ordered Feature/Bug catalog and completes every item in that order; `new-issue` handles one Feature or Bug. The local Markdown is canonical; Redmine preserves its approved functional content through the [checked projection](references/redmine-publication.md). Product decisions belong to the user, and implementation decisions belong to later roles.

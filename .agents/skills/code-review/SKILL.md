@@ -5,6 +5,8 @@ description: Review a GitLab merge request, GitHub pull request, or the current 
 
 # Code review
 
+At entry, read [user communication](references/user-communication.md) unless already read in this conversation. Apply it to progress, blockers and delivery, preserving this workflow's complete decision and approval requirements.
+
 Respond in Brazilian Portuguese from the first announcement, including questions, progress, findings, reports, approval previews and published comments. Translate prose from these instructions when explaining it; preserve technical identifiers, commands and paths. The report template is deliberately in Portuguese because it is user-facing output.
 
 Deliver separate conclusions for technical quality and task alignment. This workflow reviews and recommends: it does not implement fixes, create commits, formally approve, request changes through platform state, merge, or modify Redmine.

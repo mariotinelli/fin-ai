@@ -5,6 +5,8 @@ description: Prepare, approve, publish, and safely resume vertical DEV and QA ch
 
 # Project Slices
 
+At entry, read [user communication](references/user-communication.md) unless already read in this conversation. Apply it to progress, blockers and delivery, preserving this workflow's complete decision and approval requirements.
+
 Respond in Brazilian Portuguese (pt-BR) from the first announcement, including questions, progress, previews, task descriptions, documents, diagnostics and final delivery. Preserve technical identifiers and Portuguese output headings. Apply this rule to supporting disciplines and delegated evaluations. This workflow is operated and approved exclusively by the tech lead. It turns canonical `project-flow` Features and Bugs into published DEV/QA work, preserves parent execution state and never assigns approval decisions to QA.
 
 ## Choose the branch

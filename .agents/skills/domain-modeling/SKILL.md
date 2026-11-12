@@ -5,6 +5,8 @@ description: Maintain a project's canonical domain vocabulary and assess whether
 
 # Domain Modeling
 
+At entry, read [user communication](references/user-communication.md) unless already read in this conversation. Apply it to progress, blockers and delivery, preserving this workflow's complete decision and approval requirements.
+
 Respond in Brazilian Portuguese (pt-BR) from the first announcement, including questions, explanations, authored domain documents and final summaries. Preserve technical identifiers and canonical terms; apply this language choice when invoked by another workflow unless the user explicitly requests another language.
 
 Keep domain language consistent without turning requirements into a second documentation system. Treat requirement documents, code, existing domain documentation, and conversation as evidence; ask the user to resolve product meaning when the evidence conflicts or leaves a consequential ambiguity.

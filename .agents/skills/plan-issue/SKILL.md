@@ -5,6 +5,8 @@ description: Technically plan a DEV child task in executable phases and produce 
 
 # Plan issue
 
+At entry, read [user communication](references/user-communication.md) unless already read in this conversation. Apply it to progress, blockers and delivery, preserving this workflow's complete decision and approval requirements.
+
 Turn a DEV child into a human-readable `planning.md` executable by Ralph. Use `task.md` and the parent requirement as product sources, inspect the repository for technical facts, and never read or modify Redmine.
 
 Respond in Brazilian Portuguese (pt-BR) from the first announcement, including questions, progress, diagnostics, planning documents and final delivery. Preserve technical identifiers, paths and the Portuguese document headings required by the executor. Apply this language rule to delegated work.

@@ -159,8 +159,10 @@
       "subject_sha256": "e391a2f8233ae6ed90d8ef2258020d3ac9559d18e92e15defa82fdafe8a0a183",
       "approved_by": "Mário Tinelli",
       "approved_at": "2026-11-11T12:20:43.761199+00:00",
-      "status": "valid",
-      "document_path": ".flow/publications/5ae5d9c1-e2c8-4348-a9dc-3ac373b496d6/feature-snapshot.md"
+      "status": "invalidated",
+      "document_path": ".flow/publications/5ae5d9c1-e2c8-4348-a9dc-3ac373b496d6/feature-snapshot.md",
+      "invalidated_at": "2026-11-12T12:36:15Z",
+      "invalidated_reason": "Usuário respondeu aprovado à correção exata apresentada nesta conversa, hash 45c3eb2ed6672859bea4314ef95c938e247e38751f6d639f6a2837217e2d9942."
     },
     {
       "id": "plan-visual-001",
@@ -168,8 +170,28 @@
       "subject_sha256": "30fcba57af5d3b32bbf5224e6237588414b313528501d4a6dd349f50ada46a48",
       "approved_by": "Mário Tinelli",
       "approved_at": "2026-11-11T12:20:43.761199+00:00",
+      "status": "invalidated",
+      "plan_path": ".flow/publications/5ae5d9c1-e2c8-4348-a9dc-3ac373b496d6/plan.json",
+      "invalidated_at": "2026-11-12T12:36:15Z",
+      "invalidated_reason": "Correção visual aprovada substitui o requisito; o plano original e as operações concluídas permanecem históricos, sem repetição."
+    },
+    {
+      "id": "b686e511-07b5-404f-b610-0f6383e7af50",
+      "kind": "requirement",
+      "subject_sha256": "2b8662e884fae13069c9f7fbec32b031e45deed9b17b4dd2f1512ddc75fb8a34",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-12T12:36:15Z",
       "status": "valid",
-      "plan_path": ".flow/publications/5ae5d9c1-e2c8-4348-a9dc-3ac373b496d6/plan.json"
+      "document_path": ".flow/publications/b686e511-07b5-404f-b610-0f6383e7af50/feature-snapshot.md"
+    },
+    {
+      "id": "9da34d44-06ef-40da-a52e-edbb809dbe7a",
+      "kind": "publication-plan",
+      "subject_sha256": "697e19a84262a01001834e868dd5b9c02ca3d22baaa14775ac786987980bfd63",
+      "approved_by": "Mário Tinelli",
+      "approved_at": "2026-11-12T12:36:15Z",
+      "status": "valid",
+      "plan_path": ".flow/publications/b686e511-07b5-404f-b610-0f6383e7af50/plan.json"
     }
   ],
   "deferred_questions": [],

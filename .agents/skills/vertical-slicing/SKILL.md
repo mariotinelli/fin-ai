@@ -5,6 +5,8 @@ description: Evaluate and draft human-readable vertical implementation slices fr
 
 # Vertical Slicing
 
+At entry, read [user communication](references/user-communication.md) unless already read in this conversation. Apply it to progress, blockers and delivery, preserving this workflow's complete decision and approval requirements.
+
 Turn an approved Feature and code evidence into narrow, complete, verifiable DEV deliveries. This discipline determines slicing quality; the calling workflow owns selection, dialogue, approval, persistence and any external integration.
 
 Respond in Brazilian Portuguese (pt-BR), including proposals, task titles/descriptions, questions, estimates, progress and final delivery. Preserve technical identifiers and apply this language rule to delegated evaluations.

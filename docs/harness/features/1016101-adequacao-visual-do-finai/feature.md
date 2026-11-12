@@ -45,7 +45,7 @@ R2. Adequar aparência preserva os campos, validações, mensagens funcionais, o
 
 R3. A referência clara usa fundo #F5F7F8, superfícies brancas, texto #172622, texto secundário #52615C, verde principal #145C46, verde positivo #146345, vermelho negativo #A12B36, bordas #D6DFDB e destaque suave #E4F0E9. Preservar a hierarquia do design: títulos de destaque em Georgia e corpo em system-ui; controles com raio de 8px e painéis com 16px; espaçamento, bordas, sombras, estados e proporções conforme o pacote.
 
-R4. Preservar a organização visual responsiva do design nas estruturas aplicáveis: navegação lateral no desktop e adaptação superior no tablet/celular; controles e conteúdo reorganizados conforme o espaço. Não transportar os destinos financeiros futuros para telas atuais apenas para reproduzir a navegação do protótipo.
+R4. Aplicar a revisão design-input-002 à estrutura autenticada compartilhada: até 767px, marca no topo e navegação principal fixa no rodapé, de largura total, com base de 56px acrescida da área segura inferior e ícones de 24px, alvos de pelo menos 44px, sem legendas visíveis e com nomes acessíveis; de 768 a 1024px inclusive, navegação lateral compacta de 72px acrescida da área segura lateral, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem barra inferior; a partir de 1025px, navegação lateral desktop, preservando o recolhimento e os destinos atuais. A partir de 768px, apresentar o conteúdo em superfície com fundo de trabalho, contorno de 1px, raio de 16px e margem de 8px, com a navegação integrada ao entorno e cabeçalho transparente conforme a referência. Reservar espaço para navegação e áreas seguras, sem encobrir conteúdo, foco, mensagens ou controles. Preservar acesso ao menu da conta, configurações, links e saída em todas as larguras, adaptando sua apresentação quando o protótipo esconder o rodapé lateral. Não transportar destinos financeiros futuros para as telas atuais.
 
 R5. Preservar claro, escuro e acompanhar o sistema. A variante escura é uma adaptação aprovada da identidade fornecida, mantendo hierarquia visual, distinção entre superfícies, leitura dos textos e identificação dos estados. Não reutilizar o tema escuro neutro do starter sem adequação à identidade FinAI.
 
@@ -61,7 +61,7 @@ Marca, cores, tipografia, títulos, textos funcionais atuais, campos, botões, m
 
 CA1. Ao visitar cada superfície de R1 que esteja disponível para o usuário, reconhecer a identidade FinAI na marca, tipografia, paleta e componentes; nas superfícies sem desenho próprio, preservar campos e finalidade com a mesma linguagem visual.
 
-CA2. No tema claro, comparar as estruturas e os componentes aplicáveis com o ZIP e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter.
+CA2. No tema claro, comparar as estruturas e os componentes aplicáveis com a referência design-input-001 e as alterações compartilhadas de design-input-002, conforme R4 e verificar cores de R3, títulos Georgia, corpo system-ui, hierarquia, espaçamentos, proporções, raios, bordas e estados, sem manter a aparência genérica do starter.
 
 CA3. Selecionar claro, escuro e acompanhar o sistema; cada opção continua disponível e aplica a aparência correspondente. Ao retornar à aplicação, manter a preferência conforme o comportamento existente.
 
@@ -69,7 +69,7 @@ CA4. Com acompanhar o sistema selecionado, alterar a preferência do dispositivo
 
 CA5. No tema escuro, abrir as mesmas superfícies e estados do tema claro; manter conteúdo e ações equivalentes, identidade FinAI, textos legíveis e distinção visual entre superfícies, bordas, foco, erros e demais estados existentes.
 
-CA6. Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais.
+CA6. Verificar as telas atuais em 360×800, 390×844, 430×932, 600×960, 820×1180, 1024×768, 1366×768, 1440×900 e 1920×1080; layout e navegação se adaptam sem rolagem horizontal da página, mantendo acesso às operações atuais. Conferir também as transições 767/768px e 1024/1025px, incluindo redimensionamento após recolher a navegação desktop; cada largura aplica o modo de R4 e mantém os destinos e ações atuais disponíveis.
 
 CA7. Navegar e utilizar formulários, menus e diálogos atuais com mouse e teclado; preservar rótulos, foco visível e estados aplicáveis de hover, ativo, desabilitado e carregamento demonstrados no design ou existentes na aplicação.
 
@@ -77,19 +77,25 @@ CA8. Executar ações atuais com dados válidos e inválidos, onde aplicável; c
 
 CA9. Ao navegar pela entrega, não encontrar novas páginas financeiras, dados fictícios, operações simuladas, rótulos de armazenamento apenas local ou assistente simulado apresentados como funcionalidades prontas. O dashboard atual permanece sem antecipar as capacidades da Feature Dashboard financeiro.
 
+CA10. Em largura de até 767px, reconhecer a marca no topo e a navegação principal fixa no rodapé em largura total, com base de 56px mais a área segura, ícones de 24px, alvos de pelo menos 44px, destino ativo e nomes acessíveis mesmo sem legenda visível. Percorrer até o fim da página, focar controles e abrir menus/diálogos: a navegação não encobre ações, mensagens ou foco, e o acesso à conta, configurações, links e saída permanece disponível.
+
+CA11. De 768 a 1024px inclusive, verificar lateral compacta de 72px mais a área segura, marca compacta, alvos de pelo menos 48px e conteúdo ao lado, sem navegação inferior. A partir de 1025px, verificar navegação lateral desktop com recolhimento atual preservado. Em ambas as faixas, comparar contorno de 1px, raio de 16px, margem de 8px, entorno contínuo e cabeçalho transparente com design-input-002, nos temas claro e escuro; em sistema, manter a preferência existente. Navegação, conta, configurações, links, saída e estados de foco/ativo continuam acessíveis.
+
 ## Dependências
 
 Sem dependência de outra Feature do catálogo. O pacote de design informado é a referência visual. A implementação das próximas Features deve usar esta base; seus próprios campos, fluxos, dados e composições de tela serão aceitos nos respectivos requisitos. A conclusão deste requisito não significa que a adequação visual já foi implementada.
 
 ## Designs e evidências
 
-Referência principal: design-input-001, ../../scopes/2026-11-11-finai-mvp/sources/design-input-001.md. Original: C:/Users/maari/Downloads/FinAI-Controle-Financeiro.zip. Identificador: d5659f24-e48f-439f-bda3-af5cf97f4591.
+Referência original preservada: design-input-001, ../../scopes/2026-11-11-finai-mvp/sources/design-input-001.md. SHA-256 do ZIP original: d7fec0da8d116208b921ee8cb152b8c3710cf4a7500e30aca6d7b43270dddbd5.
 
-Localizadores: index.html, estilos :root, .app, .sidebar, .topbar, .btn, campos, diálogos e media queries; superfícies #overview, #transactions e #assistant fornecem referências da linguagem visual para as entregas que as utilizarão. DESIGN-MANIFEST.json define os nove viewports de CA6; CSS, estrutura e comportamento foram extraídos integralmente sem executar o pacote.
+Revisão de layout: design-input-002, sources/design-input-002.md; solicitação e correção de tablet: conversation-input-002, sources/conversation-input-002.md. Original atual: C:/Users/maari/Downloads/FinAI-Controle-Financeiro.zip; SHA-256 2ab427ec4ac098c977046c3e70327dccc84d93557d2038b9774dfdce11fc3d47. O identificador interno d5659f24-e48f-439f-bda3-af5cf97f4591 permanece igual; o hash distingue as duas revisões. Design-input-002 prevalece sobre a estrutura compartilhada alterada; as demais referências e decisões permanecem válidas.
 
-Comparação atual: resources/css/app.css, resources/js/components/app-sidebar.tsx, resources/js/components/app-logo.tsx, resources/js/pages/dashboard.tsx e demais páginas em resources/js/pages. O código atual possui tema do starter e dashboard de placeholders. Preferência existente comprovada em resources/js/hooks/use-appearance.tsx e resources/js/pages/appearance/update.tsx.
+Localizadores novos: index.html, regras finais @media(max-width:1024px), @media(max-width:767px), @media(min-width:768px) and (max-width:1024px), @media(min-width:768px), .sidebar nav, .nav-label, .workspace, .topbar, .toast e variáveis --mobile-nav-*, --tablet-rail-width e --tablet-nav-target. O texto integral do HTML/CSS/JS, handoff, manifesto e o inventário dos três PNGs foram retidos na fonte normalizada, sem executar nem copiar os originais. O HTML é a fonte principal da composição; imagens auxiliares não criam telas ou destinos.
 
-Adaptações: o usuário confirmou nesta entrevista adequar todas as telas atuais, desenvolver as novas nas próximas Features e manter as opções de tema. Não há composição escura no ZIP; a variante escura aplica a identidade às telas existentes conforme R5 e CA5. Persistência no sistema e IA real prevalecem sobre rótulos do protótipo por decisão anterior do usuário. Não criar telas futuras para demonstrar a base visual.
+Comparação com o código: resources/js/components/app-sidebar.tsx, nav-main.tsx, nav-user.tsx, app-shell.tsx, app-sidebar-header.tsx e resources/js/layouts/app/app-sidebar-layout.tsx ainda apresentam navegação superior nas larguras menores e desktop a partir de 1024px. As novas composições e o limite 1024/1025px exigem uma tarefa complementar. A identidade e os temas existentes são reutilizados. tests/Browser/ShellNavigationTest.php contém verificações pertinentes de navegação, teclado, conta, saída e redimensionamento; os testes foram lidos, não executados nesta preparação.
+
+Adaptações preservadas: claro, escuro e acompanhar o sistema; todas as telas atuais recebem a linguagem visual, novas telas financeiras pertencem às próximas Features; persistência no sistema e IA real prevalecem sobre textos demonstrativos do protótipo. A mudança visual preserva o acesso atual à conta, configurações, links e saída mesmo quando o protótipo esconde .sidebar-bottom. Composições financeiras novas e seletor de mês/ação de nova transação não são antecipados nesta Feature. As tarefas encerradas de identidade e estrutura mantêm seu histórico e critérios originais; a nova referência será atendida por complemento.
 
 ## Dentro do escopo
 
