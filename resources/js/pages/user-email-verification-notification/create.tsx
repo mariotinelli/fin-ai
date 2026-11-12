@@ -3,7 +3,7 @@ import { Form, Head } from '@inertiajs/react';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/auth-layout';
+import AuthLayout from '@/layouts/auth/finai-auth-layout';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
@@ -13,7 +13,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
             <Head title="Email verification" />
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-positive">
+                <div className="mb-6 rounded-md border border-positive bg-card p-4 text-sm leading-relaxed font-medium text-positive">
                     A new verification link has been sent to the email address
                     you provided during registration.
                 </div>
@@ -22,7 +22,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
             <Form {...send.form()} className="space-y-6 text-center">
                 {({ processing }) => (
                     <>
-                        <Button disabled={processing} variant="secondary">
+                        <Button disabled={processing} className="w-full">
                             {processing && <Spinner />}
                             Resend verification email
                         </Button>
