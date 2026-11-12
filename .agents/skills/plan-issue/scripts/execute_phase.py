@@ -18,11 +18,12 @@ import threading
 import time
 import uuid
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, Callable
 
 sys.dont_write_bytecode = True
 from ralph_runtime import EventSink, ProgressBuffer, RuntimeFailure, TaskLock, atomic_json, popen_group, sanitize, sanitize_text, SECRET_KEYS, terminate_process_tree
 from verification_workspace import VerificationWorkspace, declared_artifacts
+from verification_investigation import read_history, resolve_failure
 
 
 class ExecutionError(RuntimeError):
@@ -101,6 +102,7 @@ def parse_planning(planning: Path) -> tuple[str, list[tuple[int, str, str]]]:
         rendered_command(body)
         rendered_command(body, "Preflight da validação")
         rendered_command(body, "Verificação no host")
+        rendered_command(body, "Reprodução da verificação")
         declared_artifacts(body)
     numbers = [phase[0] for phase in phases]
     if numbers != sorted(set(numbers)):
@@ -205,7 +207,7 @@ def worktree_fingerprint(repo: Path) -> str:
 def render(template: Path, values: dict[str, str]) -> str:
     text = template.read_text(encoding="utf-8")
     for key, value in values.items():
-        if key in {"RENDERED_VERIFICATION", "VALIDATION_PREFLIGHT", "HOST_VERIFICATION", "DEVELOPMENT_REPORT", "EVIDENCE_REQUEST", "CORRECTION_REPORT"} and len(value) > 50000 and "{{" + key + "}}" in text:
+        if key in {"RENDERED_VERIFICATION", "VALIDATION_PREFLIGHT", "HOST_VERIFICATION", "DEVELOPMENT_REPORT", "EVIDENCE_REQUEST", "CORRECTION_REPORT", "INVESTIGATION_REPORT"} and len(value) > 50000 and "{{" + key + "}}" in text:
             if EVENTS is None:
                 fail("runtime storage is required to preserve a large agent report")
             report = EVENTS.private_file(f"context-{key.lower()}-{uuid.uuid4()}.txt")
@@ -710,7 +712,7 @@ def diagnose_host_failure(package: Path, repo: Path, values: dict[str, str], pha
         fail("runtime log is unavailable")
     before = worktree_fingerprint(repo)
     try:
-        result = invoke_agent(package, repo, "diagnose-host", render(package / "prompts" / "diagnose-host.md", values), package / "schemas" / "validation-result.schema.json", phase, timeout, model)
+        result = invoke_agent(package, repo, "diagnose-host", render(package / "prompts" / "diagnose-host.md", values), package / "schemas" / "host-diagnosis.schema.json", phase, timeout, model)
         result = redact_result(result)
         atomic_json(EVENTS.root.parent / f"phase-{phase}-host-diagnosis.json", result)
         validate_result(result, "validate")
@@ -718,10 +720,71 @@ def diagnose_host_failure(package: Path, repo: Path, values: dict[str, str], pha
             fail("host diagnosis must report concrete defects/blockers without approving the phase or visual acceptance")
         if any(finding.get("kind") not in {"defect", "verification-blocked"} for finding in result["findings"]):
             fail("host diagnosis requires explicit defect or verification-blocked findings")
+        investigation = result.get("investigation")
+        if "investigation" in result:
+            if not isinstance(investigation, dict) or not isinstance(investigation.get("requested"), bool) or investigation.get("cause") not in {"not-needed", "inconclusive-test", "environment", "scope"} or not isinstance(investigation.get("reason"), str):
+                fail("diagnosis returned an invalid investigation request")
+            if investigation["requested"] and (investigation["cause"] != "inconclusive-test" or not investigation["reason"].strip() or any(f["kind"] == "defect" for f in result["findings"])):
+                fail("only inconclusive test failures without demonstrated defects can request reproduction")
         return result
     finally:
         if worktree_fingerprint(repo) != before:
             fail("read-only host diagnosis modified repository source; changes preserved")
+
+
+def investigation_path(phase: int, context: str) -> Path:
+    if EVENTS is None:
+        fail("runtime log is unavailable")
+    return EVENTS.root.parent / f"phase-{phase}-{context}-investigation.json"
+
+
+def investigation_context(phase: int) -> str:
+    return json.dumps({context: history for context in ("host", "tests") if (history := read_history(investigation_path(phase, context))) is not None}, ensure_ascii=False, indent=2)
+
+
+def reproduce_failure(repo: Path, phase_body: str, phase: int, timeout: float, context: str, report: dict[str, Any], repeat_suite: Callable[[], dict[str, Any]]) -> dict[str, Any]:
+    declared = rendered_command(phase_body, "Reprodução da verificação")
+    if declared is not None:
+        environment = os.environ.copy()
+        for key in ("RALPH_CAPTURE_MODE", "RALPH_EVIDENCE_DIR", "RALPH_EVIDENCE_REQUEST"):
+            environment.pop(key, None)
+        with tempfile.TemporaryDirectory(prefix="ralph-reproduction-") as temporary:
+            environment.update(TEMP=temporary, TMP=temporary, TMPDIR=temporary)
+            return run_verification(repo, declared[0], phase_body, phase, timeout, declared[1], environment=environment, label="Reprodução da verificação")
+    if context == "tests":
+        return repeat_suite()
+    checks = report.get("checks", [])
+    if checks and checks[-1].get("check") == "host":
+        return run_host_checks(repo, phase_body, phase, timeout, [])
+    if checks and checks[-1].get("check") == "rendered":
+        rendered = run_rendered_verification(repo, phase_body, phase, timeout)
+        return {"status": rendered["status"], "message": rendered.get("message", ""), "diagnosable": rendered.get("diagnosable", False), "rendered": rendered}
+    fail("cannot identify an approved failed command for reproduction")
+
+
+def resolve_check_failure(package: Path, repo: Path, values: dict[str, str], phase_body: str, phase: int, attempt: int, context: str,
+                          report: dict[str, Any], timeout: float, diagnosis_timeout: float, model: str,
+                          confirm: Callable[[], dict[str, Any]]) -> dict[str, Any]:
+    if EVENTS is None:
+        fail("runtime log is unavailable")
+    original_inputs = worktree_fingerprint(repo)
+    def diagnose(current: dict[str, Any], history: dict[str, Any] | None) -> dict[str, Any]:
+        started = gate_started(phase, "host-diagnosis", attempt)
+        diagnostic_values = {**values, "HOST_VERIFICATION": json.dumps(current, ensure_ascii=False, indent=2),
+                             "INVESTIGATION_REPORT": json.dumps(history, ensure_ascii=False, indent=2)}
+        result = diagnose_host_failure(package, repo, diagnostic_values, phase, diagnosis_timeout, model)
+        gate_finished(phase, "host-diagnosis", attempt, "rejected" if validation_action(result) == "retry" else "blocked", started, findings=result["findings"])
+        return result
+    def reproduce() -> dict[str, Any]:
+        emit("investigation-progress", phase=phase, gate="investigation", attempt=attempt, result="running", details={"step": "reproducing"})
+        return reproduce_failure(repo, phase_body, phase, timeout, context, report, confirm)
+    def confirmation() -> dict[str, Any]:
+        emit("investigation-progress", phase=phase, gate="investigation", attempt=attempt, result="running", details={"step": "confirming"})
+        return confirm()
+    return resolve_failure(report, history_path=investigation_path(phase, context),
+                           archive_path=EVENTS.root / f"phase-{phase}-{context}-investigation-{uuid.uuid4()}.json",
+                           diagnose=diagnose, reproduce=reproduce, confirm=confirmation,
+                           same_inputs=lambda: worktree_fingerprint(repo) == original_inputs)
 
 
 def emit(event: str, **values: Any) -> None:
@@ -791,7 +854,7 @@ def execute(arguments: argparse.Namespace) -> int:
             if worktree_changes(repo) and state.get("current_phase") != number:
                 fail("worktree has changes unrelated to the resumable phase; commit or discard them before Ralph")
             previous_gate = state.get("current_gate") if state.get("current_phase") == number else None
-            resume_validation = previous_gate in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked", "commit"}
+            resume_validation = previous_gate in {"validation", "validation-blocked", "evidence-preparation", "evidence-blocked", "commit", "tests-blocked", "tests-diagnosis"}
             resume_host = previous_gate in {"host-checks", "host-checks-blocked", "host-diagnosis"}
             save_state(state_path, state, current_phase=number, current_gate="host-checks" if resume_host else "validation" if resume_validation else "development")
             emit("phase-started", phase=number, result="started")
@@ -847,6 +910,10 @@ def execute(arguments: argparse.Namespace) -> int:
                             fail(f"Desenvolvimento bloqueado: {development_report(development)}")
                         if not worktree_changes(repo):
                             fail(f"Gate 1 finished without repository changes. {development_report(development)}")
+                        for context_name in ("host", "tests"):
+                            history_path = investigation_path(number, context_name)
+                            if history_path.exists():
+                                history_path.unlink()
                     except (ExecutionError, RuntimeFailure, OSError) as error:
                         reason = sanitize_text(str(error))
                         diagnostic = development_path if report_available else EVENTS.events_path
@@ -866,18 +933,19 @@ def execute(arguments: argparse.Namespace) -> int:
                         reason = str(host_report.get("message", "Verificações no host incompletas"))
                         if host_report.get("diagnosable"):
                             save_state(state_path, state, current_gate="host-diagnosis", last_failure=reason)
-                            diagnosis_started = gate_started(number, "host-diagnosis", attempt)
-                            values["HOST_VERIFICATION"] = json.dumps(host_report, ensure_ascii=False, indent=2)
                             try:
-                                diagnosis = diagnose_host_failure(package, repo, values, number, arguments.validation_timeout_minutes * 60, arguments.model)
-                            except (ExecutionError, RuntimeFailure, OSError) as error:
+                                resolution = resolve_check_failure(package, repo, values, body, number, attempt, "host", host_report,
+                                                                   arguments.host_timeout_minutes * 60, arguments.validation_timeout_minutes * 60, arguments.model,
+                                                                   confirm=lambda: run_host_checks(repo, body, number, arguments.host_timeout_minutes * 60, development.get("pending_checks", [])))
+                            except (ExecutionError, RuntimeFailure, OSError, ValueError) as error:
                                 reason = "Diagnóstico da falha no host indisponível: " + sanitize_text(str(error)) + "\nFalha original: " + reason
-                                gate_finished(number, "host-diagnosis", attempt, "blocked", diagnosis_started, reason=reason)
                             else:
-                                if validation_action(diagnosis) == "retry":
+                                diagnosis = resolution["diagnosis"]
+                                if resolution["action"] == "correct":
                                     correction = "Corrija somente os defeitos demonstrados pela verificação no host, preservando o restante da fase:\n" + validation_report(diagnosis, defects_only=True) + f"\nRelatório da verificação: {diagnostic}"
+                                    if resolution["history"]:
+                                        correction += "\nInvestigação preservada: " + str(resolution["history"]["archive_path"])
                                     save_state(state_path, state, current_gate="development", last_failure=correction)
-                                    gate_finished(number, "host-diagnosis", attempt, "rejected", diagnosis_started, findings=diagnosis["findings"])
                                     gate_finished(number, "host-checks", attempt, "rejected", started, findings=diagnosis["findings"], report_path=str(diagnostic))
                                     if attempt == arguments.max_attempts:
                                         fail(f"Verificações no host rejeitaram a fase {number} {attempt} vezes; correção e trabalho preservados. Diagnóstico: {diagnostic}")
@@ -888,11 +956,15 @@ def execute(arguments: argparse.Namespace) -> int:
                                     if evidence_request_path.exists():
                                         evidence_request_path.unlink()
                                     continue
-                                reason += "\n" + validation_report(diagnosis)
-                                gate_finished(number, "host-diagnosis", attempt, "blocked", diagnosis_started, findings=diagnosis["findings"])
-                        save_state(state_path, state, current_gate="host-checks-blocked", last_failure=reason)
-                        gate_finished(number, "host-checks", attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
-                        fail(f"{sanitize(reason)} Relatório: {diagnostic}. Retome o mesmo comando após diagnosticar/corrigir o impedimento; Desenvolvimento preservado.")
+                                if resolution["action"] == "recovered":
+                                    host_report = {**resolution["report"], "investigation": resolution["history"]}
+                                    atomic_json(diagnostic, host_report)
+                                else:
+                                    reason += "\n" + validation_report(diagnosis) + "\n" + resolution["reason"]
+                        if host_report["status"] != "completed":
+                            save_state(state_path, state, current_gate="host-checks-blocked", last_failure=reason)
+                            gate_finished(number, "host-checks", attempt, "blocked", started, reason=reason, report_path=str(diagnostic))
+                            fail(f"{sanitize(reason)} Relatório: {diagnostic}. Retome o mesmo comando após diagnosticar/corrigir o impedimento; Desenvolvimento preservado.")
                     prepared_rendered = host_report.get("rendered")
                     gate_finished(number, "host-checks", attempt, "completed", started, report_path=str(diagnostic))
                 elif resume_validation and (development.get("status") == "ready-for-host-checks" or rendered_command(body, "Verificação no host") is not None):
@@ -915,6 +987,7 @@ def execute(arguments: argparse.Namespace) -> int:
                     values["RENDERED_VERIFICATION"] = json.dumps(rendered, ensure_ascii=False, indent=2)
                     values["DEVELOPMENT_REPORT"] = json.dumps(development, ensure_ascii=False, indent=2)
                     values["HOST_VERIFICATION"] = json.dumps(host_report, ensure_ascii=False, indent=2)
+                    values["INVESTIGATION_REPORT"] = investigation_context(number)
                     values["VALIDATION_PREFLIGHT"] = json.dumps(preflight, ensure_ascii=False, indent=2)
                     values["EVIDENCE_REQUEST"] = evidence_request.read_text(encoding="utf-8") if evidence_request else "Sem pedido anterior de capturas adicionais."
                     before = worktree_fingerprint(repo)
@@ -970,15 +1043,64 @@ def execute(arguments: argparse.Namespace) -> int:
                 outcome = run_verification(repo, suite, body, number, arguments.tests_timeout_minutes * 60, suite_shell)
                 passed, report, report_path = outcome["status"] == "completed", outcome["message"], Path(outcome["log"])
                 if not passed and not outcome["diagnosable"]:
+                    save_state(state_path, state, current_gate="tests-blocked", last_failure=report)
                     fail(f"Gate 3 verification blocked; source and artifacts preserved. {sanitize(report)} Diagnóstico: {outcome['directory']}/report.json")
+                recovered_tests = False
                 if not passed:
-                    correction = f"A suíte completa falhou. Corrija estas falhas:\n\n{report}"
-                    save_state(state_path, state, current_gate="development", last_failure=correction)
-                    gate_finished(number, "tests", attempt, "rejected", started, normalized_failures=[report])
-                    if attempt == arguments.max_attempts:
-                        fail(f"Gate 3 failed phase {number} {attempt} times. Diagnóstico: {report_path}")
-                    continue
+                    save_state(state_path, state, current_gate="tests-diagnosis", last_failure=report)
+                    try:
+                        resolution = resolve_check_failure(package, repo, values, body, number, attempt, "tests", outcome,
+                                                           arguments.tests_timeout_minutes * 60, arguments.validation_timeout_minutes * 60, arguments.model,
+                                                           confirm=lambda: run_verification(repo, suite, body, number, arguments.tests_timeout_minutes * 60, suite_shell))
+                    except (ExecutionError, RuntimeFailure, OSError, ValueError) as error:
+                        reason = "Diagnóstico da suíte indisponível: " + sanitize_text(str(error))
+                        save_state(state_path, state, current_gate="tests-blocked", last_failure=reason)
+                        fail(f"{reason}. Resultado original preservado: {report_path}")
+                    if resolution["action"] == "correct":
+                        correction = "Corrija somente os defeitos demonstrados pela suíte:\n" + validation_report(resolution["diagnosis"], defects_only=True)
+                        if resolution["history"]:
+                            correction += "\nInvestigação preservada: " + str(resolution["history"]["archive_path"])
+                        save_state(state_path, state, current_gate="development", last_failure=correction)
+                        gate_finished(number, "tests", attempt, "rejected", started, findings=resolution["diagnosis"]["findings"])
+                        if attempt == arguments.max_attempts:
+                            fail(f"Gate 3 failed phase {number} {attempt} times. Diagnóstico: {report_path}")
+                        continue
+                    if resolution["action"] != "recovered":
+                        reason = validation_report(resolution["diagnosis"]) + "\n" + resolution["reason"]
+                        save_state(state_path, state, current_gate="tests-blocked", last_failure=reason)
+                        gate_finished(number, "tests", attempt, "blocked", started, reason=reason)
+                        fail(f"Suíte com causa não resolvida; trabalho e evidências preservados. {sanitize(reason)}")
+                    recovered_tests = True
                 gate_finished(number, "tests", attempt, "approved", started)
+
+                if recovered_tests:
+                    save_state(state_path, state, current_gate="validation")
+                    review_started = gate_started(number, "validation", attempt)
+                    values["INVESTIGATION_REPORT"] = investigation_context(number)
+                    before = worktree_fingerprint(repo)
+                    try:
+                        review = invoke_agent(package, repo, "validate", render(package / "prompts" / "validate.md", values), package / "schemas" / "validation-result.schema.json", number, arguments.validation_timeout_minutes * 60, arguments.model)
+                        validate_result(review, "validate")
+                        validate_evidence_scope(review, planning.read_text(encoding="utf-8"), body)
+                    except (ExecutionError, RuntimeFailure, OSError) as error:
+                        save_state(state_path, state, current_gate="validation-blocked", last_failure=sanitize_text(str(error)))
+                        fail("independent review of investigation results failed; work preserved")
+                    finally:
+                        if worktree_fingerprint(repo) != before:
+                            save_state(state_path, state, current_gate="validation-blocked")
+                            fail("Gate 2 modified the repository during investigation review; changes preserved")
+                    review_action = validation_action(review)
+                    if review_action == "retry":
+                        correction = validation_report(review, defects_only=True)
+                        save_state(state_path, state, current_gate="development", last_failure=correction)
+                        gate_finished(number, "validation", attempt, "rejected", review_started, findings=review["findings"])
+                        if attempt == arguments.max_attempts:
+                            fail("investigation review rejected at attempt limit; work preserved")
+                        continue
+                    if review_action != "approved":
+                        save_state(state_path, state, current_gate="validation-blocked", last_failure=validation_report(review))
+                        fail("investigation remains unverified by independent review; work preserved")
+                    gate_finished(number, "validation", attempt, "approved", review_started)
 
                 save_state(state_path, state, current_gate="commit")
                 started = gate_started(number, "commit", attempt)
