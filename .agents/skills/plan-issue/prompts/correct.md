@@ -18,6 +18,8 @@ If you start servers or test processes, record their PIDs and stop only those pr
 
 Preserve correct work already done, address only demonstrated findings and leave changes uncommitted. Return only the schema JSON: `status: completed` after implementing the corrections (**finalizado**, not approved), or `status: blocked` when a concrete obstacle prevents completion. A blocked result explains the cause and remaining work in `summary`, supplies nonempty diagnostic `checks` and lists preserved partial changes.
 
+When corrections, tests and capture support are implemented and only sandbox-limited execution remains, use `status: ready-for-host-checks` and nonempty `pending_checks`: `host` for the approved `Verificação no host`, `rendered` for the approved `Verificação renderizada`. Describe the attempted checks and sandbox obstacle in `checks`; the parent runs those approved commands, including a build/browser verification they already contain. Use empty `pending_checks` for completed/blocked results. Actual unfinished code/test/fixture work or a required undeclared command remains blocked. Preserve correct work; never encode executable commands in JSON or broaden permissions to complete checks.
+
 ## Parent-side preflight result
 
 {{VALIDATION_PREFLIGHT}}
